@@ -10,10 +10,15 @@ const adminHtml = `<!doctype html>
   <title>Stock Auto Admin</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html {
+      height: 100%;
+      width: 100%;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: #ffffff;
-      min-height: 100vh;
+      height: 100%;
+      width: 100%;
       color: #333;
     }
     
@@ -26,8 +31,10 @@ const adminHtml = `<!doctype html>
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
+      width: 100%;
       background: #f8f9fa;
+      padding: 20px;
     }
     .login-card {
       background: white;
