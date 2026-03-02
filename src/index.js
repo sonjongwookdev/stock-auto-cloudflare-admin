@@ -358,6 +358,48 @@ const adminHtml = `<!doctype html>
     }
     .modal-close:hover { color: #333; }
     
+    /* Error Messages */
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 500;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    /* Wrong Password - User Error */
+    .alert.password-error {
+      background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+      border-left: 4px solid #ff9500;
+      color: #8b5a00;
+    }
+    /* Server Error - Connection Failed */
+    .alert.server-error {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-left: 4px solid #dc2626;
+      color: #7f1d1d;
+    }
+    /* Success */
+    .alert.success {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+    
     .error-msg {
       background: #fff5f5;
       border-left: 4px solid #ff9500;
@@ -744,7 +786,7 @@ const adminHtml = `<!doctype html>
     try {
       const password = document.getElementById('loginPassword').value
       if (!password) {
-        document.getElementById('loginError').innerHTML = '<div class="error-msg">비밀번호를 입력하세요</div>'
+        displayAlert('loginError', '비밀번호를 입력해주세요', 'password-error')
         return
       }
       
@@ -754,8 +796,34 @@ const adminHtml = `<!doctype html>
       showPage('initPage')
       await checkInitStatus()
     } catch (e) {
-      document.getElementById('loginError').innerHTML = '<div class="error-msg">로그인 실패: ' + e.message + '</div>'
+      const errorMsg = e.message || '로그인 실패'
+      const statusMatch = errorMsg.match(/HTTP (\d+)/)
+      const status = statusMatch ? parseInt(statusMatch[1]) : null
+      
+      let alertType = 'password-error'
+      let displayMsg = ''
+      
+      if (status === 401 || errorMsg.includes('비밀번호')) {
+        alertType = 'password-error'
+        displayMsg = '비밀번호가 올바르지 않습니다'
+      } else if (status >= 500 || errorMsg.includes('Failed to fetch') || errorMsg.includes('connect')) {
+        alertType = 'server-error'
+        displayMsg = '서버에 연결할 수 없습니다. 나중에 다시 시도해주세요'
+      } else if (status === 403) {
+        alertType = 'server-error'
+        displayMsg = '접근이 거부되었습니다. 관리자에게 문의하세요'
+      } else {
+        alertType = 'server-error'
+        displayMsg = errorMsg
+      }
+      
+      displayAlert('loginError', displayMsg, alertType)
     }
+  }
+  
+  function displayAlert(elementId, message, type) {
+    const alertHtml = '<div class="alert ' + type + '">' + message + '</div>'
+    document.getElementById(elementId).innerHTML = alertHtml
   }
 
   async function checkInitStatus() {
