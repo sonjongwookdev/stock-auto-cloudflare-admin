@@ -263,6 +263,31 @@ const adminHtml = `<!doctype html>
     button.btn:active {
       transform: translateY(0);
     }
+    button.btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    /* Loading Spinner */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    button.btn.loading {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      opacity: 0.9;
+    }
     button.btn.secondary {
       background: #f5f5f5;
       color: #333;
@@ -790,12 +815,17 @@ const adminHtml = `<!doctype html>
         return
       }
       
+      // 로딩 상태 시작
+      setLoginLoading(true)
+      document.getElementById('loginError').innerHTML = ''
+      
       await api('/login', { method: 'POST', body: { password } })
       currentUser.isLoggedIn = true
       
       showPage('initPage')
       await checkInitStatus()
     } catch (e) {
+      setLoginLoading(false)
       const errorMsg = e.message || '로그인 실패'
       const statusMatch = errorMsg.match(/HTTP (\d+)/)
       const status = statusMatch ? parseInt(statusMatch[1]) : null
@@ -818,6 +848,23 @@ const adminHtml = `<!doctype html>
       }
       
       displayAlert('loginError', displayMsg, alertType)
+    }
+  }
+  
+  function setLoginLoading(isLoading) {
+    const btn = document.querySelector('#loginPage button.btn')
+    const passwordInput = document.getElementById('loginPassword')
+    
+    if (isLoading) {
+      btn.disabled = true
+      btn.classList.add('loading')
+      btn.innerHTML = '<span class="spinner"></span>로그인 중...'
+      passwordInput.disabled = true
+    } else {
+      btn.disabled = false
+      btn.classList.remove('loading')
+      btn.innerHTML = '로그인'
+      passwordInput.disabled = false
     }
   }
   
