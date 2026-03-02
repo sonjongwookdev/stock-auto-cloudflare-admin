@@ -16,10 +16,10 @@ const adminHtml = `<!doctype html>
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: #ffffff;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       height: 100%;
       width: 100%;
-      color: #333;
+      color: #1a1a1a;
     }
     
     /* ===== Pages ===== */
@@ -33,30 +33,35 @@ const adminHtml = `<!doctype html>
       justify-content: center;
       min-height: 100vh;
       width: 100%;
-      background: #f8f9fa;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 20px;
     }
     .login-card {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 60px 50px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2), 0 5px 15px rgba(0,0,0,0.1);
       width: 90%;
-      max-width: 380px;
+      max-width: 420px;
       text-align: center;
+      backdrop-filter: blur(10px);
     }
     .login-card h1 {
-      font-size: 32px;
-      font-weight: 700;
+      font-size: 36px;
+      font-weight: 800;
       margin-bottom: 12px;
-      color: #000;
-      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
     }
     .login-card .subtitle {
-      color: #808080;
+      color: #666;
       margin-bottom: 40px;
       font-size: 15px;
       font-weight: 500;
+      letter-spacing: 0.5px;
     }
     
     /* Init Page */
@@ -210,42 +215,54 @@ const adminHtml = `<!doctype html>
     label {
       display: block;
       font-size: 13px;
-      margin: 16px 0 8px;
-      color: #333;
+      margin: 18px 0 10px;
+      color: #1a1a1a;
       font-weight: 600;
+      letter-spacing: 0.3px;
     }
     input, textarea, select {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
       box-sizing: border-box;
       font-family: inherit;
       font-size: 15px;
-      transition: border-color 0.2s;
+      transition: all 0.3s ease;
+      background: #fafbfc;
     }
     input:focus, textarea:focus, select:focus { 
       outline: none; 
-      border-color: #ff9500;
-      box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
     }
     textarea { min-height: 90px; }
     
     button.btn {
-      background: #ff9500;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      border-radius: 6px;
-      padding: 14px 24px;
+      border-radius: 8px;
+      padding: 16px 24px;
       cursor: pointer;
       margin-right: 6px;
-      margin-top: 24px;
-      font-size: 15px;
-      font-weight: 600;
-      transition: background 0.2s;
+      margin-top: 28px;
+      font-size: 16px;
+      font-weight: 700;
+      transition: all 0.3s ease;
       width: 100%;
+      box-shadow: 0 8px 15px rgba(102, 126, 234, 0.3);
+      letter-spacing: 0.5px;
     }
-    button.btn:hover { background: #e68600; }
+    button.btn:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(102, 126, 234, 0.4);
+    }
+    button.btn:active {
+      transform: translateY(0);
+    }
     button.btn.secondary {
       background: #f5f5f5;
       color: #333;
