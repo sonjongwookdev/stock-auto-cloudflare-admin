@@ -12,7 +12,7 @@ const adminHtml = `<!doctype html>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #ffffff;
       min-height: 100vh;
       color: #333;
     }
@@ -27,24 +27,29 @@ const adminHtml = `<!doctype html>
       align-items: center;
       justify-content: center;
       height: 100vh;
+      background: #f8f9fa;
     }
     .login-card {
       background: white;
-      border-radius: 16px;
-      padding: 40px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 60px 50px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
       width: 90%;
-      max-width: 400px;
+      max-width: 380px;
+      text-align: center;
     }
     .login-card h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-      color: #667eea;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #000;
+      letter-spacing: -0.5px;
     }
     .login-card .subtitle {
-      color: #999;
-      margin-bottom: 30px;
-      font-size: 14px;
+      color: #808080;
+      margin-bottom: 40px;
+      font-size: 15px;
+      font-weight: 500;
     }
     
     /* Init Page */
@@ -53,7 +58,7 @@ const adminHtml = `<!doctype html>
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: #f5f5f5;
+      background: #f8f9fa;
     }
     .init-card {
       background: white;
@@ -124,7 +129,7 @@ const adminHtml = `<!doctype html>
     }
     
     /* Main Dashboard */
-    .main-page { background: #f5f5f5; min-height: 100vh; padding-top: 0; }
+    .main-page { background: #f8f9fa; min-height: 100vh; padding-top: 0; }
     .top-header {
       background: white;
       border-bottom: 1px solid #e5e7eb;
@@ -197,44 +202,48 @@ const adminHtml = `<!doctype html>
     h2 { font-size: 17px; margin: 0 0 8px; }
     label {
       display: block;
-      font-size: 12px;
-      margin: 8px 0 4px;
-      color: #475569;
+      font-size: 13px;
+      margin: 16px 0 8px;
+      color: #333;
       font-weight: 600;
     }
     input, textarea, select {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
       box-sizing: border-box;
       font-family: inherit;
+      font-size: 15px;
+      transition: border-color 0.2s;
     }
     input:focus, textarea:focus, select:focus { 
       outline: none; 
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #ff9500;
+      box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
     }
     textarea { min-height: 90px; }
     
     button.btn {
-      background: #667eea;
+      background: #ff9500;
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 6px;
+      padding: 14px 24px;
       cursor: pointer;
       margin-right: 6px;
-      margin-top: 6px;
-      font-size: 13px;
+      margin-top: 24px;
+      font-size: 15px;
+      font-weight: 600;
       transition: background 0.2s;
+      width: 100%;
     }
-    button.btn:hover { background: #5568d3; }
+    button.btn:hover { background: #e68600; }
     button.btn.secondary {
-      background: #e5e7eb;
+      background: #f5f5f5;
       color: #333;
     }
-    button.btn.secondary:hover { background: #d1d5db; }
+    button.btn.secondary:hover { background: #e8e8e8; }
     button.btn.danger {
       background: #ef4444;
     }
@@ -326,13 +335,12 @@ const adminHtml = `<!doctype html>
     .modal-close:hover { color: #333; }
     
     .error-msg {
-      background: #fef2f2;
-      border-left: 4px solid #ef4444;
-      color: #991b1b;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-size: 13px;
+      background: #fff5f5;
+      border-left: 4px solid #ff9500;
+      color: #b94717;
+      padding: 12px 14px;\n      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;\n      line-height: 1.5;
     }
     .success-msg {
       background: #ecfdf5;
@@ -371,12 +379,12 @@ const adminHtml = `<!doctype html>
   <!-- Login Page -->
   <div id="loginPage" class="page login-page active">
     <div class="login-card">
-      <h1>🔐 Stock Auto</h1>
-      <p class="subtitle">관리자 대시보드</p>
+      <h1>Stock Auto</h1>
+      <p class="subtitle">자동매매 시스템 관리</p>
       <label>비밀번호</label>
-      <input id="loginPassword" type="password" placeholder="관리자 비밀번호" />
-      <button class="btn" style="width:100%" onclick="performLogin()">로그인</button>
-      <div id="loginError" style="margin-top:15px;"></div>
+      <input id="loginPassword" type="password" placeholder="관리자 비밀번호를 입력하세요" />
+      <button class="btn" onclick="performLogin()">로그인</button>
+      <div id="loginError" style="margin-top:16px;"></div>
     </div>
   </div>
 
