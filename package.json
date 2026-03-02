@@ -1,0 +1,16 @@
+{
+  "name": "stock-auto-cloudflare-admin",
+  "version": "1.0.0",
+  "description": "자동매매 시스템 관리자 페이지 - Cloudflare Workers",
+  "author": "sonjongwookdev@gmail.com",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "wrangler": "wrangler"
+  },
+  "dependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
