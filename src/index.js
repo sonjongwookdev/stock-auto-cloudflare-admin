@@ -670,29 +670,30 @@ const adminHtml = `<!doctype html>
         if (!res.ok) {
           // 4xx 에러는 재시도하지 않음
           if (res.status >= 400 && res.status < 500) {
-            throw new Error(json.error || `HTTP ${res.status}: ${json.message || '알 수 없음'}`)
+            const msg = json.message || '알 수 없음'
+            throw new Error(json.error || ('HTTP ' + res.status + ': ' + msg))
           }
           
           // 5xx 또는 네트워크 에러는 재시도
           if (attempt < maxRetries) {
             const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), maxDelay)
-            console.warn(`[API] ${path} 실패 (${attempt}/${maxRetries}, ${res.status}), ${delay}ms 후 재시도...`)
+            console.warn('[API] ' + path + ' 실패 (' + attempt + '/' + maxRetries + ', ' + res.status + '), ' + delay + 'ms 후 재시도...')
             await new Promise(r => setTimeout(r, delay))
             continue
           }
-          throw new Error(json.error || `HTTP ${res.status}`)
+          throw new Error(json.error || ('HTTP ' + res.status))
         }
         
         return json
       } catch (e) {
         // 마지막 시도면 에러 던짐
         if (attempt === maxRetries) {
-          throw new Error(`${path} 호출 실패 (${maxRetries}번 시도): ${e.message}`)
+          throw new Error(path + ' 호출 실패 (' + maxRetries + '번 시도): ' + e.message)
         }
         
         // 네트워크 에러면 재시도
         const delay = Math.min(initialDelay * Math.pow(2, attempt - 1), maxDelay)
-        console.warn(`[API] ${path} 연결 실패 (${attempt}/${maxRetries}), ${delay}ms 후 재시도...`)
+        console.warn('[API] ' + path + ' 연결 실패 (' + attempt + '/' + maxRetries + '), ' + delay + 'ms 후 재시도...')
         await new Promise(r => setTimeout(r, delay))
       }
     }
@@ -877,7 +878,7 @@ const adminHtml = `<!doctype html>
   async function loadMarketTop() {
     try {
       const criteria = document.getElementById('rankingCriteria').value || 'volume'
-      const result = await api(`/markets/${currentMarket}/top-by-criteria?criteria=${criteria}&limit=30`)
+      const result = await api('/markets/' + currentMarket + '/top-by-criteria?criteria=' + criteria + '&limit=30')
       setOut('marketOut', result.data)
     } catch (e) {
       setOut('marketOut', { error: e.message })
@@ -887,7 +888,7 @@ const adminHtml = `<!doctype html>
   async function loadRankedSymbols() {
     try {
       const criteria = document.getElementById('rankingCriteria').value || 'volume'
-      console.log(`상위종목 선택 기준: ${criteria}`)
+      console.log('상위종목 선택 기준: ' + criteria)
       await loadMarketTop()
     } catch (e) {
       setOut('marketOut', { error: e.message })
@@ -925,7 +926,7 @@ const adminHtml = `<!doctype html>
         const stats = statsMap[item.id]
         const checked = activeStrategy === item.id ? 'checked' : ''
         const statsText = stats
-          ? `✓ 승률: ${stats.winRate.toFixed(1)}% (${stats.totalTrades}거래, ROI: ${(stats.roi || 0).toFixed(1)}%)`
+          ? ('✓ 승률: ' + stats.winRate.toFixed(1) + '% (' + stats.totalTrades + '거래, ROI: ' + (stats.roi || 0).toFixed(1) + '%)')
           : '📊 신규'
 
         const row = document.createElement('div')
