@@ -34,7 +34,7 @@ const adminHtml = `<!doctype html>
       justify-content: center;
       min-height: 100vh;
       width: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       padding: 20px;
     }
     .login-card {
@@ -120,7 +120,7 @@ const adminHtml = `<!doctype html>
       justify-content: center;
       min-height: 100vh;
       width: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       padding: 20px;
     }
     .kis-card {
@@ -611,9 +611,6 @@ const adminHtml = `<!doctype html>
         <div class="warning">⚠️ 키는 안전하게 저장됩니다. 절대 공개하지 마세요.</div>
 
         <form id="kisForm" onsubmit="return false;">
-          <label>KIS Base URL</label>
-          <input id="kisBaseUrl" type="text" autocomplete="off" placeholder="https://..." />
-
           <label>KIS API Key</label>
           <input id="kisApiKey" type="password" autocomplete="new-password" placeholder="API Key" />
 
@@ -1128,12 +1125,12 @@ const adminHtml = `<!doctype html>
 
   async function saveKisKeys() {
     try {
-      const baseUrl = document.getElementById('kisBaseUrl').value
+      const baseUrl = BACKEND_BASE  // 백엔드 URL 자동 사용
       const apiKey = document.getElementById('kisApiKey').value
       const apiSecret = document.getElementById('kisApiSecret').value
       
-      if (!baseUrl || !apiKey) {
-        document.getElementById('kisError').innerHTML = '<div class="error-msg">Base URL과 API Key를 입력하세요</div>'
+      if (!apiKey) {
+        document.getElementById('kisError').innerHTML = '<div class="error-msg">API Key를 입력하세요</div>'
         return
       }
 
