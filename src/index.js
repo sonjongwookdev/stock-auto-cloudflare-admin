@@ -747,7 +747,7 @@ const adminHtml = `<!doctype html>
     </div>
 
     <!-- Main Content -->
-    <div class="wrap" style="padding-bottom: 120px;">
+    <div class="wrap">
       <div class="row">
         <section class="card full">
           <h2>🤖 자동매매 제어</h2>
@@ -761,12 +761,16 @@ const adminHtml = `<!doctype html>
             <h3 style="font-size: 16px; margin-bottom: 15px;">📍 현재 포지션</h3>
             <div id="positionsList" style="display: grid; gap: 10px;"></div>
           </div>
+          
+          <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e0e0e0;">
+            <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 15px; font-size: 16px; background: #d32f2f;">🛑 모든 거래 중단</button>
+          </div>
         </section>
 
         <section class="card">
           <h2>⚙️ 시스템 현황</h2>
           <button class="btn" onclick="loadStatus()">새로고침</button>
-          <button class="btn secondary" onclick="loadErrors()">오류 로그</button>
+          <button class="btn secondary" onclick="openErrorLogsModal()">📋 오류 로그 보기</button>
           <div id="statusOut" style="margin-top: 15px;"></div>
         </section>
       </div>
@@ -805,9 +809,22 @@ const adminHtml = `<!doctype html>
       </div>
     </div>
 
-    <!-- Fixed Bottom Bar -->
-    <div id="stopButtonBar" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e0e0e0; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100;">
-      <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 15px; font-size: 16px; background: #d32f2f;">🛑 모든 거래 중단</button>
+    <!-- Error Logs Modal -->
+    <div id="errorLogsModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+          <h2>📋 오류 로그</h2>
+          <button class="modal-close" onclick="closeErrorLogsModal()">✕</button>
+        </div>
+        
+        <div id="errorLogsContent" style="padding: 20px; max-height: 60vh; overflow-y: auto;">
+          <div style="text-align: center; color: #999;">로딩 중...</div>
+        </div>
+        
+        <div style="padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
+          <button class="btn secondary" type="button" style="width: 100%;" onclick="closeErrorLogsModal()">닫기</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1730,6 +1747,80 @@ const adminHtml = `<!doctype html>
       clearInterval(statusRefreshInterval)
       statusRefreshInterval = null
     }
+  }
+
+  async function openErrorLogsModal() {
+    const modal = document.getElementById('errorLogsModal')
+    const contentEl = document.getElementById('errorLogsContent')
+    
+    modal.classList.add('active')
+    contentEl.innerHTML = '<div style="text-align: center; color: #999;">로딩 중...</div>'
+    
+    try {
+      const errors = await api('/errors')
+      renderErrorLogs(errors)
+    } catch (e) {
+      contentEl.innerHTML = '<div style="padding: 20px; color: #ef4444; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">오류: ' + e.message + '</div>'
+    }
+  }
+
+  function closeErrorLogsModal() {
+    document.getElementById('errorLogsModal').classList.remove('active')
+  }
+
+  function renderErrorLogs(data) {
+    const contentEl = document.getElementById('errorLogsContent')
+    
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      contentEl.innerHTML = '<div style="padding: 30px; text-align: center; color: #999;">오류가 없습니다.</div>'
+      return
+    }
+
+    let html = ''
+    
+    if (Array.isArray(data.errors)) {
+      data.errors.forEach((err, idx) => {
+        const timestamp = err.timestamp || err.time || '시간 정보 없음'
+        const message = err.message || err.msg || ''
+        const code = err.code || ''
+        
+        html += '<div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #ef4444;">' +
+                '<div style="display: grid; grid-template-columns: 1fr auto; gap: 15px; margin-bottom: 8px;">' +
+                '<div>' +
+                '<strong style="color: #d32f2f;">오류 #' + (idx + 1) + '</strong>' +
+                '</div>' +
+                '<div style="font-size: 12px; color: #666;">' + timestamp + '</div>' +
+                '</div>' +
+                '<div style="color: #333; font-size: 13px; line-height: 1.6; word-break: break-all;">' +
+                (message || '메시지 없음') +
+                (code ? '<br/><span style="color: #666;">코드: ' + code + '</span>' : '') +
+                '</div>' +
+                '</div>'
+      })
+    } else if (Array.isArray(data)) {
+      data.forEach((err, idx) => {
+        const timestamp = err.timestamp || err.time || '시간 정보 없음'
+        const message = typeof err === 'string' ? err : err.message || JSON.stringify(err)
+        
+        html += '<div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #ef4444;">' +
+                '<div style="display: grid; grid-template-columns: 1fr auto; gap: 15px; margin-bottom: 8px;">' +
+                '<div><strong style="color: #d32f2f;">오류 #' + (idx + 1) + '</strong></div>' +
+                '<div style="font-size: 12px; color: #666;">' + timestamp + '</div>' +
+                '</div>' +
+                '<div style="color: #333; font-size: 13px; line-height: 1.6; word-break: break-all;">' + message + '</div>' +
+                '</div>'
+      })
+    } else {
+      html = '<div style="padding: 20px; color: #333; background: #f9f9f9; border-radius: 8px; font-family: monospace; font-size: 12px; word-break: break-all;">' +
+             JSON.stringify(data, null, 2) +
+             '</div>'
+    }
+    
+    if (!html) {
+      html = '<div style="padding: 30px; text-align: center; color: #999;">오류 정보가 없습니다.</div>'
+    }
+    
+    contentEl.innerHTML = html
   }
 
   async function loadErrors() {
