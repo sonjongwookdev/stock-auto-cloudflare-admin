@@ -530,6 +530,10 @@ const adminHtml = `<!doctype html>
           <span class="status-dot" id="headerDbStatus"></span>
           <span id="headerDbText">연결중</span>
         </div>
+        <div class="status-badge">
+          <span>💰 잔고:</span>
+          <code id="headerBalance" style="cursor: pointer; color: #10b981; font-weight: 600;" title="클릭하여 새로고침">로딩중...</code>
+        </div>
       </div>
 
       <div class="header-buttons">
@@ -746,6 +750,7 @@ const adminHtml = `<!doctype html>
   let currentMarket = 'domestic'
   let selectedStrategy = null  // 단일 선택
   let currentUser = { isLoggedIn: false }
+  let balanceRefreshInterval = null  // 잔고 자동 갱신 타이머
 
   async function api(path, opts = {}) {
     const maxRetries = 5
@@ -948,9 +953,16 @@ const adminHtml = `<!doctype html>
     showPage('mainPage')
     await loadKisStatus()
     await loadStatus()
+    await loadBalance()  // 초기 잔고 로드
     await loadMarketConfig()
     await loadStrategies()
     await loadTradingStatus()
+    
+    // 잔고 자동 갱신 설정 (30초마다)
+    if (balanceRefreshInterval) clearInterval(balanceRefreshInterval)
+    balanceRefreshInterval = setInterval(() => {
+      loadBalance().catch(e => console.warn('[Balance Refresh]', e.message))
+    }, 30000)
   }
 
   async function loadKisStatus() {
@@ -986,6 +998,35 @@ const adminHtml = `<!doctype html>
       setOut('statusOut', { error: e.message })
       document.getElementById('headerDbStatus').className = 'status-dot offline'
       document.getElementById('headerDbText').textContent = '오류'
+    }
+  }
+
+  /**
+   * 잔고 조회 함수
+   */
+  async function loadBalance() {
+    try {
+      const r = await api('/api/trading/balance')
+      const balanceEl = document.getElementById('headerBalance')
+      
+      if (r.ok && r.data) {
+        const data = r.data
+        // 총 자산을 표시 (원화)
+        const totalAssets = parseInt(data.totalAssets) || 0
+        const formatted = totalAssets.toLocaleString('ko-KR')
+        balanceEl.textContent = '₩' + formatted
+        balanceEl.title = `총 자산: ₩${formatted} | 보유 현금: ₩${(parseInt(data.cashBalance) || 0).toLocaleString('ko-KR')} | 클릭하여 새로고침`
+        balanceEl.style.color = '#10b981'
+      } else {
+        balanceEl.textContent = '조회 실패'
+        balanceEl.style.color = '#ef4444'
+      }
+    } catch (e) {
+      const balanceEl = document.getElementById('headerBalance')
+      balanceEl.textContent = '오류'
+      balanceEl.style.color = '#ef4444'
+      balanceEl.title = '클릭하여 재시도'
+      console.warn('[Balance Load]', e.message)
     }
   }
 
@@ -1364,6 +1405,21 @@ const adminHtml = `<!doctype html>
   function closeUsageModal() {
     document.getElementById('usageModal').classList.remove('active')
   }
+
+  /**
+   * 헤더의 잔고 클릭하여 새로고침
+   */
+  document.addEventListener('DOMContentLoaded', () => {
+    const balanceEl = document.getElementById('headerBalance')
+    if (balanceEl) {
+      balanceEl.addEventListener('click', () => {
+        balanceEl.style.opacity = '0.6'
+        loadBalance().finally(() => {
+          balanceEl.style.opacity = '1'
+        })
+      })
+    }
+  })
 
   async function performLogout() {
     try {
