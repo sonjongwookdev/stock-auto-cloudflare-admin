@@ -748,33 +748,20 @@ const adminHtml = `<!doctype html>
         
         <hr style="margin: 25px 0; border: none; border-top: 1px solid #e5e7eb;" />
         
-        <h3>KIS API 키 변경</h3>
-        <p style="color: #666; margin-bottom: 15px; font-size: 13px;">키를 변경하면 서버의 자동매매 프로그램이 재구동됩니다.</p>
-
-        <form id="settingsKisForm" onsubmit="return false;">
-          <label>KIS Base URL</label>
-          <input id="settingsBaseUrl" type="text" autocomplete="off" />
-          <div class="kis-preview" id="settingsBaseUrlPreview"></div>
-
-          <label>KIS API Key</label>
-          <input id="settingsApiKey" type="password" autocomplete="new-password" />
-          <div class="kis-preview" id="settingsKeyPreview"></div>
-
-          <label>KIS API Secret (선택)</label>
-          <input id="settingsApiSecret" type="password" autocomplete="new-password" />
-
-          <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin: 15px 0; font-size: 13px; color: #856404;">
-            <strong>⚠️ 주의:</strong> 키 변경 시 아래에 "변경합니다"를 입력해야 합니다.
-          </div>
-
-          <label>확인 (아래에 "변경합니다" 입력하여 확인)</label>
-          <input id="settingsConfirmation" type="text" autocomplete="off" placeholder="변경합니다" />
-
-          <button class="btn" type="button" style="width:100%; margin-top:15px;" onclick="updateKisKeys()">키 변경 확인</button>
-          <button class="btn secondary" type="button" style="width:100%" onclick="closeSettingsModal()">취소</button>
-
-          <div id="settingsMessage" style="margin-top:15px;"></div>
-        </form>
+        <h3>🔑 KIS API 키 교체</h3>
+        <p style="color: #666; margin-bottom: 15px; font-size: 13px;">현재 설정된 KIS API 키를 확인하고 교체할 수 있습니다.</p>
+        
+        <div class="kis-preview" id="settingsKeyInfo" style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-left: 4px solid #667eea; color: #333;">
+          <div style="margin-bottom: 8px;"><strong>Base URL:</strong> <span id="settingsBaseUrlDisplay">로딩 중...</span></div>
+          <div><strong>API Key:</strong> <span id="settingsKeyDisplay">로딩 중...</span></div>
+        </div>
+        
+        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin: 15px 0; font-size: 13px; color: #856404;">
+          <strong>⚠️ 주의:</strong> 키 교체 시 자동매매가 중단되고 서버가 재시작됩니다.
+        </div>
+        
+        <button class="btn" type="button" style="width:100%; margin-top:15px; padding: 15px; font-size: 15px;" onclick="goToKisSetup()">🔑 KIS API 키 교체하기</button>
+        <button class="btn secondary" type="button" style="width:100%; margin-top:10px;" onclick="closeSettingsModal()">닫기</button>
       </div>
     </div>
   </div>
@@ -815,25 +802,26 @@ const adminHtml = `<!doctype html>
           <li><strong>🖥️ 서버:</strong> Oracle 서버 연결 상태 (🟢=정상, 🔴=오류)</li>
         </ul>
 
-        <h3>5️⃣ 투자 예산 설정</h3>
-        <p>국내/해외 탭별로 투자 예산을 설정합니다:</p>
+        <h3>5️⃣ 자동매매 제어</h3>
+        <p>간단한 버튼으로 자동매매를 시작하고 중단할 수 있습니다:</p>
         <ul>
-          <li>리스트 총 시드: 전체 투자금</li>
-          <li>종목별 초기 시드: JSON 형식으로 특정 종목별 투자 배치</li>
+          <li><strong>🇰🇷 국내 자동매매 시작:</strong> 국내 시장 자동매매 시작</li>
+          <li><strong>🌎 해외 자동매매 시작:</strong> 해외 시장 자동매매 시작</li>
+          <li><strong>🛑 모든 거래 중단:</strong> 모든 포지션 청산 및 자동매매 중단</li>
         </ul>
 
-        <h3>6️⃣ 설정 및 키 변경</h3>
+        <h3>6️⃣ 설정 및 키 교체</h3>
         <p>우측 상단의 "⚙️ 설정" 버튼으로:</p>
         <ul>
-          <li>현재 API 키 확인</li>
-          <li>새로운 키로 변경 ("변경합니다" 입력 필수)</li>
-          <li>키 변경 시 자동매매 프로그램이 재구동됨</li>
+          <li>잔고 갱신 주기 설정 (30초 ~ 10분)</li>
+          <li>현재 API 키 정보 확인</li>
+          <li>"🔑 KIS API 키 교체하기" 버튼으로 키 설정 페이지 이동</li>
         </ul>
 
         <h3>💡 참고사항</h3>
-        <p>• 모든 설정은 즉시 저장됩니다</p>
-        <p>• 키 변경 시 서버가 자동으로 재시작됩니다</p>
-        <p>• 오류가 발생하면 "오류 로그" 버튼으로 확인할 수 있습니다</p>
+        <p>• 상위종목 선택과 시드 배분은 백엔드에서 자동으로 처리됩니다</p>
+        <p>• 매매 사이클은 설정된 주기마다 자동으로 실행됩니다</p>
+        <p>• 키 교체 시 자동매매가 중단되고 서버가 재시작됩니다</p>
       </div>
     </div>
   </div>
@@ -1567,52 +1555,29 @@ const adminHtml = `<!doctype html>
       loadBalanceRefreshPreference()
       updateBalanceRefreshPreview()
       
-      // KIS 키 설정 로드
+      // KIS 키 정보 표시
       const r = await api('/kis/status')
-      document.getElementById('settingsBaseUrl').value = r.kisBaseUrl || ''
-      document.getElementById('settingsBaseUrlPreview').textContent = r.kisBaseUrl ? 'Base URL: ' + r.kisBaseUrl : '미설정'
-      document.getElementById('settingsKeyPreview').textContent = r.kisKeyPreview || '미설정'
+      const baseUrlDisplay = document.getElementById('settingsBaseUrlDisplay')
+      const keyDisplay = document.getElementById('settingsKeyDisplay')
+      
+      if (baseUrlDisplay) {
+        baseUrlDisplay.textContent = r.kisBaseUrl || '미설정'
+      }
+      if (keyDisplay) {
+        keyDisplay.textContent = r.kisKeyPreview || '미설정'
+      }
     } catch (e) {
       console.error('Failed to load settings:', e)
+      const baseUrlDisplay = document.getElementById('settingsBaseUrlDisplay')
+      const keyDisplay = document.getElementById('settingsKeyDisplay')
+      if (baseUrlDisplay) baseUrlDisplay.textContent = '오류'
+      if (keyDisplay) keyDisplay.textContent = '오류'
     }
   }
 
-  async function updateKisKeys() {
-    try {
-      const baseUrl = document.getElementById('settingsBaseUrl').value
-      const apiKey = document.getElementById('settingsApiKey').value
-      const apiSecret = document.getElementById('settingsApiSecret').value
-      const confirmation = document.getElementById('settingsConfirmation').value
-
-      if (!baseUrl || !apiKey) {
-        document.getElementById('settingsMessage').innerHTML = '<div class="error-msg">Base URL과 API Key를 입력하세요</div>'
-        return
-      }
-
-      if (confirmation !== '변경합니다') {
-        document.getElementById('settingsMessage').innerHTML = '<div class="error-msg">"변경합니다"를 입력해야 합니다</div>'
-        return
-      }
-
-      const r = await api('/kis/update', {
-        method: 'POST',
-        body: {
-          kis_base_url: baseUrl,
-          kis_api_key: apiKey,
-          kis_api_secret: apiSecret,
-          confirmation
-        }
-      })
-
-      document.getElementById('settingsMessage').innerHTML = '<div class="success-msg">✓ ' + r.message + '</div>'
-      
-      setTimeout(() => {
-        closeSettingsModal()
-        loadKisStatus()
-      }, 1500)
-    } catch (e) {
-      document.getElementById('settingsMessage').innerHTML = '<div class="error-msg">오류: ' + e.message + '</div>'
-    }
+  function goToKisSetup() {
+    closeSettingsModal()
+    showPage('kisPage')
   }
 
   function openUsageModal() {
