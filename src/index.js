@@ -1,6 +1,6 @@
 const BACKEND_BASE = (typeof BACKEND_BASE_URL !== 'undefined' && BACKEND_BASE_URL)
   ? BACKEND_BASE_URL
-  : 'http://168.107.57.47:4000'
+  : 'http://168.107.57.47.nip.io:4000'
 
 const adminHtml = `<!doctype html>
 <html lang="ko">
@@ -1923,6 +1923,7 @@ async function proxyToBackend(request, url) {
   const targetPath = url.pathname.replace('/api', '') || '/'
   const targetUrl = new URL(targetPath + url.search, BACKEND_BASE)
   const headers = new Headers(request.headers)
+  headers.delete('host')
   headers.set('x-forwarded-host', url.host)
   headers.set('x-forwarded-proto', 'https')
 
