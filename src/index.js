@@ -1411,7 +1411,7 @@ const adminHtml = `<!doctype html>
   async function goToMainDashboard() {
     showPage('mainPage')
     await loadKisStatus()
-    await loadStatus()
+    // await loadStatus()  // HTTP 요청으로 인한 Mixed Content 에러 제거
     await loadBalance()  // 초기 잔고 로드
     await loadAutoControlStatus()
     await loadTradingStatus()
@@ -1452,37 +1452,16 @@ const adminHtml = `<!doctype html>
         dbDot.className = 'status-dot offline'
         dbText.textContent = '오류'
       }
-
-      renderStatusOut(r)
     } catch (e) {
-      const el = document.getElementById('statusOut')
-      el.innerHTML = '<div style="padding: 15px; color: #ef4444; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">오류: ' + e.message + '</div>'
       document.getElementById('headerDbStatus').className = 'status-dot offline'
       document.getElementById('headerDbText').textContent = '오류'
+      console.error('[Status Check]', e.message)
     }
   }
 
   function renderStatusOut(data) {
-    const el = document.getElementById('statusOut')
-    let html = ''
-    
-    Object.entries(data).forEach(([k, v]) => {
-      const valueStr = typeof v === 'object' ? JSON.stringify(v) : String(v)
-      const icon = k.includes('status') || k.includes('Status') ? '⚙️' :
-                   k.includes('health') || k.includes('healthy') ? '💚' :
-                   k.includes('time') ? '⏰' : '📌'
-      
-      html += '<div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 8px; display: grid; grid-template-columns: 150px 1fr; gap: 15px;">' +
-              '<div style="font-weight: bold; color: #667eea;">' + icon + ' ' + k + '</div>' +
-              '<div style="word-break: break-all; color: #333; font-family: monospace; font-size: 13px;">' + valueStr + '</div>' +
-              '</div>'
-    })
-    
-    if (html === '') {
-      html = '<div style="padding: 15px; color: #999; text-align: center;">데이터 없음</div>'
-    }
-    
-    el.innerHTML = html
+    // statusOut 엘리먼트가 없으므로 렌더링하지 않음
+    // (모달에서 renderStatusInModal()을 사용)
   }
 
   // Status Modal Functions
@@ -1934,11 +1913,14 @@ const adminHtml = `<!doctype html>
   }
 
   async function loadErrors() {
+    // loadErrors는 더 이상 사용되지 않음
+    // openErrorLogsModal()을 사용하세요
     try {
-      setOut('statusOut', await api('/errors'))
+      await api('/errors')
     } catch (e) {
-      setOut('statusOut', { error: e.message })
+      console.error('[Load Errors]', e.message)
     }
+  }
   }
 
   async function loadTradingStatus() {
