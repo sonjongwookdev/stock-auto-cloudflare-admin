@@ -1120,6 +1120,30 @@ const adminHtml = `<!doctype html>
     document.getElementById(elementId).innerHTML = alertHtml
   }
 
+  // 페이지 로드 시 서버 연결 상태 확인
+  async function checkServerConnection() {
+    try {
+      console.log('[서버 연결] 확인 시작: ' + BACKEND_BASE)
+      const response = await fetch(BACKEND_BASE + '/health', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 5000
+      })
+      
+      if (response.ok) {
+        console.log('[서버 연결] ✓ 정상')
+        return true
+      } else {
+        console.warn('[서버 연결] 응답 상태: ' + response.status)
+        return false
+      }
+    } catch (e) {
+      console.error('[서버 연결] ✕ 실패: ' + e.message)
+      console.error('[서버 주소] ' + BACKEND_BASE)
+      return false
+    }
+  }
+
   async function checkInitStatus() {
     try {
       const r = await api('/auth/init-check')
@@ -1997,6 +2021,11 @@ const adminHtml = `<!doctype html>
   function initEventListeners() {
     const loginInput = document.getElementById('loginPassword')
     const loginBtn = document.getElementById('loginBtn')
+    
+    // 서버 연결 상태 확인 (비동기, 백그라운드에서 실행)
+    checkServerConnection().catch(e => {
+      console.error('[초기화] 서버 연결 확인 중 에러:', e)
+    })
     
     if (loginBtn) {
       loginBtn.addEventListener('click', performLogin)
