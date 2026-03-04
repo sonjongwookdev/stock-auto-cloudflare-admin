@@ -750,17 +750,6 @@ const adminHtml = `<!doctype html>
     <div class="wrap">
       <div class="row">
         <section class="card full">
-          <h2>⚡ 원클릭 자동매매 제어</h2>
-          <p style="color:#6b7280; font-size:13px; margin-top:4px;">로그인 후 바로 시장별 자동매매를 시작하고, 현황/리포트를 한 화면에서 확인합니다.</p>
-          <div class="quick-actions">
-            <button id="startDomesticBtn" class="quick-btn domestic" onclick="startAutoTrading('domestic')">국내 자동매매 시작</button>
-            <button id="startOverseasBtn" class="quick-btn overseas" onclick="startAutoTrading('overseas')">해외 자동매매 시작</button>
-            <button id="stopAllBtn" class="quick-btn stop" onclick="stopAllTrading()">모든거래중단</button>
-          </div>
-          <div id="quickControlMsg" style="margin-top: 12px;"></div>
-        </section>
-
-        <section class="card full">
           <h2>🤖 자동매매 제어</h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
             <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 20px; font-size: 16px;">🇰🇷 국내 자동매매 시작</button>
