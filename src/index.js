@@ -210,6 +210,74 @@ const adminHtml = `<!doctype html>
       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     }
     .card.full { grid-column: 1/-1; }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quick-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      transition: opacity 0.2s ease;
+    }
+    .quick-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .quick-btn.domestic { background: #2563eb; }
+    .quick-btn.overseas { background: #7c3aed; }
+    .quick-btn.status { background: #0f766e; }
+    .quick-btn.stop { background: #dc2626; }
+
+    .status-panel {
+      margin-top: 12px;
+      border: 1px solid #dbe3ef;
+      border-radius: 10px;
+      padding: 14px;
+      background: #f9fbff;
+    }
+    .status-panel.hidden { display: none; }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .status-box {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .status-box h3 {
+      font-size: 14px;
+      margin: 0 0 8px;
+      color: #111827;
+    }
+    .report-item {
+      padding: 8px;
+      border: 1px solid #eef2f7;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+    .report-item .meta {
+      color: #6b7280;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .report-item .summary {
+      color: #111827;
+      font-size: 13px;
+      line-height: 1.45;
+    }
     
     h2 { font-size: 17px; margin: 0 0 8px; }
     label {
@@ -463,6 +531,8 @@ const adminHtml = `<!doctype html>
     @media (max-width: 768px) {
       .row { grid-template-columns: 1fr; }
       .header-status { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .quick-actions { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -546,6 +616,64 @@ const adminHtml = `<!doctype html>
     <!-- Main Content -->
     <div class="wrap">
       <div class="row">
+        <section class="card full">
+          <h2>⚡ 원클릭 자동매매 제어</h2>
+          <p style="color:#6b7280; font-size:13px; margin-top:4px;">로그인 후 바로 시장별 자동매매를 시작하고, 현황/리포트를 한 화면에서 확인합니다.</p>
+          <div class="quick-actions">
+            <button id="startDomesticBtn" class="quick-btn domestic" onclick="startAutoTrading('domestic')">국내 자동매매 시작</button>
+            <button id="startOverseasBtn" class="quick-btn overseas" onclick="startAutoTrading('overseas')">해외 자동매매 시작</button>
+            <button id="openStatusBtn" class="quick-btn status" onclick="openStatusView()">현황보기</button>
+            <button id="stopAllBtn" class="quick-btn stop" onclick="stopAllTrading()">모든거래중단</button>
+          </div>
+          <div id="quickControlMsg" style="margin-top: 12px;"></div>
+
+          <div id="statusViewPanel" class="status-panel hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+              <h3 style="font-size:16px; margin:0;">📊 자동매매 현황</h3>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="statusRefreshInterval" onchange="updateStatusRefreshInterval()" style="min-width:180px; padding:8px 10px; font-size:13px;">
+                  <option value="30">30초</option>
+                  <option value="60">1분</option>
+                  <option value="120" selected>2분 (기본값)</option>
+                  <option value="180">3분</option>
+                  <option value="300">5분</option>
+                  <option value="600">10분</option>
+                </select>
+                <button class="header-btn secondary" onclick="refreshStatusView()">새로고침</button>
+                <button class="header-btn secondary" onclick="closeStatusView()">닫기</button>
+              </div>
+            </div>
+            <div id="statusRefreshPreview" class="kis-preview" style="margin-top:10px;">✓ 현재 설정: 2분마다 자동 갱신</div>
+
+            <div class="status-grid">
+              <div class="status-box">
+                <h3>요약 현황</h3>
+                <pre id="statusSummaryOut"></pre>
+              </div>
+              <div class="status-box">
+                <h3>승률/전략 성과</h3>
+                <pre id="statusWinrateOut"></pre>
+              </div>
+              <div class="status-box">
+                <h3>현재 거래 현황</h3>
+                <div class="list" id="statusPositionsList"></div>
+              </div>
+              <div class="status-box">
+                <h3>보고서 리스트</h3>
+                <div class="list" id="statusReportsList"></div>
+              </div>
+            </div>
+
+            <div class="status-box" style="margin-top:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                <h3 style="margin:0;">실시간 보고서</h3>
+                <button class="header-btn" onclick="generateLiveReport()">현재실시간 보고서 바로뽑기</button>
+              </div>
+              <pre id="statusLiveReportOut"></pre>
+            </div>
+          </div>
+        </section>
+
         <section class="card">
           <h2>시스템 현황</h2>
           <button class="btn" onclick="loadStatus()">새로고침</button>
@@ -768,6 +896,9 @@ const adminHtml = `<!doctype html>
   let currentUser = { isLoggedIn: false }
   let balanceRefreshInterval = null  // 잔고 자동 갱신 타이머
   let balanceRefreshSeconds = 120  // 기본값 2분
+  let statusRefreshInterval = null
+  let statusRefreshSeconds = 120
+  let statusPanelOpen = false
 
   async function api(path, opts = {}) {
     const maxRetries = 5
@@ -926,11 +1057,7 @@ const adminHtml = `<!doctype html>
 
       // Auto-navigate after 2 seconds
       setTimeout(() => {
-        if (r.needsKisSetup) {
-          showPage('kisPage')
-        } else {
-          goToMainDashboard()
-        }
+        goToMainDashboard()
       }, 2000)
     } catch (e) {
       document.getElementById('initPageContainer').innerHTML = 
@@ -971,12 +1098,15 @@ const adminHtml = `<!doctype html>
     await loadKisStatus()
     await loadStatus()
     await loadBalance()  // 초기 잔고 로드
+    await loadAutoControlStatus()
     await loadMarketConfig()
     await loadStrategies()
     await loadTradingStatus()
     
     // 저장된 갱신 시간 불러오기
     loadBalanceRefreshPreference()
+    loadStatusRefreshPreference()
+    updateStatusRefreshPreview()
     
     // 잔고 자동 갱신 설정
     startBalanceAutoRefresh()
@@ -1032,7 +1162,7 @@ const adminHtml = `<!doctype html>
         const totalAssets = parseInt(data.totalAssets) || 0
         const formatted = totalAssets.toLocaleString('ko-KR')
         balanceEl.textContent = '₩' + formatted
-        balanceEl.title = `총 자산: ₩${formatted} | 보유 현금: ₩${(parseInt(data.cashBalance) || 0).toLocaleString('ko-KR')} | 클릭하여 새로고침`
+        balanceEl.title = '총 자산: ₩' + formatted + ' | 보유 현금: ₩' + (parseInt(data.cashBalance) || 0).toLocaleString('ko-KR') + ' | 클릭하여 새로고침'
         balanceEl.style.color = '#10b981'
       } else {
         balanceEl.textContent = '조회 실패'
@@ -1044,6 +1174,258 @@ const adminHtml = `<!doctype html>
       balanceEl.style.color = '#ef4444'
       balanceEl.title = '클릭하여 재시도'
       console.warn('[Balance Load]', e.message)
+    }
+  }
+
+  function setQuickControlMessage(message, type = 'success') {
+    const box = document.getElementById('quickControlMsg')
+    if (!box) return
+    const className = type === 'error' ? 'error-msg' : 'success-msg'
+    box.innerHTML = '<div class="' + className + '">' + message + '</div>'
+  }
+
+  async function loadAutoControlStatus() {
+    try {
+      const r = await api('/api/trading/auto/status')
+      const data = r.data || {}
+      const domesticRunning = !!data.domestic?.running
+      const overseasRunning = !!data.overseas?.running
+
+      const domesticBtn = document.getElementById('startDomesticBtn')
+      const overseasBtn = document.getElementById('startOverseasBtn')
+
+      if (domesticBtn) {
+        domesticBtn.disabled = domesticRunning
+        domesticBtn.textContent = domesticRunning ? '국내 자동매매 실행중' : '국내 자동매매 시작'
+      }
+
+      if (overseasBtn) {
+        overseasBtn.disabled = overseasRunning
+        overseasBtn.textContent = overseasRunning ? '해외 자동매매 실행중' : '해외 자동매매 시작'
+      }
+    } catch (e) {
+      console.warn('[Auto Status]', e.message)
+    }
+  }
+
+  async function startAutoTrading(market) {
+    try {
+      const targetMarket = market === 'overseas' ? 'overseas' : 'domestic'
+      setQuickControlMessage((targetMarket === 'overseas' ? '해외' : '국내') + ' 자동매매 시작 중...')
+
+      const r = await api('/api/trading/auto/start', {
+        method: 'POST',
+        body: { market: targetMarket },
+      })
+
+      await loadAutoControlStatus()
+      setQuickControlMessage(
+        (targetMarket === 'overseas' ? '해외' : '국내') + ' 자동매매 시작 완료' + (r.firstResult?.ok ? '' : ' (첫 사이클 일부 실패 가능)')
+      )
+
+      if (statusPanelOpen) {
+        await refreshStatusView()
+      }
+    } catch (e) {
+      setQuickControlMessage('자동매매 시작 실패: ' + e.message, 'error')
+    }
+  }
+
+  function openStatusView() {
+    const panel = document.getElementById('statusViewPanel')
+    if (!panel) return
+    panel.classList.remove('hidden')
+    statusPanelOpen = true
+    refreshStatusView()
+    startStatusAutoRefresh()
+  }
+
+  function closeStatusView() {
+    const panel = document.getElementById('statusViewPanel')
+    if (!panel) return
+    panel.classList.add('hidden')
+    statusPanelOpen = false
+    stopStatusAutoRefresh()
+  }
+
+  function renderStatusPositions(positions) {
+    const list = document.getElementById('statusPositionsList')
+    if (!list) return
+
+    if (!positions || !positions.length) {
+      list.innerHTML = '<div style="padding:10px; color:#6b7280; text-align:center;">현재 보유 포지션이 없습니다</div>'
+      return
+    }
+
+    list.innerHTML = positions
+      .map((item) => {
+        const shares = Number(item.shares || 0).toLocaleString('ko-KR')
+        const entryPrice = Number(item.entryPrice || 0).toLocaleString('ko-KR')
+        const entryDate = item.entryDate ? String(item.entryDate).substring(0, 19).replace('T', ' ') : '-'
+        return (
+          '<div class="item">' +
+          '<div><strong>' + item.symbol + '</strong><br/><small>' + shares + '주 @ ₩' + entryPrice + '</small></div>' +
+          '<div style="text-align:right; font-size:11px; color:#6b7280;">' + entryDate + '</div>' +
+          '</div>'
+        )
+      })
+      .join('')
+  }
+
+  function renderStatusReports(reports) {
+    const box = document.getElementById('statusReportsList')
+    if (!box) return
+
+    if (!reports || !reports.length) {
+      box.innerHTML = '<div style="padding:10px; color:#6b7280; text-align:center;">표시할 보고서가 없습니다</div>'
+      return
+    }
+
+    box.innerHTML = reports
+      .map((item) => {
+        const date = item.analysis_date ? String(item.analysis_date).replace('T', ' ').substring(0, 19) : '-'
+        const provider = item.provider || 'N/A'
+        const summary = String(item.summary || '').slice(0, 200)
+        return (
+          '<div class="report-item">' +
+          '<div class="meta">' + date + ' · ' + provider + '</div>' +
+          '<div class="summary">' + summary + '</div>' +
+          '</div>'
+        )
+      })
+      .join('')
+  }
+
+  async function refreshStatusView() {
+    try {
+      const r = await api('/api/trading/dashboard-overview')
+      const data = r.data || {}
+      const trading = data.trading || {}
+      const auto = data.auto || {}
+      const strategy = data.strategy || {}
+      const reports = data.reports || {}
+
+      setOut('statusSummaryOut', {
+        systemStatus: trading.systemStatus,
+        lastRunTime: trading.lastRunTime,
+        totalCapital: trading.totalCapital,
+        cashAvailable: trading.cashAvailable,
+        unrealizedPnl: trading.unrealizedPnl,
+        realizedPnl: trading.realizedPnl,
+        totalPositions: trading.totalPositions,
+        runningMarkets: {
+          domestic: !!auto.domestic?.running,
+          overseas: !!auto.overseas?.running,
+        },
+      })
+
+      setOut('statusWinrateOut', {
+        avgWinRate: strategy.avgWinRate,
+        totalStrategies: strategy.totalStrategies,
+        rankingTop5: (strategy.ranking || []).slice(0, 5),
+      })
+
+      renderStatusPositions(trading.positions || [])
+      renderStatusReports(reports.aiReports || [])
+      await loadAutoControlStatus()
+    } catch (e) {
+      setOut('statusSummaryOut', { error: e.message })
+      setOut('statusWinrateOut', { error: e.message })
+    }
+  }
+
+  async function generateLiveReport() {
+    try {
+      const r = await api('/api/trading/report/live')
+      const data = r.data || {}
+      setOut('statusLiveReportOut', {
+        generatedAt: data.generatedAt,
+        marketHint: data.marketHint,
+        totalCapital: data.totalCapital,
+        cashAvailable: data.cashAvailable,
+        totalPositions: data.totalPositions,
+        performanceReport: data.performanceReport,
+        reportMetadata: data.reportMetadata,
+        liveReportPreview: data.liveReportPreview,
+      })
+    } catch (e) {
+      setOut('statusLiveReportOut', { error: e.message })
+    }
+  }
+
+  async function stopAllTrading() {
+    const warningText =
+      '⚠️ 경고\n\n이 작업은 즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다.\n정말 계속하시겠습니까?'
+    if (!confirm(warningText)) return
+
+    const input = prompt('중단하려면 정확히 다음 문구를 입력하세요:\n모든거래를중단합니다')
+    if (input !== '모든거래를중단합니다') {
+      alert('확인 문구가 일치하지 않아 취소되었습니다.')
+      return
+    }
+
+    try {
+      setQuickControlMessage('모든 거래 중단 처리 중...')
+      const r = await api('/api/trading/auto/stop-all', {
+        method: 'POST',
+        body: { confirmation: input },
+      })
+
+      const sold = Number(r.liquidation?.sold?.length || 0)
+      const failed = Number(r.liquidation?.failed?.length || 0)
+      setQuickControlMessage('모든 거래 중단 완료 (청산 성공: ' + sold + '건, 실패: ' + failed + '건)')
+      await loadAutoControlStatus()
+
+      if (statusPanelOpen) {
+        await refreshStatusView()
+      }
+    } catch (e) {
+      setQuickControlMessage('모든 거래 중단 실패: ' + e.message, 'error')
+    }
+  }
+
+  function updateStatusRefreshInterval() {
+    const seconds = parseInt(document.getElementById('statusRefreshInterval').value || '120')
+    statusRefreshSeconds = seconds
+    localStorage.setItem('statusRefreshSeconds', String(seconds))
+    updateStatusRefreshPreview()
+    if (statusPanelOpen) startStatusAutoRefresh()
+  }
+
+  function loadStatusRefreshPreference() {
+    const saved = localStorage.getItem('statusRefreshSeconds')
+    if (!saved) return
+    statusRefreshSeconds = parseInt(saved)
+    const select = document.getElementById('statusRefreshInterval')
+    if (select) select.value = String(statusRefreshSeconds)
+  }
+
+  function updateStatusRefreshPreview() {
+    const preview = document.getElementById('statusRefreshPreview')
+    if (!preview) return
+
+    let text = '2분마다'
+    if (statusRefreshSeconds === 30) text = '30초마다'
+    else if (statusRefreshSeconds === 60) text = '1분마다'
+    else if (statusRefreshSeconds === 120) text = '2분마다'
+    else if (statusRefreshSeconds === 180) text = '3분마다'
+    else if (statusRefreshSeconds === 300) text = '5분마다'
+    else if (statusRefreshSeconds === 600) text = '10분마다'
+
+    preview.textContent = '✓ 현재 설정: ' + text + ' 자동 갱신'
+  }
+
+  function startStatusAutoRefresh() {
+    stopStatusAutoRefresh()
+    statusRefreshInterval = setInterval(() => {
+      refreshStatusView().catch((e) => console.warn('[Status Refresh]', e.message))
+    }, statusRefreshSeconds * 1000)
+  }
+
+  function stopStatusAutoRefresh() {
+    if (statusRefreshInterval) {
+      clearInterval(statusRefreshInterval)
+      statusRefreshInterval = null
     }
   }
 
@@ -1499,6 +1881,7 @@ const adminHtml = `<!doctype html>
 
   async function performLogout() {
     try {
+      stopStatusAutoRefresh()
       await api('/logout', { method: 'POST' })
       currentUser.isLoggedIn = false
       document.getElementById('loginPassword').value = ''
