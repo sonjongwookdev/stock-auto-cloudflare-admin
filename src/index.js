@@ -9,6 +9,7 @@ const adminHtml = `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stock Auto Admin v2</title>
   <link rel="icon" href="data:," />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html {
@@ -568,11 +569,103 @@ const adminHtml = `<!doctype html>
     .usage-guide p { color: #666; margin: 10px 0; }
     .usage-guide ol, .usage-guide ul { margin-left: 20px; color: #666; }
 
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin: 20px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .stat-icon {
+      font-size: 36px;
+      line-height: 1;
+    }
+    .stat-content {
+      flex: 1;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    /* Position List */
+    .position-list, .error-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .position-item, .error-item {
+      padding: 12px;
+      margin: 8px 0;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    .position-item:hover, .error-item:hover {
+      background: #f3f4f6;
+    }
+    .position-item strong, .error-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #1f2937;
+    }
+    .position-item small, .error-item small {
+      color: #6b7280;
+      font-size: 12px;
+    }
+    .error-item {
+      border-left-color: #ef4444;
+    }
+
+    /* Trading Status */
+    .trading-status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .trading-status-card {
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+    }
+    .trading-status-card h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: #1f2937;
+    }
+    .trading-status-card.active {
+      border-color: #10b981;
+      background: #ecfdf5;
+    }
+
     @media (max-width: 768px) {
       .row { grid-template-columns: 1fr; }
       .header-status { flex-direction: column; align-items: flex-start; gap: 10px; }
       .quick-actions { grid-template-columns: 1fr; }
       .status-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .trading-status-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -645,7 +738,9 @@ const adminHtml = `<!doctype html>
       </div>
 
       <div class="header-buttons">
-        <button class="header-btn" onclick="openUsageModal()">📖 사용방법</button>
+        <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
+        <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
         <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
         <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
       </div>
@@ -660,56 +755,9 @@ const adminHtml = `<!doctype html>
           <div class="quick-actions">
             <button id="startDomesticBtn" class="quick-btn domestic" onclick="startAutoTrading('domestic')">국내 자동매매 시작</button>
             <button id="startOverseasBtn" class="quick-btn overseas" onclick="startAutoTrading('overseas')">해외 자동매매 시작</button>
-            <button id="openStatusBtn" class="quick-btn status" onclick="openStatusView()">현황보기</button>
             <button id="stopAllBtn" class="quick-btn stop" onclick="stopAllTrading()">모든거래중단</button>
           </div>
           <div id="quickControlMsg" style="margin-top: 12px;"></div>
-
-          <div id="statusViewPanel" class="status-panel hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-              <h3 style="font-size:16px; margin:0;">📊 자동매매 현황</h3>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <select id="statusRefreshInterval" onchange="updateStatusRefreshInterval()" style="min-width:180px; padding:8px 10px; font-size:13px;">
-                  <option value="30">30초</option>
-                  <option value="60">1분</option>
-                  <option value="120" selected>2분 (기본값)</option>
-                  <option value="180">3분</option>
-                  <option value="300">5분</option>
-                  <option value="600">10분</option>
-                </select>
-                <button class="header-btn secondary" onclick="refreshStatusView()">새로고침</button>
-                <button class="header-btn secondary" onclick="closeStatusView()">닫기</button>
-              </div>
-            </div>
-            <div id="statusRefreshPreview" class="kis-preview" style="margin-top:10px;">✓ 현재 설정: 2분마다 자동 갱신</div>
-
-            <div class="status-grid">
-              <div class="status-box">
-                <h3>요약 현황</h3>
-                <pre id="statusSummaryOut"></pre>
-              </div>
-              <div class="status-box">
-                <h3>승률/전략 성과</h3>
-                <pre id="statusWinrateOut"></pre>
-              </div>
-              <div class="status-box">
-                <h3>현재 거래 현황</h3>
-                <div class="list" id="statusPositionsList"></div>
-              </div>
-              <div class="status-box">
-                <h3>보고서 리스트</h3>
-                <div class="list" id="statusReportsList"></div>
-              </div>
-            </div>
-
-            <div class="status-box" style="margin-top:10px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-                <h3 style="margin:0;">실시간 보고서</h3>
-                <button class="header-btn" onclick="generateLiveReport()">현재실시간 보고서 바로뽑기</button>
-              </div>
-              <pre id="statusLiveReportOut"></pre>
-            </div>
-          </div>
         </section>
 
         <section class="card full">
@@ -734,6 +782,171 @@ const adminHtml = `<!doctype html>
           <pre id="statusOut"></pre>
         </section>
       </div>
+    </div>
+  </div>
+
+  <!-- Status Page -->
+  <div id="statusPage" class="page main-page">
+    <div class="top-header">
+      <div class="header-left">
+        <div class="header-title">📊 현황 대시보드</div>
+      </div>
+      <div class="header-buttons">
+        <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
+        <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
+        <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
+        <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-label">총 투자액</div>
+            <div class="stat-value" id="statTotalInvested">로딩중...</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📈</div>
+          <div class="stat-content">
+            <div class="stat-label">수익률</div>
+            <div class="stat-value" id="statROI">로딩중...</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-content">
+            <div class="stat-label">운영 시간</div>
+            <div class="stat-value" id="statRuntime">로딩중...</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-label">활성 포지션</div>
+            <div class="stat-value" id="statPositions">로딩중...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="row">
+        <section class="card full">
+          <h2>📈 수익률 추이</h2>
+          <canvas id="performanceChart" style="max-height: 300px;"></canvas>
+        </section>
+      </div>
+
+      <!-- Positions & Logs -->
+      <div class="row">
+        <section class="card">
+          <h2>📊 현재 포지션</h2>
+          <div class="position-list" id="statusPositionList"></div>
+        </section>
+        <section class="card">
+          <h2>⚠️ 오류 로그</h2>
+          <div class="error-list" id="statusErrorList"></div>
+        </section>
+      </div>
+
+      <!-- Trading Status -->
+      <div class="row">
+        <section class="card full">
+          <h2>🤖 자동매매 상태</h2>
+          <div class="trading-status-grid">
+            <div class="trading-status-card">
+              <h3>🇰🇷 국내 시장</h3>
+              <div id="domesticStatus">확인 중...</div>
+            </div>
+            <div class="trading-status-card">
+              <h3>🌎 해외 시장</h3>
+              <div id="overseasStatus">확인 중...</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Page -->
+  <div id="usagePage" class="page main-page">
+    <div class="top-header">
+      <div class="header-left">
+        <div class="header-title">📖 사용 가이드</div>
+      </div>
+      <div class="header-buttons">
+        <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
+        <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
+        <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
+        <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <section class="card full">
+        <h2>📚 Stock Auto 관리자 가이드</h2>
+        <div class="usage-guide">
+          <h3>1️⃣ 로그인</h3>
+          <p>관리자 비밀번호를 입력하여 로그인합니다.</p>
+
+          <h3>2️⃣ 초기화</h3>
+          <p>로그인 후 다음 항목이 확인됩니다:</p>
+          <ul>
+            <li><strong>Oracle 서버:</strong> 자동매매 데이터베이스 연결 상태</li>
+            <li><strong>KIS API 키:</strong> 자동매매에 필요한 API 키 설정 여부</li>
+          </ul>
+
+          <h3>3️⃣ KIS API 키 설정</h3>
+          <p>키가 없는 경우 입력 페이지가 나타납니다:</p>
+          <ul>
+            <li>API Key 입력 (필수)</li>
+            <li>API Secret 입력 (선택사항)</li>
+          </ul>
+
+          <h3>4️⃣ 메인 대시보드</h3>
+          <p>헤더에서 다음 정보를 확인할 수 있습니다:</p>
+          <ul>
+            <li>🔑 키값: 현재 설정된 API 키 (앞뒤 3글자만 표시)</li>
+            <li>🖥️ 서버: Oracle 서버 연결 상태 (🟢=정상, 🔴=오류)</li>
+            <li>💰 잔고: 현재 계좌 잔고 (클릭하여 새로고침)</li>
+          </ul>
+
+          <h3>5️⃣ 자동매매 시작</h3>
+          <p>시장별로 자동매매를 시작할 수 있습니다:</p>
+          <ul>
+            <li><strong>국내 자동매매:</strong> 한국 주식 시장</li>
+            <li><strong>해외 자동매매:</strong> 해외 주식 시장</li>
+          </ul>
+
+          <h3>6️⃣ 현황 확인</h3>
+          <p>📊 현황 메뉴에서 다음을 확인할 수 있습니다:</p>
+          <ul>
+            <li>총 투자액 및 수익률</li>
+            <li>수익률 추이 그래프</li>
+            <li>현재 보유 포지션</li>
+            <li>오류 로그</li>
+          </ul>
+
+          <h3>7️⃣ 설정 및 키 변경</h3>
+          <p>⚙️ 설정 버튼으로:</p>
+          <ul>
+            <li>현재 API 키 확인</li>
+            <li>잔고 갱신 주기 설정</li>
+          </ul>
+
+          <h3>💡 참고사항</h3>
+          <ul>
+            <li>모든 설정은 즉시 저장됩니다</li>
+            <li>키 변경 시 서버가 자동으로 재시작됩니다</li>
+            <li>오류가 발생하면 "현황" 페이지에서 확인할 수 있습니다</li>
+          </ul>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -776,66 +989,6 @@ const adminHtml = `<!doctype html>
         
         <button class="btn" type="button" style="width:100%; margin-top:15px; padding: 15px; font-size: 15px;" onclick="goToKisSetup()">🔑 KIS API 키 교체하기</button>
         <button class="btn secondary" type="button" style="width:100%; margin-top:10px;" onclick="closeSettingsModal()">닫기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Usage Modal -->
-  <div id="usageModal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>사용방법</h2>
-        <button class="modal-close" onclick="closeUsageModal()">✕</button>
-      </div>
-
-      <div class="usage-guide">
-        <h3>📚 Stock Auto 관리자 가이드</h3>
-
-        <h3>1️⃣ 로그인</h3>
-        <p>관리자 비밀번호를 입력하여 로그인합니다.</p>
-
-        <h3>2️⃣ 초기화</h3>
-        <p>로그인 후 다음 항목이 확인됩니다:</p>
-        <ul>
-          <li><strong>Oracle 서버:</strong> 자동매매 데이터베이스 연결 상태</li>
-          <li><strong>KIS API 키:</strong> 자동매매에 필요한 API 키 설정 여부</li>
-        </ul>
-
-        <h3>3️⃣ KIS API 키 설정</h3>
-        <p>키가 없는 경우 입력 페이지가 나타납니다:</p>
-        <ul>
-          <li>KIS Base URL 입력</li>
-          <li>API Key 입력</li>
-          <li>API Secret 입력 (선택사항)</li>
-        </ul>
-
-        <h3>4️⃣ 메인 대시보드</h3>
-        <p>헤더에서 다음 정보를 확인할 수 있습니다:</p>
-        <ul>
-          <li><strong>🔑 키값:</strong> 현재 설정된 API 키 (앞뒤 3글자만 표시)</li>
-          <li><strong>🖥️ 서버:</strong> Oracle 서버 연결 상태 (🟢=정상, 🔴=오류)</li>
-        </ul>
-
-        <h3>5️⃣ 자동매매 제어</h3>
-        <p>간단한 버튼으로 자동매매를 시작하고 중단할 수 있습니다:</p>
-        <ul>
-          <li><strong>🇰🇷 국내 자동매매 시작:</strong> 국내 시장 자동매매 시작</li>
-          <li><strong>🌎 해외 자동매매 시작:</strong> 해외 시장 자동매매 시작</li>
-          <li><strong>🛑 모든 거래 중단:</strong> 모든 포지션 청산 및 자동매매 중단</li>
-        </ul>
-
-        <h3>6️⃣ 설정 및 키 교체</h3>
-        <p>우측 상단의 "⚙️ 설정" 버튼으로:</p>
-        <ul>
-          <li>잔고 갱신 주기 설정 (30초 ~ 10분)</li>
-          <li>현재 API 키 정보 확인</li>
-          <li>"🔑 KIS API 키 교체하기" 버튼으로 키 설정 페이지 이동</li>
-        </ul>
-
-        <h3>💡 참고사항</h3>
-        <p>• 상위종목 선택과 시드 배분은 백엔드에서 자동으로 처리됩니다</p>
-        <p>• 매매 사이클은 설정된 주기마다 자동으로 실행됩니다</p>
-        <p>• 키 교체 시 자동매매가 중단되고 서버가 재시작됩니다</p>
       </div>
     </div>
   </div>
@@ -913,6 +1066,11 @@ const adminHtml = `<!doctype html>
   function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
     document.getElementById(pageId).classList.add('active')
+    
+    // 현황 페이지로 이동 시 데이터 로드
+    if (pageId === 'statusPage') {
+      loadStatusPage()
+    }
   }
 
   async function performLogin() {
@@ -1578,14 +1736,6 @@ const adminHtml = `<!doctype html>
     showPage('kisPage')
   }
 
-  function openUsageModal() {
-    document.getElementById('usageModal').classList.add('active')
-  }
-
-  function closeUsageModal() {
-    document.getElementById('usageModal').classList.remove('active')
-  }
-
   /**
    * 잔고 갱신 주기 설정 저장
    */
@@ -1654,6 +1804,161 @@ const adminHtml = `<!doctype html>
       })
     }
   })
+
+  let performanceChart = null
+
+  async function loadStatusPage() {
+    try {
+      // API 호출
+      const r = await api('/api/trading/dashboard-overview')
+      const data = r.data || {}
+      const trading = data.trading || {}
+      const auto = data.auto || {}
+
+      // 통계 카드 업데이트
+      const totalInvested = Number(trading.totalCapital || 0)
+      const realizedPnl = Number(trading.realizedPnl || 0)
+      const unrealizedPnl = Number(trading.unrealizedPnl || 0)
+      const roi = totalInvested > 0 ? ((realizedPnl + unrealizedPnl) / totalInvested * 100) : 0
+
+      document.getElementById('statTotalInvested').textContent = '₩' + totalInvested.toLocaleString('ko-KR')
+      document.getElementById('statROI').textContent = roi.toFixed(2) + '%'
+      document.getElementById('statROI').style.color = roi >= 0 ? '#10b981' : '#ef4444'
+      
+      // 운영 시간 계산 (lastRunTime 기준)
+      const runtime = trading.lastRunTime || '시작 전'
+      document.getElementById('statRuntime').textContent = runtime
+      
+      // 포지션 수
+      const positions = trading.positions || []
+      document.getElementById('statPositions').textContent = positions.length + '개'
+
+      // 포지션 리스트
+      renderPositionList(positions)
+
+      // 자동매매 상태
+      updateTradingStatus(auto)
+
+      // 차트 그리기
+      drawPerformanceChart(data)
+
+      // 오류 로그 로드
+      loadErrorLogs()
+    } catch (e) {
+      console.error('현황 페이지 로드 실패:', e)
+    }
+  }
+
+  function renderPositionList(positions) {
+    const list = document.getElementById('statusPositionList')
+    if (!list) return
+
+    if (!positions || !positions.length) {
+      list.innerHTML = '<div style="padding:20px; color:#6b7280; text-align:center;">현재 보유 포지션이 없습니다</div>'
+      return
+    }
+
+    list.innerHTML = positions.map(p => {
+      const shares = Number(p.shares || 0).toLocaleString('ko-KR')
+      const entryPrice = Number(p.entryPrice || 0).toLocaleString('ko-KR')
+      const entryDate = p.entryDate ? String(p.entryDate).substring(0, 16).replace('T', ' ') : '-'
+      return `
+        <div class="position-item">
+          <strong>${p.symbol}</strong>
+          <small>${shares}주 @ ₩${entryPrice} | ${entryDate}</small>
+        </div>
+      `
+    }).join('')
+  }
+
+  function updateTradingStatus(auto) {
+    const domesticDiv = document.getElementById('domesticStatus')
+    const overseasDiv = document.getElementById('overseasStatus')
+    
+    if (domesticDiv) {
+      const isRunning = auto.domestic?.running
+      domesticDiv.innerHTML = isRunning 
+        ? '<div style="color:#10b981;">✓ 실행 중</div>' 
+        : '<div style="color:#6b7280;">⏸️ 중지됨</div>'
+    }
+    
+    if (overseasDiv) {
+      const isRunning = auto.overseas?.running
+      overseasDiv.innerHTML = isRunning 
+        ? '<div style="color:#10b981;">✓ 실행 중</div>' 
+        : '<div style="color:#6b7280;">⏸️ 중지됨</div>'
+    }
+  }
+
+  function drawPerformanceChart(data) {
+    const canvas = document.getElementById('performanceChart')
+    if (!canvas) return
+
+    // 기존 차트가 있으면 제거
+    if (performanceChart) {
+      performanceChart.destroy()
+    }
+
+    // 샘플 데이터 (실제로는 백엔드에서 시계열 데이터를 받아와야 함)
+    const trading = data.trading || {}
+    const realizedPnl = Number(trading.realizedPnl || 0)
+    const unrealizedPnl = Number(trading.unrealizedPnl || 0)
+    
+    // 간단한 막대 차트로 수익 표시
+    const ctx = canvas.getContext('2d')
+    performanceChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['실현 수익', '미실현 수익', '총 수익'],
+        datasets: [{
+          label: '수익 (₩)',
+          data: [realizedPnl, unrealizedPnl, realizedPnl + unrealizedPnl],
+          backgroundColor: [
+            realizedPnl >= 0 ? '#10b981' : '#ef4444',
+            unrealizedPnl >= 0 ? '#3b82f6' : '#f59e0b',
+            (realizedPnl + unrealizedPnl) >= 0 ? '#8b5cf6' : '#ef4444'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    })
+  }
+
+  async function loadErrorLogs() {
+    try {
+      const r = await api('/errors')
+      const errors = r.errors || []
+      const list = document.getElementById('statusErrorList')
+      if (!list) return
+
+      if (!errors || !errors.length) {
+        list.innerHTML = '<div style="padding:20px; color:#6b7280; text-align:center;">오류가 없습니다</div>'
+        return
+      }
+
+      list.innerHTML = errors.slice(0, 10).map(e => `
+        <div class="error-item">
+          <strong>${e.type || '오류'}</strong>
+          <small>${e.message || ''} | ${e.timestamp || ''}</small>
+        </div>
+      `).join('')
+    } catch (e) {
+      console.error('오류 로그 로드 실패:', e)
+    }
+  }
 
   async function performLogout() {
     try {
