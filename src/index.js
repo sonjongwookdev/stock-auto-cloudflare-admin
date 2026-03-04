@@ -650,6 +650,22 @@ const adminHtml = `<!doctype html>
       </div>
       
       <div id="settingsContent">
+        <h3>💰 잔고 갱신 설정</h3>
+        <p style="color: #666; margin-bottom: 15px; font-size: 13px;">상단바에 표시되는 잔고 정보의 자동 갱신 주기를 설정합니다.</p>
+        
+        <label>갱신 주기 선택</label>
+        <select id="settingsBalanceRefreshInterval" onchange="updateBalanceRefreshInterval()">
+          <option value="30">30초 (매우 빠름)</option>
+          <option value="60">1분</option>
+          <option value="120" selected>2분 (기본값)</option>
+          <option value="180">3분</option>
+          <option value="300">5분</option>
+          <option value="600">10분</option>
+        </select>
+        <div class="kis-preview" id="balanceRefreshPreview" style="margin-top: 10px; padding: 10px; background: #ecfdf5; border-left: 4px solid #10b981; color: #065f46;">✓ 현재 설정: 2분(120초)마다 자동 갱신</div>
+        
+        <hr style="margin: 25px 0; border: none; border-top: 1px solid #e5e7eb;" />
+        
         <h3>KIS API 키 변경</h3>
         <p style="color: #666; margin-bottom: 15px; font-size: 13px;">키를 변경하면 서버의 자동매매 프로그램이 재구동됩니다.</p>
         
@@ -751,6 +767,7 @@ const adminHtml = `<!doctype html>
   let selectedStrategy = null  // 단일 선택
   let currentUser = { isLoggedIn: false }
   let balanceRefreshInterval = null  // 잔고 자동 갱신 타이머
+  let balanceRefreshSeconds = 120  // 기본값 2분
 
   async function api(path, opts = {}) {
     const maxRetries = 5
@@ -958,11 +975,11 @@ const adminHtml = `<!doctype html>
     await loadStrategies()
     await loadTradingStatus()
     
-    // 잔고 자동 갱신 설정 (30초마다)
-    if (balanceRefreshInterval) clearInterval(balanceRefreshInterval)
-    balanceRefreshInterval = setInterval(() => {
-      loadBalance().catch(e => console.warn('[Balance Refresh]', e.message))
-    }, 30000)
+    // 저장된 갱신 시간 불러오기
+    loadBalanceRefreshPreference()
+    
+    // 잔고 자동 갱신 설정
+    startBalanceAutoRefresh()
   }
 
   async function loadKisStatus() {
@@ -1351,6 +1368,11 @@ const adminHtml = `<!doctype html>
 
   async function loadSettingsForm() {
     try {
+      // 잔고 갱신 설정 로드
+      loadBalanceRefreshPreference()
+      updateBalanceRefreshPreview()
+      
+      // KIS 키 설정 로드
       const r = await api('/kis/status')
       document.getElementById('settingsBaseUrl').value = r.kisBaseUrl || ''
       document.getElementById('settingsBaseUrlPreview').textContent = r.kisBaseUrl ? 'Base URL: ' + r.kisBaseUrl : '미설정'
@@ -1406,6 +1428,60 @@ const adminHtml = `<!doctype html>
     document.getElementById('usageModal').classList.remove('active')
   }
 
+  /**
+   * 잔고 갱신 주기 설정 저장
+   */
+  function updateBalanceRefreshInterval() {
+    const seconds = parseInt(document.getElementById('settingsBalanceRefreshInterval').value)
+    balanceRefreshSeconds = seconds
+    localStorage.setItem('balanceRefreshSeconds', seconds.toString())
+    updateBalanceRefreshPreview()
+    
+    // 즉시 갱신 주기 변경
+    if (balanceRefreshInterval) clearInterval(balanceRefreshInterval)
+    startBalanceAutoRefresh()
+  }
+  
+  /**
+   * 저장된 갱신 시간 불러오기
+   */
+  function loadBalanceRefreshPreference() {
+    const saved = localStorage.getItem('balanceRefreshSeconds')
+    if (saved) {
+      balanceRefreshSeconds = parseInt(saved)
+      const select = document.getElementById('settingsBalanceRefreshInterval')
+      if (select) {
+        select.value = balanceRefreshSeconds.toString()
+      }
+    }
+  }
+  
+  /**
+   * 갱신 시간 미리보기 업데이트
+   */
+  function updateBalanceRefreshPreview() {
+    const previewEl = document.getElementById('balanceRefreshPreview')
+    let displayText = ''
+    if (balanceRefreshSeconds === 30) displayText = '30초마다 (매우 빠름)'
+    else if (balanceRefreshSeconds === 60) displayText = '1분마다'
+    else if (balanceRefreshSeconds === 120) displayText = '2분마다 (기본값)'
+    else if (balanceRefreshSeconds === 180) displayText = '3분마다'
+    else if (balanceRefreshSeconds === 300) displayText = '5분마다'
+    else if (balanceRefreshSeconds === 600) displayText = '10분마다'
+    
+    previewEl.textContent = '✓ 현재 설정: ' + displayText + ' 자동 갱신'
+  }
+  
+  /**
+   * 잔고 자동 갱신 시작
+   */
+  function startBalanceAutoRefresh() {
+    if (balanceRefreshInterval) clearInterval(balanceRefreshInterval)
+    balanceRefreshInterval = setInterval(() => {
+      loadBalance().catch(e => console.warn('[Balance Refresh]', e.message))
+    }, balanceRefreshSeconds * 1000)
+  }
+  
   /**
    * 헤더의 잔고 클릭하여 새로고침
    */
