@@ -939,7 +939,7 @@ const adminHtml = `<!doctype html>
         
         const text = await res.text()
         let json = {}
-        try { json = text ? JSON.parse(text) : {} } catch { json = { raw: text } }
+        try { json = text ? JSON.parse(text) : {} } catch (err) { json = { raw: text } }
         
         if (!res.ok) {
           // 4xx 에러는 재시도하지 않음
@@ -1090,8 +1090,13 @@ const adminHtml = `<!doctype html>
   }
   
   function setLoginLoading(isLoading) {
-    const btn = document.querySelector('#loginPage button.btn')
+    const btn = document.getElementById('loginBtn')
     const passwordInput = document.getElementById('loginPassword')
+    
+    if (!btn || !passwordInput) {
+      console.error('[로딩] 버튼 또는 입력 필드를 찾을 수 없습니다')
+      return
+    }
     
     console.log('[로딩] 상태 변경:', isLoading ? '시작' : '종료')
     
@@ -1821,7 +1826,7 @@ const adminHtml = `<!doctype html>
     try {
       const raw = document.getElementById('aiInput').value
       let parsed = {}
-      try { parsed = raw ? JSON.parse(raw) : {} } catch { parsed = { raw } }
+      try { parsed = raw ? JSON.parse(raw) : {} } catch (err) { parsed = { raw } }
       parsed.market = currentMarket
       setOut('reportOut', await api('/ai/trigger', { method: 'POST', body: parsed }))
     } catch (e) {
