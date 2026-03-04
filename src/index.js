@@ -1,6 +1,6 @@
 const BACKEND_BASE = (typeof BACKEND_BASE_URL !== 'undefined' && BACKEND_BASE_URL)
   ? BACKEND_BASE_URL
-  : 'http://168.107.57.47.nip.io:4000'
+  : 'http://localhost:4000'  // 로컬 개발 시 기본값
 
 const adminHtml = `<!doctype html>
 <html lang="ko">
@@ -1412,8 +1412,7 @@ const adminHtml = `<!doctype html>
     showPage('mainPage')
     await loadKisStatus()
     // await loadStatus()  // HTTP 요청으로 인한 Mixed Content 에러 제거
-    await loadBalance()  // 초기 잔고 로드
-    await loadAutoControlStatus()
+    await loadBalance()  // 초기 잔고 로드 (자동 갱신 없음, 수동 새로고침만 가능)
     await loadTradingStatus()
     
     // 저장된 갱신 시간 불러오기
@@ -1421,8 +1420,8 @@ const adminHtml = `<!doctype html>
     loadStatusRefreshPreference()
     updateStatusRefreshPreview()
     
-    // 잔고 자동 갱신 설정
-    startBalanceAutoRefresh()
+    // 자동 갱신 제거: 사용자가 직접 새로고침 버튼 누름
+    // startBalanceAutoRefresh()
   }
 
   async function loadKisStatus() {
@@ -2377,7 +2376,8 @@ async function handleRequest(request) {
     })
   }
 
-  if (url.pathname.startsWith('/api/')) {
+  // /api/*, /login, /logout 경로는 백엔드로 프록시
+  if (url.pathname.startsWith('/api/') || url.pathname === '/login' || url.pathname === '/logout') {
     return proxyToBackend(request, url)
   }
 
@@ -2385,7 +2385,7 @@ async function handleRequest(request) {
 }
 
 async function proxyToBackend(request, url) {
-  const targetPath = url.pathname.replace('/api', '') || '/'
+  const targetPath = url.pathname  // /api를 포함하여 백엔드로 전달
   const targetUrl = new URL(targetPath + url.search, BACKEND_BASE)
   const headers = new Headers(request.headers)
   headers.delete('host')
@@ -2397,6 +2397,7 @@ async function proxyToBackend(request, url) {
     headers,
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
     redirect: 'follow',
+    credentials: 'include',  // 쿠키를 백엔드에 전달
   }
 
   const response = await fetch(targetUrl.toString(), init)
