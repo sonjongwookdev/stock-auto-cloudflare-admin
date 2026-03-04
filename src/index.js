@@ -8,6 +8,7 @@ const adminHtml = `<!doctype html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stock Auto Admin v2</title>
+  <link rel="icon" href="data:," />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html {
@@ -1044,6 +1045,11 @@ const adminHtml = `<!doctype html>
     const btn = document.getElementById('loginBtn')
     const passwordInput = document.getElementById('loginPassword')
     
+    if (!btn || !passwordInput) {
+      console.error('[로그인] 버튼 또는 입력 필드를 찾을 수 없습니다')
+      return
+    }
+    
     btn.disabled = true
     btn.classList.remove('loading')
     btn.classList.add('success')
@@ -1056,6 +1062,12 @@ const adminHtml = `<!doctype html>
   function showLoginFailure(message, alertType) {
     const btn = document.getElementById('loginBtn')
     const passwordInput = document.getElementById('loginPassword')
+    
+    if (!btn || !passwordInput) {
+      console.error('[로그인] 버튼 또는 입력 필드를 찾을 수 없습니다')
+      displayAlert('loginError', message, alertType)
+      return
+    }
     
     btn.disabled = true
     btn.classList.remove('loading')
