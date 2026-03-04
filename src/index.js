@@ -747,30 +747,67 @@ const adminHtml = `<!doctype html>
     </div>
 
     <!-- Main Content -->
-    <div class="wrap">
+    <div class="wrap" style="padding-bottom: 120px;">
       <div class="row">
         <section class="card full">
           <h2>🤖 자동매매 제어</h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
             <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 20px; font-size: 16px;">🇰🇷 국내 자동매매 시작</button>
             <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 20px; font-size: 16px;">🌎 해외 자동매매 시작</button>
-            <button id="stopAllBtn" class="btn secondary" onclick="stopAllTrading()" style="padding: 20px; font-size: 16px;">🛑 모든 거래 중단</button>
           </div>
           <div id="autoTradingStatus" style="margin-bottom: 15px;"></div>
-          <div style="margin-top: 15px;">
-            <strong>현재 포지션:</strong>
-            <div class="list" id="positionsList"></div>
-            <pre id="tradingOut"></pre>
+          
+          <div style="margin-top: 20px;">
+            <h3 style="font-size: 16px; margin-bottom: 15px;">📍 현재 포지션</h3>
+            <div id="positionsList" style="display: grid; gap: 10px;"></div>
           </div>
         </section>
 
         <section class="card">
-          <h2>시스템 현황</h2>
+          <h2>⚙️ 시스템 현황</h2>
           <button class="btn" onclick="loadStatus()">새로고침</button>
           <button class="btn secondary" onclick="loadErrors()">오류 로그</button>
-          <pre id="statusOut"></pre>
+          <div id="statusOut" style="margin-top: 15px;"></div>
         </section>
       </div>
+    </div>
+
+    <!-- Stop All Trading Modal -->
+    <div id="stopAllTradingModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h2>🛑 모든 거래 중단</h2>
+          <button class="modal-close" onclick="closeStopAllModal()">✕</button>
+        </div>
+        
+        <div style="padding: 20px; color: #d32f2f;">
+          <div style="background: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+            <strong style="color: #c62828;">⚠️ 경고</strong><br/>
+            <span style="color: #d32f2f; font-size: 14px;">이 작업은 즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다.</span>
+          </div>
+          
+          <p style="color: #666; margin-bottom: 15px; font-size: 14px;">중단하려면 아래 문구를 정확히 입력하세요:</p>
+          <input 
+            id="stopAllConfirmInput" 
+            type="text" 
+            placeholder="모든거래를중단합니다" 
+            onkeyup="updateStopAllButtonState()"
+            style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 15px; font-size: 14px;"
+          />
+          
+          <div id="stopAllStatus" style="background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 15px; min-height: 20px; color: #666; font-size: 13px;"></div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
+          <button class="btn secondary" type="button" style="flex: 1;" onclick="closeStopAllModal()">취소</button>
+          <button id="confirmStopAllBtn" class="btn" type="button" style="flex: 1; background: #d32f2f;" onclick="confirmStopAllTrading()" disabled>중단 실행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed Bottom Bar -->
+    <div id="stopButtonBar" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e0e0e0; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100;">
+      <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 15px; font-size: 16px; background: #d32f2f;">🛑 모든 거래 중단</button>
     </div>
   </div>
 
@@ -1344,12 +1381,36 @@ const adminHtml = `<!doctype html>
         dbText.textContent = '오류'
       }
 
-      setOut('statusOut', r)
+      renderStatusOut(r)
     } catch (e) {
-      setOut('statusOut', { error: e.message })
+      const el = document.getElementById('statusOut')
+      el.innerHTML = '<div style="padding: 15px; color: #ef4444; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">오류: ' + e.message + '</div>'
       document.getElementById('headerDbStatus').className = 'status-dot offline'
       document.getElementById('headerDbText').textContent = '오류'
     }
+  }
+
+  function renderStatusOut(data) {
+    const el = document.getElementById('statusOut')
+    let html = ''
+    
+    Object.entries(data).forEach(([k, v]) => {
+      const valueStr = typeof v === 'object' ? JSON.stringify(v) : String(v)
+      const icon = k.includes('status') || k.includes('Status') ? '⚙️' :
+                   k.includes('health') || k.includes('healthy') ? '💚' :
+                   k.includes('time') ? '⏰' : '📌'
+      
+      html += '<div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 8px; display: grid; grid-template-columns: 150px 1fr; gap: 15px;">' +
+              '<div style="font-weight: bold; color: #667eea;">' + icon + ' ' + k + '</div>' +
+              '<div style="word-break: break-all; color: #333; font-family: monospace; font-size: 13px;">' + valueStr + '</div>' +
+              '</div>'
+    })
+    
+    if (html === '') {
+      html = '<div style="padding: 15px; color: #999; text-align: center;">데이터 없음</div>'
+    }
+    
+    el.innerHTML = html
   }
 
   /**
@@ -1573,35 +1634,57 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  async function stopAllTrading() {
-    const warningText =
-      '⚠️ 경고\\n\\n이 작업은 즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다.\\n정말 계속하시겠습니까?'
-    if (!confirm(warningText)) return
+  // Stop All Trading Modal Functions
+  function openStopAllModal() {
+    document.getElementById('stopAllTradingModal').classList.add('active')
+    document.getElementById('stopAllConfirmInput').value = ''
+    document.getElementById('stopAllStatus').innerHTML = ''
+    updateStopAllButtonState()
+  }
 
-    const input = prompt('중단하려면 정확히 다음 문구를 입력하세요:\\n모든거래를중단합니다')
-    if (input !== '모든거래를중단합니다') {
-      alert('확인 문구가 일치하지 않아 취소되었습니다.')
-      return
-    }
+  function closeStopAllModal() {
+    document.getElementById('stopAllTradingModal').classList.remove('active')
+  }
 
+  function updateStopAllButtonState() {
+    const input = document.getElementById('stopAllConfirmInput').value
+    const btn = document.getElementById('confirmStopAllBtn')
+    btn.disabled = input !== '모든거래를중단합니다'
+  }
+
+  async function confirmStopAllTrading() {
+    const statusEl = document.getElementById('stopAllStatus')
+    
     try {
-      setQuickControlMessage('모든 거래 중단 처리 중...')
+      statusEl.innerHTML = '⏳ 모든 거래 중단 처리 중...'
+      
       const r = await api('/api/trading/auto/stop-all', {
         method: 'POST',
-        body: { confirmation: input },
+        body: { confirmation: '모든거래를중단합니다' },
       })
 
       const sold = Number(r.liquidation?.sold?.length || 0)
       const failed = Number(r.liquidation?.failed?.length || 0)
-      setQuickControlMessage('모든 거래 중단 완료 (청산 성공: ' + sold + '건, 실패: ' + failed + '건)')
+      
+      statusEl.innerHTML = '✓ 모든 거래 중단 완료<br/>청산 성공: ' + sold + '건, 실패: ' + failed + '건'
+      
+      setTimeout(() => {
+        closeStopAllModal()
+      }, 1500)
+      
       await loadAutoControlStatus()
+      await loadTradingStatus()
 
       if (statusPanelOpen) {
         await refreshStatusView()
       }
     } catch (e) {
-      setQuickControlMessage('모든 거래 중단 실패: ' + e.message, 'error')
+      statusEl.innerHTML = '✗ 오류: ' + e.message
     }
+  }
+
+  async function stopAllTrading() {
+    openStopAllModal()
   }
 
   function updateStatusRefreshInterval() {
@@ -1666,25 +1749,33 @@ const adminHtml = `<!doctype html>
       const posList = document.getElementById('positionsList')
       posList.innerHTML = ''
       
-      Object.entries(positions).forEach(([symbol, pos]) => {
-        const item = document.createElement('div')
-        item.className = 'item'
-        item.innerHTML = '<div>' +
-          '<strong>' + symbol + '</strong><br/>' +
-          '<small>' + pos.shares + '주 @ ' + pos.entry_price.toFixed(2) + '</small>' +
-          '</div><div style="text-align:right;font-size:11px;">' +
-          pos.entry_date.substring(0, 10) +
-          '</div>'
-        posList.appendChild(item)
-      })
-      
       if (Object.keys(positions).length === 0) {
-        posList.innerHTML = '<div style="padding: 15px; color: #999; text-align: center;">현재 포지션 없음</div>'
+        posList.innerHTML = '<div style="padding: 20px; color: #999; text-align: center; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">현재 포지션 없음</div>'
+      } else {
+        Object.entries(positions).forEach(([symbol, pos]) => {
+          const item = document.createElement('div')
+          item.style.cssText = 'background: #f9f9f9; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb; display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center;'
+          
+          const gainLoss = pos.current_price ? ((pos.current_price - pos.entry_price) * pos.shares).toFixed(0) : 'N/A'
+          const gainPct = pos.current_price ? (((pos.current_price - pos.entry_price) / pos.entry_price) * 100).toFixed(1) : 'N/A'
+          
+          item.innerHTML = '<div>' +
+            '<div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">' + symbol + '</div>' +
+            '<div style="font-size: 12px; color: #666; line-height: 1.6;">' +
+            '보유수량: ' + pos.shares + '주 | 매입가: ' + pos.entry_price.toFixed(2) + ' | 매입일: ' + pos.entry_date.substring(0, 10) +
+            '</div>' +
+            '</div>' +
+            '<div style="text-align: right;">' +
+            '<div style="font-weight: bold; font-size: 14px; color: ' + (gainLoss >= 0 ? '#10b981' : '#ef4444') + ';">' + (gainLoss >= 0 ? '+' : '') + gainLoss + '원</div>' +
+            '<div style="font-size: 12px; color: ' + (gainPct >= 0 ? '#10b981' : '#ef4444') + ';">' + (gainPct >= 0 ? '+' : '') + gainPct + '%</div>' +
+            '</div>'
+          
+          posList.appendChild(item)
+        })
       }
-      
-      setOut('tradingOut', r)
     } catch (e) {
-      setOut('tradingOut', { error: e.message })
+      const posList = document.getElementById('positionsList')
+      posList.innerHTML = '<div style="padding: 20px; color: #ef4444; text-align: center;">오류: ' + e.message + '</div>'
     }
   }
 
