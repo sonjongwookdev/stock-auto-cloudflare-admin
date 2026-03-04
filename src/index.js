@@ -698,47 +698,26 @@ const adminHtml = `<!doctype html>
           </div>
         </section>
 
-        <section class="card">
-          <h2>시스템 현황</h2>
-          <button class="btn" onclick="loadStatus()">새로고침</button>
-          <button class="btn secondary" onclick="loadErrors()">오류 로그</button>
-          <pre id="statusOut"></pre>
-        </section>
-
-        <section class="card">
-          <h2>국내/해외 탭 투자 예산</h2>
-          <div class="tabs">
-            <button id="tabDomestic" class="active btn" onclick="switchMarket('domestic')">국내 탭</button>
-            <button id="tabOverseas" class="btn" onclick="switchMarket('overseas')">해외 탭</button>
-          </div>
-          <label>상위종목 선택 기준</label>
-          <select id="rankingCriteria" onchange="loadRankedSymbols()">
-            <option value="volume">📊 거래량순 (기본)</option>
-            <option value="rising">📈 상승순</option>
-            <option value="yesterday">🔝 전날대비 오른순 (어제 대비)</option>
-            <option value="volatility">⚡ 변동성순 (스윙용)</option>
-            <option value="gap">🚀 갭 상승순</option>
-            <option value="momentum">💪 모멘텀순</option>
-            <option value="breadth">📈 광폭 추세순</option>
-          </select>
-          <label>리스트 총 시드</label>
-          <input id="marketListSeed" type="number" value="0" />
-          <label>종목별 초기 시드 (JSON)</label>
-          <textarea id="marketSymbolSeeds">{}</textarea>
-          <button class="btn" onclick="saveMarketConfig()">탭 예산 저장</button>
-          <button class="btn secondary" onclick="loadMarketTop()">탭 상위 종목 조회</button>
-          <pre id="marketOut"></pre>
-        </section>
-
         <section class="card full">
-          <h2>🤖 자동매매 대시보드</h2>
-          <button class="btn" onclick="loadTradingStatus()">📊 현황 조회</button>
-          <button class="btn" onclick="runTradingCycle()">▶️ 매매 싸이클 실행</button>
+          <h2>🤖 자동매매 제어</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 20px; font-size: 16px;">🇰🇷 국내 자동매매 시작</button>
+            <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 20px; font-size: 16px;">🌎 해외 자동매매 시작</button>
+            <button id="stopAllBtn" class="btn secondary" onclick="stopAllTrading()" style="padding: 20px; font-size: 16px;">🛑 모든 거래 중단</button>
+          </div>
+          <div id="autoTradingStatus" style="margin-bottom: 15px;"></div>
           <div style="margin-top: 15px;">
             <strong>현재 포지션:</strong>
             <div class="list" id="positionsList"></div>
             <pre id="tradingOut"></pre>
           </div>
+        </section>
+
+        <section class="card">
+          <h2>시스템 현황</h2>
+          <button class="btn" onclick="loadStatus()">새로고침</button>
+          <button class="btn secondary" onclick="loadErrors()">오류 로그</button>
+          <pre id="statusOut"></pre>
         </section>
       </div>
     </div>
@@ -1125,7 +1104,11 @@ const adminHtml = `<!doctype html>
 
       // Auto-navigate after 2 seconds
       setTimeout(() => {
-        goToMainDashboard()
+        if (r.hasKisKeys) {
+          goToMainDashboard()
+        } else {
+          showPage('kisPage')
+        }
       }, 2000)
     } catch (e) {
       document.getElementById('initPageContainer').innerHTML = 
@@ -1167,7 +1150,6 @@ const adminHtml = `<!doctype html>
     await loadStatus()
     await loadBalance()  // 초기 잔고 로드
     await loadAutoControlStatus()
-    await loadMarketConfig()
     await loadTradingStatus()
     
     // 저장된 갱신 시간 불러오기
@@ -1255,23 +1237,39 @@ const adminHtml = `<!doctype html>
     try {
       const r = await api('/api/trading/auto/status')
       const data = r.data || {}
-      const domesticRunning = !!data.domestic?.running
-      const overseasRunning = !!data.overseas?.running
-
+      
+      // 버튼 상태 업데이트
       const domesticBtn = document.getElementById('startDomesticBtn')
       const overseasBtn = document.getElementById('startOverseasBtn')
-
-      if (domesticBtn) {
+      const stopBtn = document.getElementById('stopAllBtn')
+      
+      if (domesticBtn && overseasBtn && stopBtn) {
+        const domesticRunning = data.domestic?.running || false
+        const overseasRunning = data.overseas?.running || false
+        
         domesticBtn.disabled = domesticRunning
-        domesticBtn.textContent = domesticRunning ? '국내 자동매매 실행중' : '국내 자동매매 시작'
-      }
-
-      if (overseasBtn) {
+        domesticBtn.textContent = domesticRunning ? '🇰🇷 국내 매매 중...' : '🇰🇷 국내 자동매매 시작'
+        
         overseasBtn.disabled = overseasRunning
-        overseasBtn.textContent = overseasRunning ? '해외 자동매매 실행중' : '해외 자동매매 시작'
+        overseasBtn.textContent = overseasRunning ? '🌎 해외 매매 중...' : '🌎 해외 자동매매 시작'
+        
+        stopBtn.disabled = !domesticRunning && !overseasRunning
+        
+        // 상태 표시
+        const statusEl = document.getElementById('autoTradingStatus')
+        if (statusEl) {
+          let statusHtml = '<div style=\"padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;\">'
+          statusHtml += '<div><strong>국내:</strong> ' + (domesticRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.domestic.cycleCount || 0) + '회)</span>' : '<span style=\"color: #999;\">중단됨</span>') + '</div>'
+          statusHtml += '<div style=\"margin-top: 8px;\"><strong>해외:</strong> ' + (overseasRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.overseas.cycleCount || 0) + '회)</span>' : '<span style=\"color: #999;\">중단됨</span>') + '</div>'
+          if (data.intervalSeconds) {
+            statusHtml += '<div style=\"margin-top: 8px; color: #666;\"><small>갱신 주기: ' + data.intervalSeconds + '초</small></div>'
+          }
+          statusHtml += '</div>'
+          statusEl.innerHTML = statusHtml
+        }
       }
     } catch (e) {
-      console.warn('[Auto Status]', e.message)
+      console.error('[자동매매] 상태 로드 실패:', e)
     }
   }
 
@@ -1496,59 +1494,6 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  function switchMarket(market) {
-    currentMarket = market
-    document.getElementById('tabDomestic').classList.toggle('active', market === 'domestic')
-    document.getElementById('tabOverseas').classList.toggle('active', market === 'overseas')
-    document.getElementById('rankingCriteria').value = 'volume' // 기본값으로 리셋
-    loadMarketConfig()
-  }
-
-  async function loadMarketConfig() {
-    try {
-      const r = await api('/markets/config')
-      const cfg = r.marketConfig?.[currentMarket] || { listSeed: 0, symbolSeeds: {} }
-      document.getElementById('marketListSeed').value = cfg.listSeed || 0
-      document.getElementById('marketSymbolSeeds').value = JSON.stringify(cfg.symbolSeeds || {}, null, 2)
-      setOut('marketOut', { market: currentMarket, config: cfg })
-    } catch (e) {
-      setOut('marketOut', { error: e.message })
-    }
-  }
-
-  async function saveMarketConfig() {
-    try {
-      const body = {
-        market: currentMarket,
-        listSeed: Number(document.getElementById('marketListSeed').value || 0),
-        symbolSeeds: JSON.parse(document.getElementById('marketSymbolSeeds').value || '{}'),
-      }
-      setOut('marketOut', await api('/markets/config', { method: 'POST', body }))
-    } catch (e) {
-      setOut('marketOut', { error: e.message })
-    }
-  }
-
-  async function loadMarketTop() {
-    try {
-      const criteria = document.getElementById('rankingCriteria').value || 'volume'
-      const result = await api('/api/markets/' + currentMarket + '/top-by-criteria?criteria=' + criteria + '&limit=30')
-      setOut('marketOut', result.data)
-    } catch (e) {
-      setOut('marketOut', { error: e.message })
-    }
-  }
-
-  async function loadRankedSymbols() {
-    try {
-      const criteria = document.getElementById('rankingCriteria').value || 'volume'
-      console.log('상위종목 선택 기준: ' + criteria)
-      await loadMarketTop()
-    } catch (e) {
-      setOut('marketOut', { error: e.message })
-    }
-  }
-
   async function loadErrors() {
     try {
       setOut('statusOut', await api('/errors'))
@@ -1588,20 +1533,22 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  async function runTradingCycle() {
+  async function startAutoTrading(market) {
     try {
-      if (!confirm('지금 매매 싸이클을 실행하시겠습니까?')) return
+      if (!confirm((market === 'overseas' ? '해외' : '국내') + ' 자동매매를 시작하시겠습니까?')) return
       
-      setOut('tradingOut', { status: '실행 중...' })
-      const r = await api('/trading/run-cycle', { method: 'POST' })
-      
-      setOut('tradingOut', r.result || r)
+      const r = await api('/api/trading/auto/start', {
+        method: 'POST',
+        body: { market }
+      })
       
       if (r.ok) {
-        setTimeout(() => loadTradingStatus(), 2000)
+        alert('✓ ' + (market === 'overseas' ? '해외' : '국내') + ' 자동매매가 시작되었습니다')
+        await loadAutoControlStatus()
+        await loadTradingStatus()
       }
     } catch (e) {
-      setOut('tradingOut', { error: e.message })
+      alert('오류: ' + e.message)
     }
   }
 
