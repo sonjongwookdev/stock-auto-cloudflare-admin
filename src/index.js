@@ -1095,6 +1095,9 @@ const adminHtml = `<!doctype html>
       console.log('[로그인] 성공')
       currentUser.isLoggedIn = true
       
+      // 로그인 상태를 localStorage에 저장
+      localStorage.setItem('isLoggedIn', 'true')
+      
       // 성공 표시
       showLoginSuccess()
       
@@ -1963,6 +1966,10 @@ const adminHtml = `<!doctype html>
       stopStatusAutoRefresh()
       await api('/logout', { method: 'POST' })
       currentUser.isLoggedIn = false
+      
+      // localStorage에서 로그인 상태 제거
+      localStorage.removeItem('isLoggedIn')
+      
       document.getElementById('loginPassword').value = ''
       document.getElementById('loginError').innerHTML = ''
       showPage('loginPage')
@@ -1981,6 +1988,24 @@ const adminHtml = `<!doctype html>
   function initEventListeners() {
     const loginInput = document.getElementById('loginPassword')
     const loginBtn = document.getElementById('loginBtn')
+    
+    // 저장된 로그인 상태 확인
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    if (isLoggedIn) {
+      console.log('[초기화] 저장된 로그인 상태 감지')
+      currentUser.isLoggedIn = true
+      
+      // 비동기로 초기화 체크 실행
+      setTimeout(() => {
+        showPage('initPage')
+        checkInitStatus().catch(e => {
+          console.error('[초기화 체크] 실패:', e)
+          // 오류 시 로그인 페이지로 돌아가기
+          localStorage.removeItem('isLoggedIn')
+          showPage('loginPage')
+        })
+      }, 100)
+    }
     
     // 서버 연결 상태 확인 (비동기, 백그라운드에서 실행)
     checkServerConnection().catch(e => {
