@@ -1862,12 +1862,10 @@ const adminHtml = `<!doctype html>
       const shares = Number(p.shares || 0).toLocaleString('ko-KR')
       const entryPrice = Number(p.entryPrice || 0).toLocaleString('ko-KR')
       const entryDate = p.entryDate ? String(p.entryDate).substring(0, 16).replace('T', ' ') : '-'
-      return `
-        <div class="position-item">
-          <strong>${p.symbol}</strong>
-          <small>${shares}주 @ ₩${entryPrice} | ${entryDate}</small>
-        </div>
-      `
+      return '<div class="position-item">' +
+        '<strong>' + p.symbol + '</strong>' +
+        '<small>' + shares + '주 @ ₩' + entryPrice + ' | ' + entryDate + '</small>' +
+        '</div>'
     }).join('')
   }
 
@@ -1949,12 +1947,12 @@ const adminHtml = `<!doctype html>
         return
       }
 
-      list.innerHTML = errors.slice(0, 10).map(e => `
-        <div class="error-item">
-          <strong>${e.type || '오류'}</strong>
-          <small>${e.message || ''} | ${e.timestamp || ''}</small>
-        </div>
-      `).join('')
+      list.innerHTML = errors.slice(0, 10).map(e => 
+        '<div class="error-item">' +
+        '<strong>' + (e.type || '오류') + '</strong>' +
+        '<small>' + (e.message || '') + ' | ' + (e.timestamp || '') + '</small>' +
+        '</div>'
+      ).join('')
     } catch (e) {
       console.error('오류 로그 로드 실패:', e)
     }
