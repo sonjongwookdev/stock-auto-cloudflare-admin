@@ -1921,7 +1921,6 @@ const adminHtml = `<!doctype html>
       console.error('[Load Errors]', e.message)
     }
   }
-  }
 
   async function loadTradingStatus() {
     try {
