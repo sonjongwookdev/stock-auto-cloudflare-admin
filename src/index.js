@@ -1052,8 +1052,41 @@ const adminHtml = `<!doctype html>
           <strong>⚠️ 주의:</strong> 키 교체 시 자동매매가 중단되고 서버가 재시작됩니다.
         </div>
         
-        <button class="btn" type="button" style="width:100%; margin-top:15px; padding: 15px; font-size: 15px;" onclick="goToKisSetup()">🔑 KIS API 키 교체하기</button>
+        <button class="btn" type="button" style="width:100%; margin-top:15px; padding: 15px; font-size: 15px;" onclick="openKeyChangeModal()">🔑 KIS API 키 교체하기</button>
         <button class="btn secondary" type="button" style="width:100%; margin-top:10px;" onclick="closeSettingsModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Change Confirmation Modal -->
+  <div id="keyChangeModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>🔑 API 키 교체 확인</h2>
+        <button class="modal-close" onclick="closeKeyChangeModal()">✕</button>
+      </div>
+      
+      <div style="padding: 20px; color: #d32f2f;">
+        <div style="background: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+          <strong style="color: #c62828;">⚠️ 경고</strong><br/>
+          <span style="color: #d32f2f; font-size: 14px;">이 작업은 자동매매를 중단하고 서버를 재시작합니다.</span>
+        </div>
+        
+        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">진행하려면 아래 문구를 정확히 입력하세요:</p>
+        <input 
+          id="keyChangeConfirmInput" 
+          type="text" 
+          placeholder="키를교체하겠습니다" 
+          onkeyup="updateKeyChangeButtonState()"
+          style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 15px; font-size: 14px;"
+        />
+        
+        <div id="keyChangeStatus" style="background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 15px; min-height: 20px; color: #666; font-size: 13px;"></div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
+        <button class="btn secondary" type="button" style="flex: 1;" onclick="closeKeyChangeModal()">취소</button>
+        <button id="confirmKeyChangeBtn" class="btn" type="button" style="flex: 1; background: #d32f2f;" onclick="confirmKeyChange()" disabled>교체 실행</button>
       </div>
     </div>
   </div>
@@ -1985,6 +2018,58 @@ const adminHtml = `<!doctype html>
   function goToKisSetup() {
     closeSettingsModal()
     showPage('kisPage')
+  }
+
+  // Key Change Modal Functions
+  function openKeyChangeModal() {
+    document.getElementById('keyChangeModal').classList.add('active')
+    document.getElementById('keyChangeConfirmInput').value = ''
+    document.getElementById('keyChangeStatus').innerHTML = ''
+    updateKeyChangeButtonState()
+  }
+
+  function closeKeyChangeModal() {
+    document.getElementById('keyChangeModal').classList.remove('active')
+  }
+
+  function updateKeyChangeButtonState() {
+    const input = document.getElementById('keyChangeConfirmInput').value
+    const btn = document.getElementById('confirmKeyChangeBtn')
+    const isCorrect = input === '키를교체하겠습니다'
+    
+    if (isCorrect) {
+      btn.disabled = false
+      btn.style.opacity = '1'
+      btn.style.cursor = 'pointer'
+    } else {
+      btn.disabled = true
+      btn.style.opacity = '0.5'
+      btn.style.cursor = 'not-allowed'
+    }
+  }
+
+  async function confirmKeyChange() {
+    const statusEl = document.getElementById('keyChangeStatus')
+    
+    try {
+      statusEl.innerHTML = '⏳ 키 교체 처리 중...'
+      
+      const r = await api('/api/kis/update', {
+        method: 'POST',
+        body: { action: 'update' }
+      })
+      
+      statusEl.innerHTML = '✓ API 키가 업데이트 되었습니다.<br/>키 입력 페이지로 이동합니다.'
+      
+      setTimeout(() => {
+        closeKeyChangeModal()
+        closeSettingsModal()
+        showPage('kisPage')
+      }, 1500)
+      
+    } catch (e) {
+      statusEl.innerHTML = '✗ 오류: ' + e.message
+    }
   }
 
   /**
