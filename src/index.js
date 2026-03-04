@@ -1193,8 +1193,8 @@ const adminHtml = `<!doctype html>
       console.log('[로그인] 성공')
       currentUser.isLoggedIn = true
       
-      // 로그인 상태를 localStorage에 저장
-      localStorage.setItem('isLoggedIn', 'true')
+      // 로그인 상태를 storage에 저장
+      storage.setItem('isLoggedIn', 'true')
       
       // 성공 표시
       showLoginSuccess()
@@ -1796,13 +1796,13 @@ const adminHtml = `<!doctype html>
   function updateStatusRefreshInterval() {
     const seconds = parseInt(document.getElementById('statusRefreshInterval').value || '120')
     statusRefreshSeconds = seconds
-    localStorage.setItem('statusRefreshSeconds', String(seconds))
+    storage.setItem('statusRefreshSeconds', String(seconds))
     updateStatusRefreshPreview()
     if (statusPanelOpen) startStatusAutoRefresh()
   }
 
   function loadStatusRefreshPreference() {
-    const saved = localStorage.getItem('statusRefreshSeconds')
+    const saved = storage.getItem('statusRefreshSeconds')
     if (!saved) return
     statusRefreshSeconds = parseInt(saved)
     const select = document.getElementById('statusRefreshInterval')
@@ -2060,7 +2060,7 @@ const adminHtml = `<!doctype html>
   function updateBalanceRefreshInterval() {
     const seconds = parseInt(document.getElementById('settingsBalanceRefreshInterval').value)
     balanceRefreshSeconds = seconds
-    localStorage.setItem('balanceRefreshSeconds', seconds.toString())
+    storage.setItem('balanceRefreshSeconds', seconds.toString())
     updateBalanceRefreshPreview()
     
     // 즉시 갱신 주기 변경
@@ -2072,7 +2072,7 @@ const adminHtml = `<!doctype html>
    * 저장된 갱신 시간 불러오기
    */
   function loadBalanceRefreshPreference() {
-    const saved = localStorage.getItem('balanceRefreshSeconds')
+    const saved = storage.getItem('balanceRefreshSeconds')
     if (saved) {
       balanceRefreshSeconds = parseInt(saved)
       const select = document.getElementById('settingsBalanceRefreshInterval')
@@ -2283,7 +2283,7 @@ const adminHtml = `<!doctype html>
       currentUser.isLoggedIn = false
       
       // localStorage에서 로그인 상태 제거
-      localStorage.removeItem('isLoggedIn')
+      storage.removeItem('isLoggedIn')
       
       document.getElementById('loginPassword').value = ''
       document.getElementById('loginError').innerHTML = ''
@@ -2300,12 +2300,34 @@ const adminHtml = `<!doctype html>
     initEventListeners()
   }
 
+  // localStorage 안전하게 사용하는 헬퍼 함수
+  function safeLocalStorage() {
+    try {
+      const test = '__test__'
+      localStorage.setItem(test, test)
+      localStorage.removeItem(test)
+      return localStorage
+    } catch (e) {
+      // localStorage 사용 불가 시 메모리 스토리지 사용
+      console.warn('[Storage] localStorage 사용 불가, 메모리 저장소 사용 중')
+      return {
+        data: {},
+        getItem(key) { return this.data[key] || null },
+        setItem(key, value) { this.data[key] = value },
+        removeItem(key) { delete this.data[key] },
+        clear() { this.data = {} }
+      }
+    }
+  }
+
+  const storage = safeLocalStorage()
+
   function initEventListeners() {
     const loginInput = document.getElementById('loginPassword')
     const loginBtn = document.getElementById('loginBtn')
     
     // 저장된 로그인 상태 확인
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+    const isLoggedIn = storage.getItem('isLoggedIn') === 'true'
     if (isLoggedIn) {
       console.log('[초기화] 저장된 로그인 상태 감지')
       currentUser.isLoggedIn = true
@@ -2316,7 +2338,7 @@ const adminHtml = `<!doctype html>
         checkInitStatus().catch(e => {
           console.error('[초기화 체크] 실패:', e)
           // 오류 시 로그인 페이지로 돌아가기
-          localStorage.removeItem('isLoggedIn')
+          storage.removeItem('isLoggedIn')
           showPage('loginPage')
         })
       }, 100)
