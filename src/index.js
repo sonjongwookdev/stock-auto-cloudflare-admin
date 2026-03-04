@@ -66,12 +66,12 @@ const adminHtml = `<!doctype html>
     }
     
     /* Init Page */
-    .init-page.active {
+    .page.init-page {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background: #f8f9fa;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
     .init-card {
       background: white;
@@ -114,7 +114,7 @@ const adminHtml = `<!doctype html>
     .status-text small { color: #666; display: block; }
     
     /* KIS Setup Page */
-    .kis-page.active {
+    .page.kis-page {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -593,34 +593,30 @@ const adminHtml = `<!doctype html>
   </div>
 
   <!-- Init Check Page -->
-  <div id="initPage" class="page">
-    <div class="init-page" id="initPageContainer">
-      <div class="init-card">
-        <h2>초기화 중...</h2>
-        <p style="color: #999; margin-top: 20px;">시스템 상태를 확인하는 중입니다</p>
-      </div>
+  <div id="initPage" class="page init-page">
+    <div class="init-card">
+      <h2>초기화 중...</h2>
+      <p style="color: #999; margin-top: 20px;">시스템 상태를 확인하는 중입니다</p>
     </div>
   </div>
 
   <!-- KIS Setup Page -->
-  <div id="kisPage" class="page">
-    <div class="kis-page">
-      <div class="kis-card">
-        <h2>KIS API 키 설정</h2>
-        <p class="subtitle">자동매매 API 키를 입력해주세요</p>
-        <div class="warning">⚠️ 키는 안전하게 저장됩니다. 절대 공개하지 마세요.</div>
+  <div id="kisPage" class="page kis-page">
+    <div class="kis-card">
+      <h2>KIS API 키 설정</h2>
+      <p class="subtitle">자동매매 API 키를 입력해주세요</p>
+      <div class="warning">⚠️ 키는 안전하게 저장됩니다. 절대 공개하지 마세요.</div>
 
-        <form id="kisForm" onsubmit="return false;">
-          <label>KIS API Key</label>
-          <input id="kisApiKey" type="password" autocomplete="new-password" placeholder="API Key" />
+      <form id="kisForm" onsubmit="return false;">
+        <label>KIS API Key</label>
+        <input id="kisApiKey" type="password" autocomplete="new-password" placeholder="API Key" />
 
-          <label>KIS API Secret (선택)</label>
-          <input id="kisApiSecret" type="password" autocomplete="new-password" placeholder="API Secret" />
+        <label>KIS API Secret (선택)</label>
+        <input id="kisApiSecret" type="password" autocomplete="new-password" placeholder="API Secret" />
 
-          <button class="btn" type="button" style="width:100%; margin-top:20px;" onclick="saveKisKeys()">키 저장 및 계속</button>
-          <div id="kisError" style="margin-top:15px;"></div>
-        </form>
-      </div>
+        <button class="btn" type="button" style="width:100%; margin-top:20px;" onclick="saveKisKeys()">키 저장 및 계속</button>
+        <div id="kisError" style="margin-top:15px;"></div>
+      </form>
     </div>
   </div>
 
@@ -1081,7 +1077,7 @@ const adminHtml = `<!doctype html>
   async function checkInitStatus() {
     try {
       const r = await api('/auth/init-check')
-      const card = document.getElementById('initPageContainer')
+      const card = document.getElementById('initPage')
       
       let html = '<div class="init-card"><h2>초기화 상태</h2>'
       
@@ -1117,7 +1113,7 @@ const adminHtml = `<!doctype html>
         }
       }, 2000)
     } catch (e) {
-      document.getElementById('initPageContainer').innerHTML = 
+      document.getElementById('initPage').innerHTML = 
         '<div class="init-card"><div class="error-msg">오류: ' + e.message + '</div></div>'
       setTimeout(() => showPage('loginPage'), 3000)
     }
