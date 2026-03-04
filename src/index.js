@@ -841,6 +841,9 @@ const adminHtml = `<!doctype html>
   </div>
 
 <script>
+  // Backend URL 설정
+  const BACKEND_BASE = '${BACKEND_BASE}'
+  
   let currentMarket = 'domestic'
   let currentUser = { isLoggedIn: false }
   let balanceRefreshInterval = null  // 잔고 자동 갱신 타이머
@@ -1703,7 +1706,9 @@ async function handleRequest(request) {
   const url = new URL(request.url)
 
   if (url.pathname === '/' || url.pathname === '/admin') {
-    return new Response(adminHtml, {
+    // 템플릿 변수 치환
+    const html = adminHtml.replace('${BACKEND_BASE}', BACKEND_BASE)
+    return new Response(html, {
       headers: { 'Content-Type': 'text/html; charset=UTF-8' },
     })
   }
