@@ -1189,7 +1189,20 @@ const adminHtml = `<!doctype html>
       await new Promise(resolve => setTimeout(resolve, 50))
       
       console.log('[로그인] API 호출 중...')
-      await api('/login', { method: 'POST', body: { password } })
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+        credentials: 'include'
+      })
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        let errorData = {}
+        try { errorData = JSON.parse(errorText) } catch (e) {}
+        throw new Error(errorData.error || ('HTTP ' + res.status))
+      }
+      
       console.log('[로그인] 성공')
       currentUser.isLoggedIn = true
       
@@ -1413,6 +1426,7 @@ const adminHtml = `<!doctype html>
     await loadKisStatus()
     // await loadStatus()  // HTTP 요청으로 인한 Mixed Content 에러 제거
     await loadBalance()  // 초기 잔고 로드 (자동 갱신 없음, 수동 새로고침만 가능)
+    await loadAutoControlStatus()  // 자동매매 상태 로드
     await loadTradingStatus()
     
     // 저장된 갱신 시간 불러오기
@@ -2277,7 +2291,13 @@ const adminHtml = `<!doctype html>
   async function performLogout() {
     try {
       stopStatusAutoRefresh()
-      await api('/logout', { method: 'POST' })
+      
+      // /logout 직접 호출 (쿠키 포함)
+      const res = await fetch('/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
       currentUser.isLoggedIn = false
       
       // localStorage에서 로그인 상태 제거
@@ -2390,7 +2410,7 @@ async function proxyToBackend(request, url) {
   const headers = new Headers(request.headers)
   headers.delete('host')
   headers.set('x-forwarded-host', url.host)
-  headers.set('x-forwarded-proto', 'https')
+  headers.set('x-forwarded-proto', url.protocol.replace(':', ''))
 
   const init = {
     method: request.method,
