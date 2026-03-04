@@ -66,7 +66,7 @@ const adminHtml = `<!doctype html>
     }
     
     /* Init Page */
-    .page.init-page {
+    .page.init-page.active {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -114,7 +114,7 @@ const adminHtml = `<!doctype html>
     .status-text small { color: #666; display: block; }
     
     /* KIS Setup Page */
-    .page.kis-page {
+    .page.kis-page.active {
       display: flex;
       align-items: center;
       justify-content: center;
