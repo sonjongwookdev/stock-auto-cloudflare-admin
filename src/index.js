@@ -223,13 +223,13 @@ const adminHtml = `<!doctype html>
     }
     .row {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: 1fr;
+      gap: 16px;
     }
     .card {
       background: white;
       border-radius: 12px;
-      padding: 14px;
+      padding: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     }
     .card.full { grid-column: 1/-1; }
@@ -747,30 +747,35 @@ const adminHtml = `<!doctype html>
     </div>
 
     <!-- Main Content -->
-    <div class="wrap">
+    <div class="wrap" style="max-width: 1200px; margin: 0 auto;">
       <div class="row">
-        <section class="card full">
-          <h2>🤖 자동매매 제어</h2>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-            <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 20px; font-size: 16px;">🇰🇷 국내 자동매매 시작</button>
-            <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 20px; font-size: 16px;">🌎 해외 자동매매 시작</button>
+        <!-- 자동매매 제어 -->
+        <section class="card" style="grid-column: 1 / -1;">
+          <h2 style="margin-bottom: 20px;">🤖 자동매매 제어</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 18px; font-size: 15px;">🇰🇷 국내 자동매매 시작</button>
+            <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 18px; font-size: 15px;">🌎 해외 자동매매 시작</button>
           </div>
-          <div id="autoTradingStatus" style="margin-bottom: 15px;"></div>
+          <div id="autoTradingStatus" style="margin-bottom: 15px; min-height: 20px;"></div>
           
-          <div style="margin-top: 20px;">
-            <h3 style="font-size: 16px; margin-bottom: 15px;">📍 현재 포지션</h3>
+          <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <h3 style="font-size: 15px; margin-bottom: 12px; color: #333;">📍 현재 포지션</h3>
             <div id="positionsList" style="display: grid; gap: 10px;"></div>
           </div>
         </section>
 
-        <section class="card">
-          <h2>⚙️ 시스템 현황</h2>
-          <button class="btn" onclick="openStatusModal()">📊 현황보기</button>
-          <button class="btn secondary" onclick="openErrorLogsModal()">📋 오류 로그 보기</button>
+        <!-- 시스템 현황 -->
+        <section class="card" style="grid-column: 1 / -1;">
+          <h2 style="margin-bottom: 15px;">⚙️ 시스템 현황</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button class="btn" onclick="openStatusModal()" style="padding: 12px;">📊 현황보기</button>
+            <button class="btn secondary" onclick="openErrorLogsModal()" style="padding: 12px;">📋 오류 로그 보기</button>
+          </div>
         </section>
 
-        <section class="card full">
-          <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 15px; font-size: 16px; background: #d32f2f;">🛑 모든 거래 중단</button>
+        <!-- 모든 거래 중단 -->
+        <section class="card" style="grid-column: 1 / -1;">
+          <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 16px; font-size: 15px; background: #dc2626; font-weight: 600;">🛑 모든 거래 중단</button>
         </section>
       </div>
     </div>
