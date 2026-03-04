@@ -118,19 +118,40 @@ const adminHtml = `<!doctype html>
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background: #f5f5f5;
+      min-height: 100vh;
+      width: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
     }
     .kis-card {
       background: white;
       border-radius: 16px;
-      padding: 40px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      padding: 50px 45px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2), 0 5px 15px rgba(0,0,0,0.1);
       width: 90%;
       max-width: 500px;
+      text-align: center;
     }
-    .kis-card h2 { font-size: 20px; margin-bottom: 8px; color: #333; }
-    .kis-card .subtitle { color: #999; margin-bottom: 25px; font-size: 14px; }
+    .kis-card h2 { 
+      font-size: 28px; 
+      font-weight: 700;
+      margin-bottom: 8px; 
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .kis-card .subtitle { 
+      color: #666; 
+      margin-bottom: 30px; 
+      font-size: 14px; 
+    }
+    .kis-card label,
+    .kis-card input,
+    .kis-card .warning {
+      text-align: left;
+    }
     .kis-card .warning {
       background: #fef3c7;
       border-left: 4px solid #f59e0b;
