@@ -356,6 +356,22 @@ const adminHtml = `<!doctype html>
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       opacity: 0.9;
     }
+    button.btn.success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
+    }
+    button.btn.success:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: none;
+    }
+    button.btn.failure {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 8px 15px rgba(239, 68, 68, 0.3);
+    }
+    button.btn.failure:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: none;
+    }
     button.btn.secondary {
       background: #f5f5f5;
       color: #333;
@@ -974,7 +990,7 @@ const adminHtml = `<!doctype html>
         return
       }
       
-      // 로딩 상태 시작
+      // 로딩 상태 시작 (클릭 방지)
       console.log('[로그인] 로딩 상태 표시')
       setLoginLoading(true)
       document.getElementById('loginError').innerHTML = ''
@@ -987,11 +1003,17 @@ const adminHtml = `<!doctype html>
       console.log('[로그인] 성공')
       currentUser.isLoggedIn = true
       
+      // 성공 표시
+      showLoginSuccess()
+      
+      // 2초 후 다음 페이지로 이동
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
       showPage('initPage')
       await checkInitStatus()
     } catch (e) {
       console.error('[로그인] 실패:', e)
-      setLoginLoading(false)
+      
       const errorMsg = e.message || '로그인 실패'
       const statusMatch = errorMsg.match(/HTTP (\d+)/)
       const status = statusMatch ? parseInt(statusMatch[1]) : null
@@ -1013,8 +1035,46 @@ const adminHtml = `<!doctype html>
         displayMsg = errorMsg
       }
       
-      displayAlert('loginError', displayMsg, alertType)
+      // 실패 표시 후 버튼 복구
+      showLoginFailure(displayMsg, alertType)
     }
+  }
+  
+  function showLoginSuccess() {
+    const btn = document.getElementById('loginBtn')
+    const passwordInput = document.getElementById('loginPassword')
+    
+    btn.disabled = true
+    btn.classList.remove('loading')
+    btn.classList.add('success')
+    btn.innerHTML = '<span style="font-size: 18px;">✓</span> 로그인 성공'
+    passwordInput.disabled = true
+    
+    console.log('[로그인] 성공 표시')
+  }
+  
+  function showLoginFailure(message, alertType) {
+    const btn = document.getElementById('loginBtn')
+    const passwordInput = document.getElementById('loginPassword')
+    
+    btn.disabled = true
+    btn.classList.remove('loading')
+    btn.classList.add('failure')
+    btn.innerHTML = '<span style="font-size: 18px;">✕</span> 로그인 실패'
+    passwordInput.disabled = false
+    
+    // 에러 메시지 표시
+    displayAlert('loginError', message, alertType)
+    
+    // 3초 후 버튼 복구
+    setTimeout(() => {
+      btn.disabled = false
+      btn.classList.remove('failure')
+      btn.innerHTML = '로그인'
+      console.log('[로그인] 버튼 복구')
+    }, 3000)
+    
+    console.log('[로그인] 실패 표시')
   }
   
   function setLoginLoading(isLoading) {
