@@ -7,7 +7,7 @@ const adminHtml = `<!doctype html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stock Auto Admin</title>
+  <title>Stock Auto Admin v2</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html {
@@ -497,9 +497,11 @@ const adminHtml = `<!doctype html>
       background: #fff5f5;
       border-left: 4px solid #ff9500;
       color: #b94717;
-      padding: 12px 14px;\n      border-radius: 6px;
+      padding: 12px 14px;
+      border-radius: 6px;
       margin-bottom: 16px;
-      font-size: 14px;\n      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.5;
     }
     .success-msg {
       background: #ecfdf5;
@@ -544,7 +546,7 @@ const adminHtml = `<!doctype html>
       <p class="subtitle">자동매매 시스템 관리</p>
       <label>비밀번호</label>
       <input id="loginPassword" type="password" placeholder="관리자 비밀번호를 입력하세요" />
-      <button class="btn" onclick="performLogin()">로그인</button>
+      <button id="loginBtn" class="btn">로그인</button>
       <div id="loginError" style="margin-top:16px;"></div>
     </div>
   </div>
@@ -907,13 +909,16 @@ const adminHtml = `<!doctype html>
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
         const res = await fetch('/api' + path, {
           method: opts.method || 'GET',
           headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
           body: opts.body ? JSON.stringify(opts.body) : undefined,
           credentials: 'include',
-          timeout: 30000 // 30초 타임아웃
-        })
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
         
         const text = await res.text()
         let json = {}
@@ -962,6 +967,7 @@ const adminHtml = `<!doctype html>
 
   async function performLogin() {
     try {
+      console.log('[로그인] 시작')
       const password = document.getElementById('loginPassword').value
       if (!password) {
         displayAlert('loginError', '비밀번호를 입력해주세요', 'password-error')
@@ -969,15 +975,22 @@ const adminHtml = `<!doctype html>
       }
       
       // 로딩 상태 시작
+      console.log('[로그인] 로딩 상태 표시')
       setLoginLoading(true)
       document.getElementById('loginError').innerHTML = ''
       
+      // UI 업데이트를 위한 짧은 딜레이
+      await new Promise(resolve => setTimeout(resolve, 50))
+      
+      console.log('[로그인] API 호출 중...')
       await api('/login', { method: 'POST', body: { password } })
+      console.log('[로그인] 성공')
       currentUser.isLoggedIn = true
       
       showPage('initPage')
       await checkInitStatus()
     } catch (e) {
+      console.error('[로그인] 실패:', e)
       setLoginLoading(false)
       const errorMsg = e.message || '로그인 실패'
       const statusMatch = errorMsg.match(/HTTP (\d+)/)
@@ -1008,16 +1021,20 @@ const adminHtml = `<!doctype html>
     const btn = document.querySelector('#loginPage button.btn')
     const passwordInput = document.getElementById('loginPassword')
     
+    console.log('[로딩] 상태 변경:', isLoading ? '시작' : '종료')
+    
     if (isLoading) {
       btn.disabled = true
       btn.classList.add('loading')
       btn.innerHTML = '<span class="spinner"></span>로그인 중...'
       passwordInput.disabled = true
+      console.log('[로딩] 버튼 비활성화 및 스피너 표시')
     } else {
       btn.disabled = false
       btn.classList.remove('loading')
       btn.innerHTML = '로그인'
       passwordInput.disabled = false
+      console.log('[로딩] 버튼 활성화')
     }
   }
   
@@ -1051,8 +1068,9 @@ const adminHtml = `<!doctype html>
         '<div class="status-text">' +
         '<strong>KIS API 키</strong>' +
         '<small>' + (r.hasKisKeys ? '설정됨' : '설정 필요') + '</small>' +
-        '</div></div></div>'
+        '</div></div>'
       
+      html += '</div>'
       card.innerHTML = html
 
       // Auto-navigate after 2 seconds
@@ -1892,9 +1910,27 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  document.getElementById('loginPassword').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') performLogin()
-  })
+  // DOM이 로드된 후 이벤트 리스너 등록
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEventListeners)
+  } else {
+    initEventListeners()
+  }
+
+  function initEventListeners() {
+    const loginInput = document.getElementById('loginPassword')
+    const loginBtn = document.getElementById('loginBtn')
+    
+    if (loginBtn) {
+      loginBtn.addEventListener('click', performLogin)
+    }
+    
+    if (loginInput) {
+      loginInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performLogin()
+      })
+    }
+  }
 </script>
 </body>
 </html>`
@@ -1935,5 +1971,5 @@ async function proxyToBackend(request, url) {
   }
 
   const response = await fetch(targetUrl.toString(), init)
-  return new Response(response.body, response)
+  return response
 }
