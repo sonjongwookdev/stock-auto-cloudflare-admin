@@ -761,17 +761,16 @@ const adminHtml = `<!doctype html>
             <h3 style="font-size: 16px; margin-bottom: 15px;">📍 현재 포지션</h3>
             <div id="positionsList" style="display: grid; gap: 10px;"></div>
           </div>
-          
-          <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e0e0e0;">
-            <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 15px; font-size: 16px; background: #d32f2f;">🛑 모든 거래 중단</button>
-          </div>
         </section>
 
         <section class="card">
           <h2>⚙️ 시스템 현황</h2>
-          <button class="btn" onclick="loadStatus()">새로고침</button>
+          <button class="btn" onclick="openStatusModal()">📊 현황보기</button>
           <button class="btn secondary" onclick="openErrorLogsModal()">📋 오류 로그 보기</button>
-          <div id="statusOut" style="margin-top: 15px;"></div>
+        </section>
+
+        <section class="card full">
+          <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 15px; font-size: 16px; background: #d32f2f;">🛑 모든 거래 중단</button>
         </section>
       </div>
     </div>
@@ -805,6 +804,24 @@ const adminHtml = `<!doctype html>
         <div style="display: flex; gap: 10px; padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
           <button class="btn secondary" type="button" style="flex: 1;" onclick="closeStopAllModal()">취소</button>
           <button id="confirmStopAllBtn" class="btn" type="button" style="flex: 1; background: #d32f2f;" onclick="confirmStopAllTrading()" disabled>중단 실행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div id="statusModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+          <h2>📊 시스템 현황</h2>
+          <button class="modal-close" onclick="closeStatusModal()">✕</button>
+        </div>
+        
+        <div id="statusContent" style="padding: 20px; max-height: 60vh; overflow-y: auto;">
+          <div style="text-align: center; color: #999;">로딩 중...</div>
+        </div>
+        
+        <div style="padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
+          <button class="btn secondary" type="button" style="width: 100%;" onclick="closeStatusModal()">닫기</button>
         </div>
       </div>
     </div>
@@ -1428,6 +1445,61 @@ const adminHtml = `<!doctype html>
     }
     
     el.innerHTML = html
+  }
+
+  // Status Modal Functions
+  async function openStatusModal() {
+    const modal = document.getElementById('statusModal')
+    const contentEl = document.getElementById('statusContent')
+    
+    modal.classList.add('active')
+    contentEl.innerHTML = '<div style="text-align: center; color: #999;">로딩 중...</div>'
+    
+    try {
+      const status = await api('/status')
+      const dbOnline = status.dbStatus === 'healthy'
+      const dbDot = document.getElementById('headerDbStatus')
+      const dbText = document.getElementById('headerDbText')
+      
+      if (dbOnline) {
+        dbDot.className = 'status-dot online'
+        dbText.textContent = '정상'
+      } else {
+        dbDot.className = 'status-dot offline'
+        dbText.textContent = '오류'
+      }
+      
+      renderStatusInModal(status)
+    } catch (e) {
+      contentEl.innerHTML = '<div style="padding: 20px; color: #ef4444; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">오류: ' + e.message + '</div>'
+    }
+  }
+
+  function closeStatusModal() {
+    document.getElementById('statusModal').classList.remove('active')
+  }
+
+  function renderStatusInModal(data) {
+    const contentEl = document.getElementById('statusContent')
+    let html = ''
+    
+    Object.entries(data).forEach(([k, v]) => {
+      const valueStr = typeof v === 'object' ? JSON.stringify(v) : String(v)
+      const icon = k.includes('status') || k.includes('Status') ? '⚙️' :
+                   k.includes('health') || k.includes('healthy') ? '💚' :
+                   k.includes('time') ? '⏰' : '📌'
+      
+      html += '<div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: grid; grid-template-columns: 150px 1fr; gap: 15px;">' +
+              '<div style="font-weight: bold; color: #667eea;">' + icon + ' ' + k + '</div>' +
+              '<div style="word-break: break-all; color: #333; font-family: monospace; font-size: 13px;">' + valueStr + '</div>' +
+              '</div>'
+    })
+    
+    if (html === '') {
+      html = '<div style="padding: 30px; text-align: center; color: #999;">데이터 없음</div>'
+    }
+    
+    contentEl.innerHTML = html
   }
 
   /**
