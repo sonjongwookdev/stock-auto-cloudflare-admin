@@ -1535,25 +1535,6 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  async function startAutoTrading(market) {
-    try {
-      if (!confirm((market === 'overseas' ? '해외' : '국내') + ' 자동매매를 시작하시겠습니까?')) return
-      
-      const r = await api('/api/trading/auto/start', {
-        method: 'POST',
-        body: { market }
-      })
-      
-      if (r.ok) {
-        alert('✓ ' + (market === 'overseas' ? '해외' : '국내') + ' 자동매매가 시작되었습니다')
-        await loadAutoControlStatus()
-        await loadTradingStatus()
-      }
-    } catch (e) {
-      alert('오류: ' + e.message)
-    }
-  }
-
   function openSettingsModal() {
     document.getElementById('settingsModal').classList.add('active')
     loadSettingsForm()
