@@ -1,0 +1,5 @@
+node_modules/
+.next/
+wrangler.lock
+package-lock.json
+package.json

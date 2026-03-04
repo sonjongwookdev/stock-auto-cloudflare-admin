@@ -8,9 +8,14 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "wrangler": "wrangler"
+    "wrangler": "wrangler",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix"
   },
   "dependencies": {
     "wrangler": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.0.2"
   }
 }

@@ -28,7 +28,7 @@ const adminHtml = `<!doctype html>
     .page.active { display: block; }
     
     /* Login Page */
-    .login-page {
+    .login-page.active {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -66,7 +66,7 @@ const adminHtml = `<!doctype html>
     }
     
     /* Init Page */
-    .init-page {
+    .init-page.active {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -114,7 +114,7 @@ const adminHtml = `<!doctype html>
     .status-text small { color: #666; display: block; }
     
     /* KIS Setup Page */
-    .kis-page {
+    .kis-page.active {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -142,7 +142,7 @@ const adminHtml = `<!doctype html>
     }
     
     /* Main Dashboard */
-    .main-page { background: #f8f9fa; min-height: 100vh; padding-top: 0; }
+    .main-page.active { display: block; background: #f8f9fa; min-height: 100vh; padding-top: 0; }
     .top-header {
       background: white;
       border-bottom: 1px solid #e5e7eb;
@@ -562,8 +562,9 @@ const adminHtml = `<!doctype html>
       <h1>Stock Auto</h1>
       <p class="subtitle">자동매매 시스템 관리</p>
       <form id="loginForm">
+        <input type="text" autocomplete="username" style="display:none;" aria-hidden="true" tabindex="-1" />
         <label>비밀번호</label>
-        <input id="loginPassword" type="password" placeholder="관리자 비밀번호를 입력하세요" />
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="관리자 비밀번호를 입력하세요" />
         <button id="loginBtn" class="btn" type="button">로그인</button>
         <div id="loginError" style="margin-top:16px;"></div>
       </form>
@@ -587,18 +588,20 @@ const adminHtml = `<!doctype html>
         <h2>KIS API 키 설정</h2>
         <p class="subtitle">자동매매 API 키를 입력해주세요</p>
         <div class="warning">⚠️ 키는 안전하게 저장됩니다. 절대 공개하지 마세요.</div>
-        
-        <label>KIS Base URL</label>
-        <input id="kisBaseUrl" type="text" placeholder="https://..." />
-        
-        <label>KIS API Key</label>
-        <input id="kisApiKey" type="password" placeholder="API Key" />
-        
-        <label>KIS API Secret (선택)</label>
-        <input id="kisApiSecret" type="password" placeholder="API Secret" />
-        
-        <button class="btn" style="width:100%; margin-top:20px;" onclick="saveKisKeys()">키 저장 및 계속</button>
-        <div id="kisError" style="margin-top:15px;"></div>
+
+        <form id="kisForm" onsubmit="return false;">
+          <label>KIS Base URL</label>
+          <input id="kisBaseUrl" type="text" autocomplete="off" placeholder="https://..." />
+
+          <label>KIS API Key</label>
+          <input id="kisApiKey" type="password" autocomplete="new-password" placeholder="API Key" />
+
+          <label>KIS API Secret (선택)</label>
+          <input id="kisApiSecret" type="password" autocomplete="new-password" placeholder="API Secret" />
+
+          <button class="btn" type="button" style="width:100%; margin-top:20px;" onclick="saveKisKeys()">키 저장 및 계속</button>
+          <div id="kisError" style="margin-top:15px;"></div>
+        </form>
       </div>
     </div>
   </div>
@@ -738,15 +741,6 @@ const adminHtml = `<!doctype html>
           </div>
         </section>
 
-        <section class="card full">
-          <h2>🎯 활성 전략 선택 (단일 구동)</h2>
-          <button class="btn" onclick="loadStrategies()">전략 불러오기</button>
-          <button class="btn" onclick="loadStrategyStats()">성적 확인</button>
-          <button class="btn" onclick="activateSelectedStrategy()">전략 활성화</button>
-          <div id="strategyChips" style="margin:10px 0;"></div>
-          <div class="list" id="strategyList"></div>
-        </section>
-
         <section class="card">
           <h2>전략별 비용 설정</h2>
           <label>전략 ID</label>
@@ -817,29 +811,31 @@ const adminHtml = `<!doctype html>
         
         <h3>KIS API 키 변경</h3>
         <p style="color: #666; margin-bottom: 15px; font-size: 13px;">키를 변경하면 서버의 자동매매 프로그램이 재구동됩니다.</p>
-        
-        <label>KIS Base URL</label>
-        <input id="settingsBaseUrl" type="text" />
-        <div class="kis-preview" id="settingsBaseUrlPreview"></div>
 
-        <label>KIS API Key</label>
-        <input id="settingsApiKey" type="password" />
-        <div class="kis-preview" id="settingsKeyPreview"></div>
+        <form id="settingsKisForm" onsubmit="return false;">
+          <label>KIS Base URL</label>
+          <input id="settingsBaseUrl" type="text" autocomplete="off" />
+          <div class="kis-preview" id="settingsBaseUrlPreview"></div>
 
-        <label>KIS API Secret (선택)</label>
-        <input id="settingsApiSecret" type="password" />
+          <label>KIS API Key</label>
+          <input id="settingsApiKey" type="password" autocomplete="new-password" />
+          <div class="kis-preview" id="settingsKeyPreview"></div>
 
-        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin: 15px 0; font-size: 13px; color: #856404;">
-          <strong>⚠️ 주의:</strong> 키 변경 시 아래에 "변경합니다"를 입력해야 합니다.
-        </div>
+          <label>KIS API Secret (선택)</label>
+          <input id="settingsApiSecret" type="password" autocomplete="new-password" />
 
-        <label>확인 (아래에 "변경합니다" 입력하여 확인)</label>
-        <input id="settingsConfirmation" type="text" placeholder="변경합니다" />
+          <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin: 15px 0; font-size: 13px; color: #856404;">
+            <strong>⚠️ 주의:</strong> 키 변경 시 아래에 "변경합니다"를 입력해야 합니다.
+          </div>
 
-        <button class="btn" style="width:100%; margin-top:15px;" onclick="updateKisKeys()">키 변경 확인</button>
-        <button class="btn secondary" style="width:100%" onclick="closeSettingsModal()">취소</button>
+          <label>확인 (아래에 "변경합니다" 입력하여 확인)</label>
+          <input id="settingsConfirmation" type="text" autocomplete="off" placeholder="변경합니다" />
 
-        <div id="settingsMessage" style="margin-top:15px;"></div>
+          <button class="btn" type="button" style="width:100%; margin-top:15px;" onclick="updateKisKeys()">키 변경 확인</button>
+          <button class="btn secondary" type="button" style="width:100%" onclick="closeSettingsModal()">취소</button>
+
+          <div id="settingsMessage" style="margin-top:15px;"></div>
+        </form>
       </div>
     </div>
   </div>
@@ -887,15 +883,7 @@ const adminHtml = `<!doctype html>
           <li>종목별 초기 시드: JSON 형식으로 특정 종목별 투자 배치</li>
         </ul>
 
-        <h3>6️⃣ 전략 설정</h3>
-        <p>자동매매에 적용할 투자 전략을 선택하고 활성화합니다:</p>
-        <ul>
-          <li>전략 목록에서 체크박스로 선택</li>
-          <li>"선택 전략 활성화" 버튼으로 동시 적용</li>
-          <li>전략별 설정에서 시드와 적용 시장 설정</li>
-        </ul>
-
-        <h3>7️⃣ 설정 및 키 변경</h3>
+        <h3>6️⃣ 설정 및 키 변경</h3>
         <p>우측 상단의 "⚙️ 설정" 버튼으로:</p>
         <ul>
           <li>현재 API 키 확인</li>
@@ -913,7 +901,6 @@ const adminHtml = `<!doctype html>
 
 <script>
   let currentMarket = 'domestic'
-  let selectedStrategy = null  // 단일 선택
   let currentUser = { isLoggedIn: false }
   let balanceRefreshInterval = null  // 잔고 자동 갱신 타이머
   let balanceRefreshSeconds = 120  // 기본값 2분
@@ -1018,7 +1005,7 @@ const adminHtml = `<!doctype html>
       console.error('[로그인] 실패:', e)
       
       const errorMsg = e.message || '로그인 실패'
-      const statusMatch = errorMsg.match(/HTTP (\d+)/)
+      const statusMatch = errorMsg.match(/HTTP (\\d+)/)
       const status = statusMatch ? parseInt(statusMatch[1]) : null
       
       let alertType = 'password-error'
@@ -1221,7 +1208,6 @@ const adminHtml = `<!doctype html>
     await loadBalance()  // 초기 잔고 로드
     await loadAutoControlStatus()
     await loadMarketConfig()
-    await loadStrategies()
     await loadTradingStatus()
     
     // 저장된 갱신 시간 불러오기
@@ -1476,10 +1462,10 @@ const adminHtml = `<!doctype html>
 
   async function stopAllTrading() {
     const warningText =
-      '⚠️ 경고\n\n이 작업은 즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다.\n정말 계속하시겠습니까?'
+      '⚠️ 경고\\n\\n이 작업은 즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다.\\n정말 계속하시겠습니까?'
     if (!confirm(warningText)) return
 
-    const input = prompt('중단하려면 정확히 다음 문구를 입력하세요:\n모든거래를중단합니다')
+    const input = prompt('중단하려면 정확히 다음 문구를 입력하세요:\\n모든거래를중단합니다')
     if (input !== '모든거래를중단합니다') {
       alert('확인 문구가 일치하지 않아 취소되었습니다.')
       return
@@ -1611,105 +1597,6 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  async function loadStrategies() {
-    try {
-      const r = await api('/strategies/catalog')
-      const list = document.getElementById('strategyList')
-      list.innerHTML = ''
-      const activeStrategy = r.activeStrategies?.[0] || null
-      selectedStrategy = activeStrategy
-
-      // 각 전략의 성적 조회
-      let statsMap = {}
-      try {
-        const statsResp = await api('/strategies/stats')
-        statsResp.data.all?.forEach((s) => {
-          statsMap[s.strategyId] = s
-        })
-      } catch (e) {
-        console.warn('Failed to load strategy stats:', e)
-      }
-
-      ;(r.catalog || []).forEach((item) => {
-        const stats = statsMap[item.id]
-        const checked = activeStrategy === item.id ? 'checked' : ''
-        const statsText = stats
-          ? ('✓ 승률: ' + stats.winRate.toFixed(1) + '% (' + stats.totalTrades + '거래, ROI: ' + (stats.roi || 0).toFixed(1) + '%)')
-          : '📊 신규'
-
-        const row = document.createElement('div')
-        row.className = 'item'
-        row.style.display = 'flex'
-        row.style.alignItems = 'center'
-        row.innerHTML =
-          '<div style="flex:1;">' +
-          '<div><strong>' +
-          item.name +
-          '</strong> <span style="color:#999;font-size:11px;">(' +
-          item.id +
-          ')</span></div>' +
-          '<div style="color:#0066cc;font-size:12px;margin:5px 0;font-weight:500;">' +
-          statsText +
-          '</div>' +
-          '<div style="color:#999;font-size:11px;">' +
-          (item.summary || '') +
-          '</div>' +
-          '</div>' +
-          '<div style="display:flex;gap:8px;align-items:center;">' +
-          '<input type="radio" name="strategy" ' +
-          checked +
-          ' data-id="' +
-          item.id +
-          '" />' +
-          '<button class="btn secondary" style="padding:4px 8px;font-size:11px;" data-report="' +
-          item.id +
-          '">상세</button>' +
-          '</div>'
-        list.appendChild(row)
-      })
-
-      list.querySelectorAll('input[type=radio]').forEach((el) => {
-        el.addEventListener('change', (ev) => {
-          if (ev.target.checked) {
-            selectedStrategy = ev.target.getAttribute('data-id')
-            renderStrategyChips()
-          }
-        })
-      })
-
-      list.querySelectorAll('button[data-report]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-report')
-          document.getElementById('strategyReportId').value = id
-          document.getElementById('strategyId').value = id
-          loadStrategyReport()
-        })
-      })
-
-      renderStrategyChips()
-      setOut('strategyConfigOut', {
-        activeStrategy,
-        catalog: r.catalog || [],
-        strategyStats: Object.values(statsMap),
-      })
-    } catch (e) {
-      setOut('strategyConfigOut', { error: e.message })
-    }
-  }
-
-  function renderStrategyChips() {
-    const box = document.getElementById('strategyChips')
-    box.innerHTML = ''
-    if (selectedStrategy) {
-      const span = document.createElement('span')
-      span.className = 'chip'
-      span.textContent = '✓ ' + selectedStrategy
-      box.appendChild(span)
-    } else {
-      box.innerHTML = '<span style="color:#999; font-size:12px;">🔘 선택된 전략 없음</span>'
-    }
-  }
-
   async function loadTradingStatus() {
     try {
       const r = await api('/trading/status')
@@ -1758,43 +1645,6 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  async function activateSelectedStrategy() {
-    try {
-      if (!selectedStrategy) {
-        alert('활성화할 전략을 선택하세요')
-        return
-      }
-
-      const body = {
-        strategyId: selectedStrategy,
-        market: currentMarket,
-      }
-
-      const result = await api('/strategies/activate-single', { method: 'POST', body })
-
-      setOut('strategyConfigOut', result)
-
-      if (result.ok) {
-        alert('✓ ' + result.message)
-        setTimeout(() => loadStrategies(), 1000)
-      }
-    } catch (e) {
-      setOut('strategyConfigOut', { error: e.message })
-    }
-  }
-
-  async function loadStrategyStats() {
-    try {
-      const result = await api('/strategies/stats')
-      setOut('strategyConfigOut', {
-        title: '전략별 성적 순위',
-        ...result.data,
-      })
-    } catch (e) {
-      setOut('strategyConfigOut', { error: e.message })
-    }
-  }
-
   async function saveStrategyConfig() {
     try {
       const body = {
@@ -1813,7 +1663,6 @@ const adminHtml = `<!doctype html>
     try {
       const body = { strategyId: document.getElementById('strategyId').value }
       setOut('strategyConfigOut', await api('/strategies/deactivate', { method: 'POST', body }))
-      await loadStrategies()
     } catch (e) {
       setOut('strategyConfigOut', { error: e.message })
     }
