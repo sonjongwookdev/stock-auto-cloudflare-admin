@@ -740,46 +740,6 @@ const adminHtml = `<!doctype html>
             <pre id="tradingOut"></pre>
           </div>
         </section>
-
-        <section class="card">
-          <h2>전략별 비용 설정</h2>
-          <label>전략 ID</label>
-          <input id="strategyId" placeholder="core:추세추종_전략" />
-          <label>전략 리스트 시드</label>
-          <input id="strategyListSeed" type="number" value="0" />
-          <label>전략 종목별 초기 시드 (JSON)</label>
-          <textarea id="strategySymbolSeeds">{}</textarea>
-          <label>적용 시장</label>
-          <select id="strategyMarkets" multiple>
-            <option value="domestic">국내</option>
-            <option value="overseas">해외</option>
-          </select>
-          <button class="btn" onclick="saveStrategyConfig()">전략 설정 저장</button>
-          <button class="btn secondary" onclick="deactivateStrategy()">전략 비활성화</button>
-          <pre id="strategyConfigOut"></pre>
-        </section>
-
-        <section class="card">
-          <h2>전략 상세 보고서</h2>
-          <label>전략 ID</label>
-          <input id="strategyReportId" placeholder="core:추세추종_전략" />
-          <button class="btn" onclick="loadStrategyReport()">상세 페이지 열기</button>
-          <pre id="strategyReportOut"></pre>
-        </section>
-
-        <section class="card full">
-          <h2>리포트 전송/수신 + AI 분석</h2>
-          <label>리포트 제목</label>
-          <input id="reportTitle" value="daily-auto-report" />
-          <label>리포트 본문 (비우면 크롤링 원문 사용)</label>
-          <textarea id="reportBody"></textarea>
-          <button class="btn" onclick="sendReport()">리포트 분석 전송</button>
-          <button class="btn secondary" onclick="loadAiResults()">AI 결과 목록</button>
-          <label>AI 추가 입력</label>
-          <textarea id="aiInput">{"focus":"domestic and overseas top list"}</textarea>
-          <button class="btn" onclick="triggerAi()">AI 분석 트리거</button>
-          <pre id="reportOut"></pre>
-        </section>
       </div>
     </div>
   </div>
@@ -1572,7 +1532,7 @@ const adminHtml = `<!doctype html>
   async function loadMarketTop() {
     try {
       const criteria = document.getElementById('rankingCriteria').value || 'volume'
-      const result = await api('/markets/' + currentMarket + '/top-by-criteria?criteria=' + criteria + '&limit=30')
+      const result = await api('/api/markets/' + currentMarket + '/top-by-criteria?criteria=' + criteria + '&limit=30')
       setOut('marketOut', result.data)
     } catch (e) {
       setOut('marketOut', { error: e.message })
@@ -1642,70 +1602,6 @@ const adminHtml = `<!doctype html>
       }
     } catch (e) {
       setOut('tradingOut', { error: e.message })
-    }
-  }
-
-  async function saveStrategyConfig() {
-    try {
-      const body = {
-        strategyId: document.getElementById('strategyId').value,
-        listSeed: Number(document.getElementById('strategyListSeed').value || 0),
-        symbolSeeds: JSON.parse(document.getElementById('strategySymbolSeeds').value || '{}'),
-        markets: Array.from(document.getElementById('strategyMarkets').selectedOptions).map((opt) => opt.value),
-      }
-      setOut('strategyConfigOut', await api('/strategies/config', { method: 'POST', body }))
-    } catch (e) {
-      setOut('strategyConfigOut', { error: e.message })
-    }
-  }
-
-  async function deactivateStrategy() {
-    try {
-      const body = { strategyId: document.getElementById('strategyId').value }
-      setOut('strategyConfigOut', await api('/strategies/deactivate', { method: 'POST', body }))
-    } catch (e) {
-      setOut('strategyConfigOut', { error: e.message })
-    }
-  }
-
-  async function loadStrategyReport() {
-    try {
-      const id = encodeURIComponent(document.getElementById('strategyReportId').value)
-      setOut('strategyReportOut', await api('/strategies/' + id + '/report'))
-    } catch (e) {
-      setOut('strategyReportOut', { error: e.message })
-    }
-  }
-
-  async function sendReport() {
-    try {
-      const body = {
-        title: document.getElementById('reportTitle').value,
-        content: document.getElementById('reportBody').value,
-      }
-      setOut('reportOut', await api('/reports/send', { method: 'POST', body }))
-    } catch (e) {
-      setOut('reportOut', { error: e.message })
-    }
-  }
-
-  async function loadAiResults() {
-    try {
-      setOut('reportOut', await api('/ai'))
-    } catch (e) {
-      setOut('reportOut', { error: e.message })
-    }
-  }
-
-  async function triggerAi() {
-    try {
-      const raw = document.getElementById('aiInput').value
-      let parsed = {}
-      try { parsed = raw ? JSON.parse(raw) : {} } catch (err) { parsed = { raw } }
-      parsed.market = currentMarket
-      setOut('reportOut', await api('/ai/trigger', { method: 'POST', body: parsed }))
-    } catch (e) {
-      setOut('reportOut', { error: e.message })
     }
   }
 
