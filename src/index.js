@@ -561,10 +561,12 @@ const adminHtml = `<!doctype html>
     <div class="login-card">
       <h1>Stock Auto</h1>
       <p class="subtitle">자동매매 시스템 관리</p>
-      <label>비밀번호</label>
-      <input id="loginPassword" type="password" placeholder="관리자 비밀번호를 입력하세요" />
-      <button id="loginBtn" class="btn">로그인</button>
-      <div id="loginError" style="margin-top:16px;"></div>
+      <form id="loginForm">
+        <label>비밀번호</label>
+        <input id="loginPassword" type="password" placeholder="관리자 비밀번호를 입력하세요" />
+        <button id="loginBtn" class="btn" type="button">로그인</button>
+        <div id="loginError" style="margin-top:16px;"></div>
+      </form>
     </div>
   </div>
 
