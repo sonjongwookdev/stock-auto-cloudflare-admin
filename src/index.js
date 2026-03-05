@@ -1423,7 +1423,6 @@ const adminHtml = `<!doctype html>
 
   async function saveKisKeys() {
     try {
-      const baseUrl = BACKEND_BASE  // 백엔드 URL 자동 사용
       const apiKey = document.getElementById('kisApiKey').value
       const apiSecret = document.getElementById('kisApiSecret').value
       
@@ -1435,7 +1434,6 @@ const adminHtml = `<!doctype html>
       await api('/kis/update', {
         method: 'POST',
         body: {
-          kis_base_url: baseUrl,
           kis_api_key: apiKey,
           kis_api_secret: apiSecret,
           confirmation: '변경합니다'
@@ -2495,35 +2493,59 @@ const adminHtml = `<!doctype html>
 async function handleRequest(request, env) {
   const url = new URL(request.url)
   const backendBase = getBackendBase(env)
+  const origin = request.headers.get('Origin') || '*'
+  
+  // CORS 헤더 설정
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie, X-Requested-With',
+    'Access-Control-Expose-Headers': 'Set-Cookie, Content-Type'
+  }
+
+  // OPTIONS 프리플라이트 요청 처리
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
 
   if (url.pathname === '/' || url.pathname === '/admin') {
     // 템플릿 변수 치환
     const html = adminHtml.replace('__BACKEND_BASE__', backendBase)
     return new Response(html, {
-      headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+      headers: {
+        'Content-Type': 'text/html; charset=UTF-8',
+        ...corsHeaders
+      },
     })
   }
 
   // /api/* 경로는 백엔드로 프록시
   if (url.pathname.startsWith('/api/')) {
-    return proxyToBackend(request, url, backendBase)
+    return proxyToBackend(request, url, backendBase, corsHeaders)
   }
 
-  return new Response('Not Found', { status: 404 })
+  return new Response('Not Found', { status: 404, headers: corsHeaders })
 }
 
-async function proxyToBackend(request, url, backendBase) {
+async function proxyToBackend(request, url, backendBase, corsHeaders) {
   // /api/* 경로를 백엔드로 그대로 전달
   const targetUrl = new URL(url.pathname + url.search, backendBase)
   const headers = new Headers(request.headers)
   headers.delete('host')
+  headers.delete('origin')
   headers.set('x-forwarded-host', url.host)
   headers.set('x-forwarded-proto', url.protocol.replace(':', ''))
   
-  // Cookie 헤더를 명시적으로 복사
+  // Cookie 헤더를 명시적으로 복사 (이미 request.headers에 있지만 명시적으로 처리)
   const cookieHeader = request.headers.get('Cookie')
   if (cookieHeader) {
     headers.set('Cookie', cookieHeader)
+  }
+
+  // Content-Type이 없으면 json으로 설정
+  if (request.method !== 'GET' && request.method !== 'HEAD' && !headers.has('content-type')) {
+    headers.set('Content-Type', 'application/json')
   }
 
   const init = {
@@ -2536,22 +2558,36 @@ async function proxyToBackend(request, url, backendBase) {
   try {
     const response = await fetch(targetUrl.toString(), init)
     
-    // Set-Cookie 헤더를 응답에 포함
+    // 응답에 CORS 헤더 추가
+    const responseHeaders = new Headers(response.headers)
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      responseHeaders.set(key, value)
+    })
+    
+    // Set-Cookie 헤더가 있으면 유지
+    const setCookie = response.headers.get('Set-Cookie')
+    if (setCookie) {
+      responseHeaders.set('Set-Cookie', setCookie)
+    }
+    
     const newResponse = new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers
+      headers: responseHeaders
     })
     
     return newResponse
   } catch (error) {
-    console.error('[Proxy Error]', error)
+    console.error('[Proxy Error]', error.message)
     return new Response(JSON.stringify({ 
       ok: false, 
       error: '백엔드 서버 연결 실패: ' + error.message 
     }), {
       status: 503,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders
+      }
     })
   }
 }
