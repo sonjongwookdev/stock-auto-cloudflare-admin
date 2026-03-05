@@ -1154,8 +1154,8 @@ const adminHtml = `<!doctype html>
         // /api로 시작하지 않으면 /api 추가
         const apiPath = path.startsWith('/api') ? path : ('/api' + path)
         
-        // 백엔드를 직접 호출 (Worker 프록시 우회)
-        const fullUrl = BACKEND_BASE + apiPath
+        // Worker 프록시를 통해 호출 (현재 호스트 기준으로 상대 경로 사용)
+        const fullUrl = window.location.origin + apiPath
         
         const res = await fetch(fullUrl, {
           method: opts.method || 'GET',
@@ -1234,7 +1234,7 @@ const adminHtml = `<!doctype html>
       await new Promise(resolve => setTimeout(resolve, 50))
       
       console.log('[로그인] API 호출 중...')
-      const res = await fetch(BACKEND_BASE + '/api/auth/login', {
+      const res = await fetch(window.location.origin + '/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -2404,7 +2404,7 @@ const adminHtml = `<!doctype html>
       stopStatusAutoRefresh()
       
       // /api/auth/logout 호출 (쿠키 포함)
-      const res = await fetch(BACKEND_BASE + '/api/auth/logout', {
+      const res = await fetch(window.location.origin + '/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       })
