@@ -1159,6 +1159,10 @@ const adminHtml = `<!doctype html>
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           fullUrl = 'http://localhost:4000' + apiPath
         }
+        // Cloudflare Workers 도메인에서는 터널 URL로 직접 호출 (쿠키 문제 우회)
+        else if (window.location.hostname.includes('workers.dev')) {
+          fullUrl = 'https://stock-admin.loca.lt' + apiPath
+        }
         
         const res = await fetch(fullUrl, {
           method: opts.method || 'GET',
@@ -1241,6 +1245,10 @@ const adminHtml = `<!doctype html>
       let loginUrl = window.location.origin + '/api/auth/login'
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         loginUrl = 'http://localhost:4000/api/auth/login'
+      }
+      // Cloudflare Workers 도메인에서는 터널 URL로 직접 호출
+      else if (window.location.hostname.includes('workers.dev')) {
+        loginUrl = 'https://stock-admin.loca.lt/api/auth/login'
       }
       
       const res = await fetch(loginUrl, {
@@ -2414,6 +2422,10 @@ const adminHtml = `<!doctype html>
       let logoutUrl = window.location.origin + '/api/auth/logout'
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         logoutUrl = 'http://localhost:4000/api/auth/logout'
+      }
+      // Cloudflare Workers 도메인에서는 터널 URL로 직접 호출
+      else if (window.location.hostname.includes('workers.dev')) {
+        logoutUrl = 'https://stock-admin.loca.lt/api/auth/logout'
       }
       const res = await fetch(logoutUrl, {
         method: 'POST',
