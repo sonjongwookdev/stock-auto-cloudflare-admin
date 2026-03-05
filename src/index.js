@@ -1451,9 +1451,7 @@ const adminHtml = `<!doctype html>
   // Backend URL 설정
   // Cloudflare Workers 배포 시 환경 변수로 주입됨
   // 개발 환경: localhost:4000, 프로덕션: env.BACKEND_BASE_URL
-  const BACKEND_BASE = typeof globalThis !== 'undefined' && globalThis.BACKEND_BASE_URL 
-    ? globalThis.BACKEND_BASE_URL 
-    : 'http://localhost:4000'
+  const BACKEND_BASE = '__BACKEND_BASE__'
   
   let currentMarket = 'domestic'
   let currentUser = { isLoggedIn: false }
