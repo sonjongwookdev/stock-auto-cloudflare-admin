@@ -1,6 +1,11 @@
-const BACKEND_BASE = (typeof BACKEND_BASE_URL !== 'undefined' && BACKEND_BASE_URL)
-  ? BACKEND_BASE_URL
-  : 'http://localhost:4000'  // 로컬 개발 시 기본값
+const DEFAULT_BACKEND_BASE = 'http://localhost:4000'  // 로컬 개발 시 기본값
+
+function getBackendBase(env) {
+  const fromEnv = env && typeof env.BACKEND_BASE_URL === 'string'
+    ? env.BACKEND_BASE_URL.trim()
+    : ''
+  return fromEnv || DEFAULT_BACKEND_BASE
+}
 
 const adminHtml = `<!doctype html>
 <html lang="ko">
@@ -728,8 +733,8 @@ const adminHtml = `<!doctype html>
         </div>
         <div class="status-badge">
           <span>🖥️ 서버:</span>
-          <span class="status-dot" id="headerDbStatus"></span>
-          <span id="headerDbText">연결중</span>
+          <span class="status-dot online" id="headerDbStatus"></span>
+          <span id="headerDbText">연결됨</span>
         </div>
         <div class="status-badge">
           <span>💰 잔고:</span>
@@ -752,15 +757,17 @@ const adminHtml = `<!doctype html>
         <!-- 자동매매 제어 -->
         <section class="card" style="grid-column: 1 / -1;">
           <h2 style="margin-bottom: 20px;">🤖 자동매매 제어</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
             <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 18px; font-size: 15px;">🇰🇷 국내 자동매매 시작</button>
             <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 18px; font-size: 15px;">🌎 해외 자동매매 시작</button>
           </div>
-          <div id="autoTradingStatus" style="margin-bottom: 15px; min-height: 20px;"></div>
+          <div id="quickControlMsg" style="margin-bottom: 12px;"></div>
           
           <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <h3 style="font-size: 15px; margin-bottom: 12px; color: #333;">📍 현재 포지션</h3>
-            <div id="positionsList" style="display: grid; gap: 10px;"></div>
+            <div id="positionsList" style="display: grid; gap: 10px;">
+              <div class="loading-spinner">⏳ 로딩 중...</div>
+            </div>
           </div>
         </section>
 
@@ -775,7 +782,7 @@ const adminHtml = `<!doctype html>
 
         <!-- 모든 거래 중단 -->
         <section class="card" style="grid-column: 1 / -1;">
-          <button class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 16px; font-size: 15px; background: #dc2626; font-weight: 600;">🛑 모든 거래 중단</button>
+          <button id="stopAllBtn" class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 16px; font-size: 15px; background: #dc2626; font-weight: 600;">🛑 모든 거래 중단</button>
         </section>
       </div>
     </div>
@@ -871,7 +878,7 @@ const adminHtml = `<!doctype html>
         <div class="stat-card">
           <div class="stat-icon">💰</div>
           <div class="stat-content">
-            <div class="stat-label">총 투자액</div>
+            <div class="stat-label">투자중 금액</div>
             <div class="stat-value" id="statTotalInvested">로딩중...</div>
           </div>
         </div>
@@ -954,62 +961,92 @@ const adminHtml = `<!doctype html>
 
     <div class="wrap">
       <section class="card full">
-        <h2>📚 Stock Auto 관리자 가이드</h2>
-        <div class="usage-guide">
-          <h3>1️⃣ 로그인</h3>
-          <p>관리자 비밀번호를 입력하여 로그인합니다.</p>
+        <h2 style="color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 20px;">📚 Stock Auto 관리자 가이드</h2>
+        
+        <div class="usage-guide" style="line-height: 1.8;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+            <h3 style="color: white; margin: 0 0 10px 0; font-size: 20px;">🚀 시작하기</h3>
+            <p style="margin: 0; font-size: 14px; opacity: 0.95;">이 관리자 패널은 Stock Auto 자동매매 시스템을 제어하고 모니터링하는 웹 인터페이스입니다.</p>
+          </div>
 
-          <h3>2️⃣ 초기화</h3>
-          <p>로그인 후 다음 항목이 확인됩니다:</p>
-          <ul>
-            <li><strong>Oracle 서버:</strong> 자동매매 데이터베이스 연결 상태</li>
-            <li><strong>KIS API 키:</strong> 자동매매에 필요한 API 키 설정 여부</li>
-          </ul>
+          <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #667eea; margin-top: 0;">1️⃣ 로그인</h3>
+            <p style="margin-bottom: 10px;">관리자 비밀번호를 입력하여 로그인합니다.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>로그인 상태는 브라우저에 저장됩니다</li>
+              <li>다음 방문 시 자동 로그인됩니다</li>
+            </ul>
+          </div>
 
-          <h3>3️⃣ KIS API 키 설정</h3>
-          <p>키가 없는 경우 입력 페이지가 나타납니다:</p>
-          <ul>
-            <li>API Key 입력 (필수)</li>
-            <li>API Secret 입력 (선택사항)</li>
-          </ul>
+          <div style="background: #f8f9fa; border-left: 4px solid #10b981; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #10b981; margin-top: 0;">2️⃣ 대시보드 (💼)</h3>
+            <h4 style="color: #333; margin-top: 15px;">📊 상단 헤더 정보</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li><strong>🔑 키값:</strong> 설정된 KIS API 키 (앞뒤 3글자만 표시)</li>
+              <li><strong>🖥️ 서버:</strong> 백엔드 서버 연결 상태 (🟢 정상 / 🔴 오류)</li>
+              <li><strong>💰 잔고:</strong> 현재 계좌 잔고 (<strong>클릭하여 수동 새로고침</strong>)</li>
+            </ul>
+            <h4 style="color: #333; margin-top: 20px;">🤖 자동매매 제어</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li><strong>국내 자동매매:</strong> 한국 주식 시장 자동매매 시작</li>
+              <li><strong>해외 자동매매:</strong> 해외 주식 시장 자동매매 시작</li>
+              <li>실행 중인 매매는 버튼이 비활성화되며 사이클 횟수가 표시됩니다</li>
+            </ul>
+            <h4 style="color: #333; margin-top: 20px;">⚙️ 시스템 현황</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li><strong>📊 현황보기:</strong> 서버 상태, KIS 키 상태 확인</li>
+              <li><strong>📋 오류 로그 보기:</strong> 발생한 오류 메시지 확인</li>
+            </ul>
+            <h4 style="color: #333; margin-top: 20px;">🛑 모든 거래 중단</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>"<strong>모든거래를중단합니다</strong>" 문구를 입력해야 실행됩니다</li>
+              <li>즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다</li>
+            </ul>
+          </div>
 
-          <h3>4️⃣ 메인 대시보드</h3>
-          <p>헤더에서 다음 정보를 확인할 수 있습니다:</p>
-          <ul>
-            <li>🔑 키값: 현재 설정된 API 키 (앞뒤 3글자만 표시)</li>
-            <li>🖥️ 서버: Oracle 서버 연결 상태 (🟢=정상, 🔴=오류)</li>
-            <li>💰 잔고: 현재 계좌 잔고 (클릭하여 새로고침)</li>
-          </ul>
+          <div style="background: #f8f9fa; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #3b82f6; margin-top: 0;">3️⃣ 현황 페이지 (📊)</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li><strong>현황 보기:</strong> 서버 상태, 자동매매 상태 확인</li>
+              <li><strong>오류 로그:</strong> 시스템 오류 및 경고 확인</li>
+            </ul>
+          </div>
 
-          <h3>5️⃣ 자동매매 시작</h3>
-          <p>시장별로 자동매매를 시작할 수 있습니다:</p>
-          <ul>
-            <li><strong>국내 자동매매:</strong> 한국 주식 시장</li>
-            <li><strong>해외 자동매매:</strong> 해외 주식 시장</li>
-          </ul>
+          <div style="background: #f8f9fa; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #f59e0b; margin-top: 0;">4️⃣ 설정 (⚙️)</h3>
+            <h4 style="color: #333; margin-top: 15px;">🔑 KIS API 키 교체</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>현재 설정된 API 키 확인</li>
+              <li>키 교체 시 "<strong>키를교체하겠습니다</strong>" 문구 입력 필요</li>
+              <li>⚠️ <strong>주의:</strong> 키 교체 시 자동매매가 중단됩니다</li>
+            </ul>
+          </div>
 
-          <h3>6️⃣ 현황 확인</h3>
-          <p>📊 현황 메뉴에서 다음을 확인할 수 있습니다:</p>
-          <ul>
-            <li>총 투자액 및 수익률</li>
-            <li>수익률 추이 그래프</li>
-            <li>현재 보유 포지션</li>
-            <li>오류 로그</li>
-          </ul>
+          <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #ff9800; margin-top: 0;">💡 유용한 팁</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>잔고는 <strong>클릭하여 수동으로 새로고침</strong>할 수 있습니다</li>
+              <li>중요한 작업은 확인 문구를 입력해야 실행됩니다</li>
+              <li>모든 설정은 브라우저의 localStorage에 저장됩니다</li>
+              <li>오류 발생 시 📋 오류 로그를 확인하세요</li>
+            </ul>
+          </div>
 
-          <h3>7️⃣ 설정 및 키 변경</h3>
-          <p>⚙️ 설정 버튼으로:</p>
-          <ul>
-            <li>현재 API 키 확인</li>
-            <li>잔고 갱신 주기 설정</li>
-          </ul>
-
-          <h3>💡 참고사항</h3>
-          <ul>
-            <li>모든 설정은 즉시 저장됩니다</li>
-            <li>키 변경 시 서버가 자동으로 재시작됩니다</li>
-            <li>오류가 발생하면 "현황" 페이지에서 확인할 수 있습니다</li>
-          </ul>
+          <div style="background: #ffebee; border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px;">
+            <h3 style="color: #ef4444; margin-top: 0;">❓ 문제 해결</h3>
+            <h4 style="color: #333; margin-top: 15px;">잔고가 표시되지 않아요</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>잔고를 클릭하여 수동 새로고침을 시도하세요</li>
+              <li>KIS API 키가 제대로 설정되었는지 확인하세요</li>
+              <li>백엔드 서버가 실행 중인지 확인하세요</li>
+            </ul>
+            <h4 style="color: #333; margin-top: 15px;">자동매매가 시작되지 않아요</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>시장 운영 시간인지 확인하세요</li>
+              <li>KIS API 키가 유효한지 확인하세요</li>
+              <li>📋 오류 로그에서 자세한 오류를 확인하세요</li>
+            </ul>
+          </div>
         </div>
       </section>
     </div>
@@ -1093,7 +1130,7 @@ const adminHtml = `<!doctype html>
 
 <script>
   // Backend URL 설정
-  const BACKEND_BASE = '${BACKEND_BASE}'
+  const BACKEND_BASE = '__BACKEND_BASE__'
   
   let currentMarket = 'domestic'
   let currentUser = { isLoggedIn: false }
@@ -1102,6 +1139,7 @@ const adminHtml = `<!doctype html>
   let statusRefreshInterval = null
   let statusRefreshSeconds = 120
   let statusPanelOpen = false
+  let isServerOnline = true
 
   async function api(path, opts = {}) {
     const maxRetries = 5
@@ -1112,7 +1150,14 @@ const adminHtml = `<!doctype html>
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 30000);
-        const res = await fetch('/api' + path, {
+        
+        // /api로 시작하지 않으면 /api 추가
+        const apiPath = path.startsWith('/api') ? path : ('/api' + path)
+        
+        // 백엔드를 직접 호출 (Worker 프록시 우회)
+        const fullUrl = BACKEND_BASE + apiPath
+        
+        const res = await fetch(fullUrl, {
           method: opts.method || 'GET',
           headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
           body: opts.body ? JSON.stringify(opts.body) : undefined,
@@ -1189,7 +1234,7 @@ const adminHtml = `<!doctype html>
       await new Promise(resolve => setTimeout(resolve, 50))
       
       console.log('[로그인] API 호출 중...')
-      const res = await fetch('/login', {
+      const res = await fetch(BACKEND_BASE + '/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -1325,28 +1370,10 @@ const adminHtml = `<!doctype html>
     document.getElementById(elementId).innerHTML = alertHtml
   }
 
-  // 페이지 로드 시 서버 연결 상태 확인
+  // 페이지 로드 시 서버 연결 상태 확인 (비활성화 - 불필요)
   async function checkServerConnection() {
-    try {
-      console.log('[서버 연결] 확인 시작: ' + BACKEND_BASE)
-      const response = await fetch(BACKEND_BASE + '/health', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 5000
-      })
-      
-      if (response.ok) {
-        console.log('[서버 연결] ✓ 정상')
-        return true
-      } else {
-        console.warn('[서버 연결] 응답 상태: ' + response.status)
-        return false
-      }
-    } catch (e) {
-      console.error('[서버 연결] ✕ 실패: ' + e.message)
-      console.error('[서버 주소] ' + BACKEND_BASE)
-      return false
-    }
+    // 로그인 시 자동으로 서버 상태가 확인되므로 별도 체크 불필요
+    return true
   }
 
   async function checkInitStatus() {
@@ -1423,11 +1450,14 @@ const adminHtml = `<!doctype html>
 
   async function goToMainDashboard() {
     showPage('mainPage')
-    await loadKisStatus()
-    // await loadStatus()  // HTTP 요청으로 인한 Mixed Content 에러 제거
-    await loadBalance()  // 초기 잔고 로드 (자동 갱신 없음, 수동 새로고침만 가능)
-    await loadAutoControlStatus()  // 자동매매 상태 로드
-    await loadTradingStatus()
+    // 병렬 로딩으로 성능 개선
+    await Promise.all([
+      loadKisStatus(),
+      loadStatus(),
+      loadBalance(),
+      loadAutoControlStatus(),
+      loadTradingStatus()
+    ]).catch(e => console.error('[Dashboard Load Error]', e))
     
     // 저장된 갱신 시간 불러오기
     loadBalanceRefreshPreference()
@@ -1452,22 +1482,41 @@ const adminHtml = `<!doctype html>
   }
 
   async function loadStatus() {
+    const previousServerOnline = isServerOnline
+
     try {
       const r = await api('/status')
       const dbOnline = r.dbStatus === 'healthy'
       const dbDot = document.getElementById('headerDbStatus')
       const dbText = document.getElementById('headerDbText')
+
+      isServerOnline = dbOnline
+      applyServerStateToTradingButtons()
       
       if (dbOnline) {
         dbDot.className = 'status-dot online'
-        dbText.textContent = '정상'
+        dbText.textContent = '연결됨'
+
+        if (!previousServerOnline) {
+          setQuickControlMessage('서버 연결이 복구되었습니다. 자동매매 시작 버튼을 다시 사용할 수 있습니다.', 'success')
+          loadAutoControlStatus().catch(() => {})
+        }
       } else {
         dbDot.className = 'status-dot offline'
         dbText.textContent = '오류'
+
+        if (previousServerOnline) {
+          setQuickControlMessage('서버 연결 오류 상태입니다. 자동매매 시작 버튼이 일시 비활성화됩니다.', 'error')
+        }
       }
     } catch (e) {
+      isServerOnline = false
+      applyServerStateToTradingButtons()
       document.getElementById('headerDbStatus').className = 'status-dot offline'
       document.getElementById('headerDbText').textContent = '오류'
+      if (previousServerOnline) {
+        setQuickControlMessage('서버 상태 확인 실패로 자동매매 시작 버튼이 일시 비활성화됩니다.', 'error')
+      }
       console.error('[Status Check]', e.message)
     }
   }
@@ -1493,7 +1542,7 @@ const adminHtml = `<!doctype html>
       
       if (dbOnline) {
         dbDot.className = 'status-dot online'
-        dbText.textContent = '정상'
+        dbText.textContent = '연결됨'
       } else {
         dbDot.className = 'status-dot offline'
         dbText.textContent = '오류'
@@ -1536,9 +1585,12 @@ const adminHtml = `<!doctype html>
    * 잔고 조회 함수
    */
   async function loadBalance() {
+    const balanceEl = document.getElementById('headerBalance')
     try {
+      balanceEl.textContent = '⏳'
+      balanceEl.style.color = '#6b7280'
+      
       const r = await api('/api/trading/balance')
-      const balanceEl = document.getElementById('headerBalance')
       
       if (r.ok && r.data) {
         const data = r.data
@@ -1568,7 +1620,36 @@ const adminHtml = `<!doctype html>
     box.innerHTML = '<div class="' + className + '">' + message + '</div>'
   }
 
+  function applyServerStateToTradingButtons() {
+    const domesticBtn = document.getElementById('startDomesticBtn')
+    const overseasBtn = document.getElementById('startOverseasBtn')
+    if (!domesticBtn || !overseasBtn) return
+
+    if (!isServerOnline) {
+      domesticBtn.disabled = true
+      overseasBtn.disabled = true
+      domesticBtn.title = '서버 연결 오류로 비활성화됨'
+      overseasBtn.title = '서버 연결 오류로 비활성화됨'
+      return
+    }
+
+    domesticBtn.title = ''
+    overseasBtn.title = ''
+
+    if (domesticBtn.dataset.running !== '1') {
+      domesticBtn.disabled = false
+    }
+    if (overseasBtn.dataset.running !== '1') {
+      overseasBtn.disabled = false
+    }
+  }
+
   async function loadAutoControlStatus() {
+    const statusEl = document.getElementById('autoTradingStatus')
+    if (statusEl) {
+      statusEl.innerHTML = '<div class="loading-spinner">⏳ 로딩 중...</div>'
+    }
+    
     try {
       const r = await api('/api/trading/auto/status')
       const data = r.data || {}
@@ -1578,17 +1659,21 @@ const adminHtml = `<!doctype html>
       const overseasBtn = document.getElementById('startOverseasBtn')
       const stopBtn = document.getElementById('stopAllBtn')
       
-      if (domesticBtn && overseasBtn && stopBtn) {
+      if (domesticBtn && overseasBtn) {
         const domesticRunning = data.domestic?.running || false
         const overseasRunning = data.overseas?.running || false
-        
-        domesticBtn.disabled = domesticRunning
+
+        domesticBtn.dataset.running = domesticRunning ? '1' : '0'
+        overseasBtn.dataset.running = overseasRunning ? '1' : '0'
+
         domesticBtn.textContent = domesticRunning ? '🇰🇷 국내 매매 중...' : '🇰🇷 국내 자동매매 시작'
-        
-        overseasBtn.disabled = overseasRunning
         overseasBtn.textContent = overseasRunning ? '🌎 해외 매매 중...' : '🌎 해외 자동매매 시작'
-        
-        stopBtn.disabled = !domesticRunning && !overseasRunning
+
+        applyServerStateToTradingButtons()
+
+        if (stopBtn) {
+          stopBtn.disabled = !domesticRunning && !overseasRunning
+        }
         
         // 상태 표시
         const statusEl = document.getElementById('autoTradingStatus')
@@ -1605,13 +1690,21 @@ const adminHtml = `<!doctype html>
       }
     } catch (e) {
       console.error('[자동매매] 상태 로드 실패:', e)
+      setQuickControlMessage('자동매매 상태 조회 실패: ' + e.message, 'error')
     }
   }
 
   async function startAutoTrading(market) {
     try {
       const targetMarket = market === 'overseas' ? 'overseas' : 'domestic'
-      setQuickControlMessage((targetMarket === 'overseas' ? '해외' : '국내') + ' 자동매매 시작 중...')
+
+      await loadStatus()
+      if (!isServerOnline) {
+        setQuickControlMessage('서버 연결 오류 상태입니다. 연결 복구 후 다시 시도하세요.', 'error')
+        return
+      }
+
+      setQuickControlMessage((targetMarket === 'overseas' ? '해외' : '국내') + ' 자동매매 시작 요청 중...')
 
       const r = await api('/api/trading/auto/start', {
         method: 'POST',
@@ -1628,6 +1721,7 @@ const adminHtml = `<!doctype html>
       }
     } catch (e) {
       setQuickControlMessage('자동매매 시작 실패: ' + e.message, 'error')
+      await loadAutoControlStatus().catch(() => {})
     }
   }
 
@@ -1704,11 +1798,18 @@ const adminHtml = `<!doctype html>
       const auto = data.auto || {}
       const strategy = data.strategy || {}
       const reports = data.reports || {}
+      const positions = Array.isArray(trading.positions) ? trading.positions : []
+      const investedAmount = positions.reduce((sum, pos) => {
+        const shares = Number(pos?.shares || 0)
+        const entryPrice = Number(pos?.entryPrice || 0)
+        return sum + (shares * entryPrice)
+      }, 0)
 
       setOut('statusSummaryOut', {
         systemStatus: trading.systemStatus,
         lastRunTime: trading.lastRunTime,
         totalCapital: trading.totalCapital,
+        investedAmount,
         cashAvailable: trading.cashAvailable,
         unrealizedPnl: trading.unrealizedPnl,
         realizedPnl: trading.realizedPnl,
@@ -1936,12 +2037,12 @@ const adminHtml = `<!doctype html>
   }
 
   async function loadTradingStatus() {
+    const posList = document.getElementById('positionsList')
     try {
+      posList.innerHTML = '<div class="loading-spinner">⏳ 로딩 중...</div>'
+      
       const r = await api('/trading/status')
       const positions = r.positions || {}
-      
-      // 포지션 목록 표시
-      const posList = document.getElementById('positionsList')
       posList.innerHTML = ''
       
       if (Object.keys(positions).length === 0) {
@@ -2048,7 +2149,7 @@ const adminHtml = `<!doctype html>
     try {
       statusEl.innerHTML = '⏳ 키 교체 처리 중...'
       
-      const r = await api('/api/kis/update', {
+      const r = await api('/kis/update', {
         method: 'POST',
         body: { action: 'update' }
       })
@@ -2116,7 +2217,10 @@ const adminHtml = `<!doctype html>
   function startBalanceAutoRefresh() {
     if (balanceRefreshInterval) clearInterval(balanceRefreshInterval)
     balanceRefreshInterval = setInterval(() => {
-      loadBalance().catch(e => console.warn('[Balance Refresh]', e.message))
+      Promise.all([
+        loadStatus(),
+        loadBalance()
+      ]).catch(e => console.warn('[Header Refresh]', e.message))
     }, balanceRefreshSeconds * 1000)
   }
   
@@ -2128,7 +2232,10 @@ const adminHtml = `<!doctype html>
     if (balanceEl) {
       balanceEl.addEventListener('click', () => {
         balanceEl.style.opacity = '0.6'
-        loadBalance().finally(() => {
+        Promise.all([
+          loadStatus(),
+          loadBalance()
+        ]).finally(() => {
           balanceEl.style.opacity = '1'
         })
       })
@@ -2144,9 +2251,14 @@ const adminHtml = `<!doctype html>
       const data = r.data || {}
       const trading = data.trading || {}
       const auto = data.auto || {}
+      const positions = Array.isArray(trading.positions) ? trading.positions : []
 
       // 통계 카드 업데이트
-      const totalInvested = Number(trading.totalCapital || 0)
+      const totalInvested = positions.reduce((sum, pos) => {
+        const shares = Number(pos?.shares || 0)
+        const entryPrice = Number(pos?.entryPrice || 0)
+        return sum + (shares * entryPrice)
+      }, 0)
       const realizedPnl = Number(trading.realizedPnl || 0)
       const unrealizedPnl = Number(trading.unrealizedPnl || 0)
       const roi = totalInvested > 0 ? ((realizedPnl + unrealizedPnl) / totalInvested * 100) : 0
@@ -2160,7 +2272,6 @@ const adminHtml = `<!doctype html>
       document.getElementById('statRuntime').textContent = runtime
       
       // 포지션 수
-      const positions = trading.positions || []
       document.getElementById('statPositions').textContent = positions.length + '개'
 
       // 포지션 리스트
@@ -2292,8 +2403,8 @@ const adminHtml = `<!doctype html>
     try {
       stopStatusAutoRefresh()
       
-      // /logout 직접 호출 (쿠키 포함)
-      const res = await fetch('/logout', {
+      // /api/auth/logout 호출 (쿠키 포함)
+      const res = await fetch(BACKEND_BASE + '/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       })
@@ -2381,45 +2492,72 @@ const adminHtml = `<!doctype html>
 </body>
 </html>`
 
-addEventListener('fetch', (event) => {
-  event.respondWith(handleRequest(event.request))
-})
-
-async function handleRequest(request) {
+async function handleRequest(request, env) {
   const url = new URL(request.url)
+  const backendBase = getBackendBase(env)
 
   if (url.pathname === '/' || url.pathname === '/admin') {
     // 템플릿 변수 치환
-    const html = adminHtml.replace('${BACKEND_BASE}', BACKEND_BASE)
+    const html = adminHtml.replace('__BACKEND_BASE__', backendBase)
     return new Response(html, {
       headers: { 'Content-Type': 'text/html; charset=UTF-8' },
     })
   }
 
-  // /api/*, /login, /logout 경로는 백엔드로 프록시
-  if (url.pathname.startsWith('/api/') || url.pathname === '/login' || url.pathname === '/logout') {
-    return proxyToBackend(request, url)
+  // /api/* 경로는 백엔드로 프록시
+  if (url.pathname.startsWith('/api/')) {
+    return proxyToBackend(request, url, backendBase)
   }
 
   return new Response('Not Found', { status: 404 })
 }
 
-async function proxyToBackend(request, url) {
-  const targetPath = url.pathname  // /api를 포함하여 백엔드로 전달
-  const targetUrl = new URL(targetPath + url.search, BACKEND_BASE)
+async function proxyToBackend(request, url, backendBase) {
+  // /api/* 경로를 백엔드로 그대로 전달
+  const targetUrl = new URL(url.pathname + url.search, backendBase)
   const headers = new Headers(request.headers)
   headers.delete('host')
   headers.set('x-forwarded-host', url.host)
   headers.set('x-forwarded-proto', url.protocol.replace(':', ''))
+  
+  // Cookie 헤더를 명시적으로 복사
+  const cookieHeader = request.headers.get('Cookie')
+  if (cookieHeader) {
+    headers.set('Cookie', cookieHeader)
+  }
 
   const init = {
     method: request.method,
     headers,
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
     redirect: 'follow',
-    credentials: 'include',  // 쿠키를 백엔드에 전달
   }
 
-  const response = await fetch(targetUrl.toString(), init)
-  return response
+  try {
+    const response = await fetch(targetUrl.toString(), init)
+    
+    // Set-Cookie 헤더를 응답에 포함
+    const newResponse = new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    })
+    
+    return newResponse
+  } catch (error) {
+    console.error('[Proxy Error]', error)
+    return new Response(JSON.stringify({ 
+      ok: false, 
+      error: '백엔드 서버 연결 실패: ' + error.message 
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+}
+
+export default {
+  fetch(request, env) {
+    return handleRequest(request, env)
+  }
 }
