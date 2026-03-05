@@ -1,13 +1,23 @@
-module.exports = {
-  env: {
-    browser: true,
-    node: true,
-    es2021: true
-  },
-  extends: ['eslint:recommended'],
-  rules: {
-    'no-unused-vars': 'warn',
-    'no-console': 'off'
-  },
-  ignorePatterns: ['node_modules/', 'dist/', 'build/']
-}
+// ESLint flat config (ESLint >= 9).
+export default [
+  {
+    files: ['src/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2021,
+      sourceType: 'script',
+      globals: {
+        // Browser globals commonly used inside the admin HTML script string
+        window: 'readonly',
+        document: 'readonly',
+        fetch: 'readonly',
+        Response: 'readonly',
+        Headers: 'readonly',
+        Request: 'readonly'
+      }
+    },
+    rules: {
+      'no-unused-vars': 'warn',
+      'no-console': 'off'
+    }
+  }
+]

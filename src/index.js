@@ -815,7 +815,7 @@ const adminHtml = `<!doctype html>
         
         <div style="display: flex; gap: 10px; padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
           <button class="btn secondary" type="button" style="flex: 1;" onclick="closeStopAllModal()">취소</button>
-          <button id="confirmStopAllBtn" class="btn" type="button" style="flex: 1; background: #d32f2f;" onclick="confirmStopAllTrading()" disabled>중단 실행</button>
+          <button id="confirmStopAllBtn" class="btn" type="button" style="flex: 1; background: #d32f2f;" onclick="confirmStopAll()" disabled>중단 실행</button>
         </div>
       </div>
     </div>
@@ -1129,8 +1129,147 @@ const adminHtml = `<!doctype html>
   </div>
 
 <script>
+  // ============================================
+  // 에러 분류 및 처리 시스템
+  // ============================================
+  
+  const ErrorCategories = {
+    NETWORK: 'network',        // 네트워크 오류
+    AUTH: 'auth',              // 인증 오류
+    CONFIG: 'config',          // 설정 오류 (KIS 키 미설정 등)
+    DATABASE: 'database',      // 데이터베이스 오류
+    TIMEOUT: 'timeout',        // 타임아웃
+    VALIDATION: 'validation',  // 입력값 검증 오류
+    NOT_FOUND: 'not_found',    // 리소스 미발견
+    CONFLICT: 'conflict',      // 충돌 (이미 실행 중 등)
+    SERVER: 'server',          // 서버 오류
+    EXTERNAL_API: 'external',  // 외부 API 오류
+    UNKNOWN: 'unknown'         // 기타 오류
+  }
+
+  // 에러 코드별 사용자 친화적 메시지
+  const ErrorMessageMap = {
+    'INVALID_INPUT': '입력값이 올바르지 않습니다. 다시 확인해주세요.',
+    'AUTH_FAILED': '인증에 실패했습니다. 비밀번호를 확인해주세요.',
+    'KIS_NOT_CONFIGURED': 'KIS API 키가 설정되지 않았습니다. 설정하기를 클릭해주세요.',
+    'DB_CONNECTION_ERROR': '데이터베이스 연결에 실패했습니다.',
+    'OPERATION_TIMEOUT': '작업이 시간 초과되었습니다. 다시 시도해주세요.',
+    'OPERATION_IN_PROGRESS': '해당 작업은 이미 진행 중입니다.',
+    'OPERATION_NOT_ALLOWED': '현재 이 작업은 수행할 수 없습니다.',
+  }
+
+  // 에러 분류 및 사용자 메시지 생성
+  function classifyError(error, statusCode = null) {
+    const message = error.message || String(error)
+    
+    // 타임아웃 감지
+    if (message.includes('timeout') || message.includes('Timeout') || message.includes('시간 초과')) {
+      return {
+        category: ErrorCategories.TIMEOUT,
+        userMessage: '요청이 시간 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해주세요.',
+        suggestion: '네트워크 연결을 확인하거나 잠시 후 다시 시도해주세요.'
+      }
+    }
+
+    // HTTP 상태 코드 기반 분류
+    if (statusCode) {
+      if (statusCode === 401 || statusCode === 403) {
+        return {
+          category: ErrorCategories.AUTH,
+          userMessage: '인증에 실패했습니다.',
+          suggestion: '로그인을 다시 시도해주세요.'
+        }
+      }
+      if (statusCode === 400) {
+        return {
+          category: ErrorCategories.VALIDATION,
+          userMessage: '요청 데이터가 올바르지 않습니다.',
+          suggestion: '입력값을 확인해주세요.'
+        }
+      }
+      if (statusCode === 404) {
+        return {
+          category: ErrorCategories.NOT_FOUND,
+          userMessage: '요청한 리소스를 찾을 수 없습니다.',
+          suggestion: '서버 상태를 확인해주세요.'
+        }
+      }
+      if (statusCode === 409) {
+        return {
+          category: ErrorCategories.CONFLICT,
+          userMessage: '현재 상태에서 이 작업을 수행할 수 없습니다.',
+          suggestion: '시스템 상태를 확인 후 다시 시도해주세요.'
+        }
+      }
+      if (statusCode === 503) {
+        return {
+          category: ErrorCategories.SERVER,
+          userMessage: '백엔드 서버가 응답하지 않습니다.',
+          suggestion: '잠시 후 다시 시도해주세요.'
+        }
+      }
+      if (statusCode >= 500) {
+        return {
+          category: ErrorCategories.SERVER,
+          userMessage: '서버 오류가 발생했습니다.',
+          suggestion: '오류 로그를 확인하고 관리자에게 연락해주세요.'
+        }
+      }
+    }
+
+    // 에러 메시지 키워드 기반 분류
+    if (message.includes('KIS') || message.includes('API 키')) {
+      return {
+        category: ErrorCategories.CONFIG,
+        userMessage: 'KIS API 설정에 문제가 있습니다.',
+        suggestion: '설정 페이지에서 KIS API 키를 확인해주세요.'
+      }
+    }
+    
+    if (message.includes('Database') || message.includes('database')) {
+      return {
+        category: ErrorCategories.DATABASE,
+        userMessage: '데이터베이스 연결에 실패했습니다.',
+        suggestion: '서버 상태를 확인해주세요.'
+      }
+    }
+    
+    if (message.includes('offline') || message.includes('Failed to fetch') || message.includes('Network')) {
+      return {
+        category: ErrorCategories.NETWORK,
+        userMessage: '네트워크 연결을 확인할 수 없습니다.',
+        suggestion: '인터넷 연결을 확인하거나 백엔드 서버가 실행 중인지 확인해주세요.'
+      }
+    }
+
+    // 기본값
+    return {
+      category: ErrorCategories.UNKNOWN,
+      userMessage: '오류가 발생했습니다: ' + message,
+      suggestion: '오류 로그를 확인하거나 관리자에게 연락해주세요.'
+    }
+  }
+
+  // 건의사항 포함된 에러 메시지 표시
+  function formatErrorMessage(userMessage, suggestion = null) {
+    let html = '<div style="color: #d32f2f; font-size: 14px; line-height: 1.5;">' +
+      '<strong>오류:</strong> ' + userMessage
+    
+    if (suggestion) {
+      html += '<br/><span style="color: #666; font-size: 12px; margin-top: 8px; display: block;">' +
+        '→ ' + suggestion + '</span>'
+    }
+    
+    html += '</div>'
+    return html
+  }
+
   // Backend URL 설정
-  const BACKEND_BASE = '__BACKEND_BASE__'
+  // Cloudflare Workers 배포 시 환경 변수로 주입됨
+  // 개발 환경: localhost:4000, 프로덕션: env.BACKEND_BASE_URL
+  const BACKEND_BASE = typeof globalThis !== 'undefined' && globalThis.BACKEND_BASE_URL 
+    ? globalThis.BACKEND_BASE_URL 
+    : 'http://localhost:4000'
   
   let currentMarket = 'domestic'
   let currentUser = { isLoggedIn: false }
@@ -1175,8 +1314,11 @@ const adminHtml = `<!doctype html>
         if (!res.ok) {
           // 4xx 에러는 재시도하지 않음
           if (res.status >= 400 && res.status < 500) {
-            const msg = json.message || '알 수 없음'
-            throw new Error(json.error || ('HTTP ' + res.status + ': ' + msg))
+            const err = new Error(json.error || json.message || ('HTTP ' + res.status))
+            err.statusCode = res.status
+            err.errorType = json.code
+            err.category = classifyError(err, res.status)
+            throw err
           }
           
           // 5xx 또는 네트워크 에러는 재시도
@@ -1186,14 +1328,27 @@ const adminHtml = `<!doctype html>
             await new Promise(r => setTimeout(r, delay))
             continue
           }
-          throw new Error(json.error || ('HTTP ' + res.status))
+          
+          const err = new Error(json.error || ('HTTP ' + res.status))
+          err.statusCode = res.status
+          err.category = classifyError(err, res.status)
+          throw err
         }
         
         return json
       } catch (e) {
+        // 분류 정보 추가
+        if (!e.category) {
+          e.category = classifyError(e, e.statusCode)
+        }
+        
         // 마지막 시도면 에러 던짐
         if (attempt === maxRetries) {
-          throw new Error(path + ' 호출 실패 (' + maxRetries + '번 시도): ' + e.message)
+          const finalErr = new Error(e.message)
+          finalErr.category = e.category
+          finalErr.statusCode = e.statusCode
+          finalErr.errorType = e.errorType
+          throw finalErr
         }
         
         // 네트워크 에러면 재시도
@@ -1272,29 +1427,27 @@ const adminHtml = `<!doctype html>
     } catch (e) {
       console.error('[로그인] 실패:', e)
       
+      // 에러 분류
+      const category = e.category || classifyError(e)
       const errorMsg = e.message || '로그인 실패'
-      const statusMatch = errorMsg.match(/HTTP (\\d+)/)
-      const status = statusMatch ? parseInt(statusMatch[1]) : null
       
-      let alertType = 'password-error'
-      let displayMsg = ''
+      let displayMsg = category.userMessage
+      let alertType = 'server-error'
       
-      if (status === 401 || errorMsg.includes('비밀번호')) {
+      // 카테고리별 커스터마이징
+      if (category.category === ErrorCategories.AUTH) {
         alertType = 'password-error'
         displayMsg = '비밀번호가 올바르지 않습니다'
-      } else if (status >= 500 || errorMsg.includes('Failed to fetch') || errorMsg.includes('connect')) {
+      } else if (category.category === ErrorCategories.NETWORK) {
         alertType = 'server-error'
-        displayMsg = '서버에 연결할 수 없습니다. 나중에 다시 시도해주세요'
-      } else if (status === 403) {
+        displayMsg = '서버에 연결할 수 없습니다. 네트워크와 백엔드 서버 상태를 확인해주세요'
+      } else if (category.category === ErrorCategories.TIMEOUT) {
         alertType = 'server-error'
-        displayMsg = '접근이 거부되었습니다. 관리자에게 문의하세요'
-      } else {
-        alertType = 'server-error'
-        displayMsg = errorMsg
+        displayMsg = '로그인 요청이 시간 초과되었습니다. 다시 시도해주세요'
       }
       
       // 실패 표시 후 버튼 복구
-      showLoginFailure(displayMsg, alertType)
+      showLoginFailure(formatErrorMessage(displayMsg, category.suggestion), alertType)
     }
   }
   
@@ -1490,7 +1643,7 @@ const adminHtml = `<!doctype html>
     const previousServerOnline = isServerOnline
 
     try {
-      const r = await api('/status')
+      const r = await api('/api/status')
       const dbOnline = r.dbStatus === 'healthy'
       const dbDot = document.getElementById('headerDbStatus')
       const dbText = document.getElementById('headerDbText')
@@ -1965,7 +2118,7 @@ const adminHtml = `<!doctype html>
     contentEl.innerHTML = '<div style="text-align: center; color: #999;">로딩 중...</div>'
     
     try {
-      const errors = await api('/errors')
+      const errors = await api('/api/errors')
       renderErrorLogs(errors)
     } catch (e) {
       contentEl.innerHTML = '<div style="padding: 20px; color: #ef4444; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">오류: ' + e.message + '</div>'
@@ -2455,6 +2608,233 @@ const adminHtml = `<!doctype html>
         removeItem(key) { delete this.data[key] },
         clear() { this.data = {} }
       }
+    }
+  }
+
+  const storage = safeLocalStorage()
+
+  // ============================================
+  // 핵심 자동매매 제어 함수들
+  // ============================================
+
+  async function startAutoTrading(market) {
+    try {
+      const btn = document.getElementById('start' + (market === 'domestic' ? 'Domestic' : 'Overseas') + 'Btn')
+      if (!btn) {
+        console.error('[AutoTrading] Button not found for market:', market)
+        return
+      }
+      
+      // 버튼 비활성화
+      btn.disabled = true
+      btn.classList.add('loading')
+      const originalText = btn.innerHTML
+      btn.innerHTML = '<span class="spinner"></span> 시작 중...'
+      
+      const response = await api('/trading/auto/start', {
+        method: 'POST',
+        body: { market }
+      })
+      
+      // 성공
+      btn.classList.remove('loading')
+      btn.classList.add('success')
+      btn.innerHTML = '✓ ' + (market === 'domestic' ? '국내' : '해외') + ' 실행 중'
+      
+      // 상태 갱신
+      await Promise.all([
+        loadAutoControlStatus(),
+        loadStatus()
+      ]).catch(e => console.warn('[Refresh after start]', e.message))
+      
+      // 3초 후 버튼 복구
+      setTimeout(() => {
+        btn.classList.remove('success')
+        btn.disabled = true
+        btn.innerHTML = '✓ ' + (market === 'domestic' ? '국내' : '해외') + ' 실행 중'
+      }, 3000)
+      
+    } catch (err) {
+      const category = err.category || classifyError(err)
+      const btn = document.getElementById('start' + (market === 'domestic' ? 'Domestic' : 'Overseas') + 'Btn')
+      
+      if (!btn) return
+      
+      // 에러 처리
+      btn.classList.remove('loading')
+      btn.classList.add('failure')
+      btn.innerHTML = '✕ 실패'
+      
+      // 에러 메시지 표시
+      const msgDiv = document.getElementById('quickControlMsg')
+      if (msgDiv) {
+        msgDiv.innerHTML = formatErrorMessage(
+          category.userMessage,
+          category.suggestion
+        )
+      } else {
+        alert(category.userMessage)
+      }
+      
+      // 2초 후 버튼 복구
+      setTimeout(() => {
+        btn.classList.remove('failure')
+        btn.disabled = false
+        btn.innerHTML = '🤖 ' + (market === 'domestic' ? '🇰🇷 국내 자동매매 시작' : '🌎 해외 자동매매 시작')
+      }, 2000)
+    }
+  }
+
+  async function openStopAllModal() {
+    document.getElementById('stopAllTradingModal').classList.add('active')
+  }
+
+  function closeStopAllModal() {
+    document.getElementById('stopAllTradingModal').classList.remove('active')
+    document.getElementById('stopAllConfirmInput').value = ''
+    document.getElementById('stopAllStatus').innerHTML = ''
+    updateStopAllButtonState()
+  }
+
+  function updateStopAllButtonState() {
+    const input = document.getElementById('stopAllConfirmInput')
+    if (!input) return
+    
+    const value = input.value
+    const btn = document.getElementById('confirmStopAllBtn')
+    if (!btn) return
+    
+    const isCorrect = value === '모든거래를중단합니다'
+    btn.disabled = !isCorrect
+    btn.style.opacity = isCorrect ? '1' : '0.5'
+    btn.style.cursor = isCorrect ? 'pointer' : 'not-allowed'
+  }
+
+  async function confirmStopAll() {
+    try {
+      const btn = document.getElementById('confirmStopAllBtn')
+      if (!btn) return
+      
+      btn.disabled = true
+      btn.innerHTML = '<span class="spinner"></span> 처리 중...'
+      
+      const response = await api('/trading/auto/stop-all', {
+        method: 'POST',
+        body: { confirmation: '모든거래를중단합니다' }
+      })
+      
+      // 성공
+      btn.innerHTML = '✓ 처리 완료'
+      btn.style.background = '#10b981'
+      
+      // 상태 갱신
+      await Promise.all([
+        loadAutoControlStatus(),
+        loadStatus(),
+        loadBalance()
+      ]).catch(e => console.warn('[Refresh after stop]', e.message))
+      
+      // 2초 후 모달 닫기
+      setTimeout(() => {
+        closeStopAllModal()
+      }, 2000)
+      
+    } catch (err) {
+      const category = err.category || classifyError(err)
+      const statusDiv = document.getElementById('stopAllStatus')
+      
+      if (statusDiv) {
+        statusDiv.innerHTML = formatErrorMessage(
+          category.userMessage,
+          category.suggestion
+        )
+      }
+      
+      const btn = document.getElementById('confirmStopAllBtn')
+      if (btn) {
+        btn.disabled = false
+        btn.innerHTML = '⚠️ 중단합니다'
+      }
+    }
+  }
+
+  async function loadBalance() {
+    try {
+      const r = await api('/trading/balance')
+      const balance = r.data || {}
+      
+      document.getElementById('headerBalance').textContent = 
+        '₩' + (Number(balance.cashAvailable || 0)).toLocaleString('ko-KR')
+      
+      isServerOnline = true
+    } catch (err) {
+      document.getElementById('headerBalance').textContent = '오류'
+      const category = err.category || classifyError(err)
+      
+      if (category.category === ErrorCategories.NETWORK) {
+        isServerOnline = false
+      }
+    }
+  }
+
+  async function loadStatus() {
+    try {
+      const r = await api('/status')
+      const dbStatus = r.dbStatus === 'healthy'
+      
+      const dot = document.getElementById('headerDbStatus')
+      const text = document.getElementById('headerDbText')
+      
+      if (dot) {
+        dot.className = 'status-dot ' + (dbStatus ? 'online' : 'offline')
+      }
+      if (text) {
+        text.textContent = dbStatus ? '연결됨' : '오류'
+      }
+    } catch (err) {
+      const dot = document.getElementById('headerDbStatus')
+      const text = document.getElementById('headerDbText')
+      
+      if (dot) dot.className = 'status-dot offline'
+      if (text) text.textContent = '오류'
+    }
+  }
+
+  async function loadAutoControlStatus() {
+    try {
+      const r = await api('/trading/auto/status')
+      const data = r.data || {}
+      const domestic = data.domestic || {}
+      const overseas = data.overseas || {}
+      
+      const domesticBtn = document.getElementById('startDomesticBtn')
+      const overseasBtn = document.getElementById('startOverseasBtn')
+      
+      if (domesticBtn) {
+        if (domestic.running) {
+          domesticBtn.disabled = true
+          domesticBtn.innerHTML = '✓ 🇰🇷 국내 실행 중'
+          domesticBtn.style.background = '#10b981'
+        } else {
+          domesticBtn.disabled = false
+          domesticBtn.innerHTML = '🤖 🇰🇷 국내 자동매매 시작'
+          domesticBtn.style.background = ''
+        }
+      }
+      
+      if (overseasBtn) {
+        if (overseas.running) {
+          overseasBtn.disabled = true
+          overseasBtn.innerHTML = '✓ 🌎 해외 실행 중'
+          overseasBtn.style.background = '#10b981'
+        } else {
+          overseasBtn.disabled = false
+          overseasBtn.innerHTML = '🤖 🌎 해외 자동매매 시작'
+          overseasBtn.style.background = ''
+        }
+      }
+    } catch (err) {
+      console.warn('[LoadAutoStatus]', err.message)
     }
   }
 
