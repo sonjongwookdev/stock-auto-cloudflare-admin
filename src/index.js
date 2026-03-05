@@ -3022,8 +3022,6 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  const storage = safeLocalStorage()
-
   function initEventListeners() {
     const loginInput = document.getElementById('loginPassword')
     const loginBtn = document.getElementById('loginBtn')
