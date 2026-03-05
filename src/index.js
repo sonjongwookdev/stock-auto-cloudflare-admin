@@ -1155,14 +1155,9 @@ const adminHtml = `<!doctype html>
         const apiPath = path.startsWith('/api') ? path : ('/api' + path)
         
         // 로컬호스트 검사 - localhost에서는 localhost로 직접 호출
-        let fullUrl = window.location.origin + apiPath
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          fullUrl = 'http://localhost:4000' + apiPath
-        }
-        // Cloudflare Workers 도메인에서는 터널 URL로 직접 호출 (쿠키 문제 우회)
-        else if (window.location.hostname.includes('workers.dev')) {
-          fullUrl = 'https://stock-admin.loca.lt' + apiPath
-        }
+        let fullUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? 'http://localhost:4000' + apiPath
+          : BACKEND_BASE + apiPath
         
         const res = await fetch(fullUrl, {
           method: opts.method || 'GET',
@@ -1242,14 +1237,9 @@ const adminHtml = `<!doctype html>
       
       console.log('[로그인] API 호출 중...')
       // 로컬호스트 검사
-      let loginUrl = window.location.origin + '/api/auth/login'
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        loginUrl = 'http://localhost:4000/api/auth/login'
-      }
-      // Cloudflare Workers 도메인에서는 터널 URL로 직접 호출
-      else if (window.location.hostname.includes('workers.dev')) {
-        loginUrl = 'https://stock-admin.loca.lt/api/auth/login'
-      }
+      const loginUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:4000/api/auth/login'
+        : BACKEND_BASE + '/api/auth/login'
       
       const res = await fetch(loginUrl, {
         method: 'POST',
@@ -2419,14 +2409,10 @@ const adminHtml = `<!doctype html>
       stopStatusAutoRefresh()
       
       // /api/auth/logout 호출 (쿠키 포함)
-      let logoutUrl = window.location.origin + '/api/auth/logout'
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        logoutUrl = 'http://localhost:4000/api/auth/logout'
-      }
-      // Cloudflare Workers 도메인에서는 터널 URL로 직접 호출
-      else if (window.location.hostname.includes('workers.dev')) {
-        logoutUrl = 'https://stock-admin.loca.lt/api/auth/logout'
-      }
+      const logoutUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:4000/api/auth/logout'
+        : BACKEND_BASE + '/api/auth/logout'
+      
       const res = await fetch(logoutUrl, {
         method: 'POST',
         credentials: 'include'
@@ -2545,76 +2531,8 @@ async function handleRequest(request, env) {
     })
   }
 
-  // /api/* 경로는 백엔드로 프록시
-  if (url.pathname.startsWith('/api/')) {
-    return proxyToBackend(request, url, backendBase, corsHeaders)
-  }
-
+  // Worker는 HTML만 제공, API는 프론트엔드에서 직접 백엔드 호출
   return new Response('Not Found', { status: 404, headers: corsHeaders })
-}
-
-async function proxyToBackend(request, url, backendBase, corsHeaders) {
-  // /api/* 경로를 백엔드로 그대로 전달
-  const targetUrl = new URL(url.pathname + url.search, backendBase)
-  const headers = new Headers(request.headers)
-  headers.delete('host')
-  headers.delete('origin')
-  headers.set('x-forwarded-host', url.host)
-  headers.set('x-forwarded-proto', url.protocol.replace(':', ''))
-  
-  // Cookie 헤더를 명시적으로 복사 (이미 request.headers에 있지만 명시적으로 처리)
-  const cookieHeader = request.headers.get('Cookie')
-  if (cookieHeader) {
-    headers.set('Cookie', cookieHeader)
-  }
-
-  // Content-Type이 없으면 json으로 설정
-  if (request.method !== 'GET' && request.method !== 'HEAD' && !headers.has('content-type')) {
-    headers.set('Content-Type', 'application/json')
-  }
-
-  const init = {
-    method: request.method,
-    headers,
-    body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
-    redirect: 'follow',
-  }
-
-  try {
-    const response = await fetch(targetUrl.toString(), init)
-    
-    // 응답에 CORS 헤더 추가
-    const responseHeaders = new Headers(response.headers)
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      responseHeaders.set(key, value)
-    })
-    
-    // Set-Cookie 헤더가 있으면 유지
-    const setCookie = response.headers.get('Set-Cookie')
-    if (setCookie) {
-      responseHeaders.set('Set-Cookie', setCookie)
-    }
-    
-    const newResponse = new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders
-    })
-    
-    return newResponse
-  } catch (error) {
-    console.error('[Proxy Error]', error.message)
-    return new Response(JSON.stringify({ 
-      ok: false, 
-      error: '백엔드 서버 연결 실패: ' + error.message 
-    }), {
-      status: 503,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders
-      }
-    })
-  }
 }
 
 export default {
