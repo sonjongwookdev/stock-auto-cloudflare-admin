@@ -1154,8 +1154,11 @@ const adminHtml = `<!doctype html>
         // /api로 시작하지 않으면 /api 추가
         const apiPath = path.startsWith('/api') ? path : ('/api' + path)
         
-        // Worker 프록시를 통해 호출 (현재 호스트 기준으로 상대 경로 사용)
-        const fullUrl = window.location.origin + apiPath
+        // 로컬호스트 검사 - localhost에서는 localhost로 직접 호출
+        let fullUrl = window.location.origin + apiPath
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          fullUrl = 'http://localhost:4000' + apiPath
+        }
         
         const res = await fetch(fullUrl, {
           method: opts.method || 'GET',
@@ -1234,7 +1237,13 @@ const adminHtml = `<!doctype html>
       await new Promise(resolve => setTimeout(resolve, 50))
       
       console.log('[로그인] API 호출 중...')
-      const res = await fetch(window.location.origin + '/api/auth/login', {
+      // 로컬호스트 검사
+      let loginUrl = window.location.origin + '/api/auth/login'
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        loginUrl = 'http://localhost:4000/api/auth/login'
+      }
+      
+      const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -2402,7 +2411,11 @@ const adminHtml = `<!doctype html>
       stopStatusAutoRefresh()
       
       // /api/auth/logout 호출 (쿠키 포함)
-      const res = await fetch(window.location.origin + '/api/auth/logout', {
+      let logoutUrl = window.location.origin + '/api/auth/logout'
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        logoutUrl = 'http://localhost:4000/api/auth/logout'
+      }
+      const res = await fetch(logoutUrl, {
         method: 'POST',
         credentials: 'include'
       })
