@@ -1,4 +1,6 @@
-const BASE_URL = 'https://eight-poets-hug.loca.lt';
+const BASE_URL = typeof globalThis !== 'undefined' && globalThis.BACKEND_BASE_URL
+  ? globalThis.BACKEND_BASE_URL
+  : process.env.BACKEND_BASE_URL || 'http://localhost:4000';
 const ORIGIN = 'https://stock-auto-cloudflare-admin.sonjongwook123.workers.dev';
 
 async function testEndpoints() {
