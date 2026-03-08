@@ -14,6 +14,9 @@ const adminHtml = `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stock Auto Admin v2</title>
   <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,7 +43,7 @@ const adminHtml = `<!doctype html>
       justify-content: center;
       min-height: 100vh;
       width: 100%;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      background: linear-gradient(135deg, #f5f7fa 0%, #e2e6ea 50%, #ffffff 100%);
       background-size: 200% 200%;
       animation: gradientShift 15s ease infinite;
       padding: 20px;
@@ -114,9 +117,9 @@ const adminHtml = `<!doctype html>
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-      background-size: 200% 200%;
-      animation: gradientShift 15s ease infinite;
+      background: #fff;
+      background-size: 100% 100%;
+      /* animation: gradientShift 15s ease infinite; */
     }
     .init-card {
       background: rgba(255, 255, 255, 0.95);
@@ -848,6 +851,393 @@ const adminHtml = `<!doctype html>
       background: #ecfdf5;
     }
 
+    :root {
+      --bg: #f4f6f3;
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-strong: #ffffff;
+      --surface-soft: #eef2ec;
+      --line: rgba(25, 34, 28, 0.08);
+      --text: #142018;
+      --muted: #66756c;
+      --brand: #0f766e;
+      --brand-2: #155eef;
+      --accent: #d97706;
+      --good: #15803d;
+      --bad: #dc2626;
+      --shadow: 0 20px 50px rgba(19, 33, 24, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(21, 94, 239, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 34%),
+        linear-gradient(180deg, #f8faf8 0%, #eef2ee 100%);
+      color: var(--text);
+    }
+
+    .login-page.active,
+    .page.kis-page.active,
+    .page.init-page.active {
+      background:
+        radial-gradient(circle at 15% 20%, rgba(21, 94, 239, 0.16), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(217, 119, 6, 0.12), transparent 22%),
+        linear-gradient(160deg, #f6fbf9 0%, #edf2f0 55%, #f8faf7 100%);
+    }
+
+    .login-card,
+    .init-card,
+    .kis-card,
+    .card,
+    .modal-content,
+    .stat-card,
+    .trading-status-card {
+      background: var(--surface);
+      backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .login-card h1,
+    .header-title {
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .login-card {
+      box-shadow: 0 32px 80px rgba(20, 32, 24, 0.12);
+    }
+
+    .login-card h1 {
+      background: linear-gradient(135deg, #0f766e 0%, #155eef 65%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+    }
+
+    .top-header {
+      background: rgba(255, 255, 255, 0.72);
+      border-bottom: 1px solid rgba(20, 32, 24, 0.08);
+      box-shadow: 0 12px 30px rgba(20, 32, 24, 0.06);
+    }
+
+    .header-title {
+      font-size: 22px;
+      background: linear-gradient(135deg, #12261c 0%, #0f766e 52%, #155eef 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(20, 32, 24, 0.08);
+      color: var(--muted);
+      border-radius: 999px;
+      box-shadow: none;
+    }
+
+    .header-btn,
+    .quick-btn,
+    button.btn {
+      border-radius: 16px;
+    }
+
+    .header-btn {
+      background: linear-gradient(135deg, #12261c 0%, #0f766e 100%);
+      box-shadow: 0 10px 24px rgba(15, 118, 110, 0.2);
+    }
+
+    .header-btn:hover,
+    button.btn:hover {
+      transform: translateY(-2px) scale(1.01);
+    }
+
+    .header-btn.secondary,
+    button.btn.secondary,
+    .tabs button {
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--text);
+      border: 1px solid rgba(20, 32, 24, 0.08);
+    }
+
+    .card {
+      border-radius: var(--radius-xl);
+      padding: 26px;
+    }
+
+    .card::before {
+      background: linear-gradient(90deg, #0f766e 0%, #155eef 58%, #d97706 100%);
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 28px auto 48px;
+      padding: 0 20px 36px;
+    }
+
+    .dashboard-hero {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .hero-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: 30px;
+      border: 1px solid rgba(20, 32, 24, 0.08);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(24px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-panel.primary {
+      background:
+        radial-gradient(circle at top right, rgba(21, 94, 239, 0.18), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(241,248,245,0.86) 100%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      font-size: 38px;
+      line-height: 1.03;
+      letter-spacing: -0.05em;
+      margin-bottom: 12px;
+      max-width: 11ch;
+    }
+
+    .hero-copy {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 56ch;
+    }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .market-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(20, 32, 24, 0.08);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hero-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .hero-kpi {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(20, 32, 24, 0.08);
+    }
+
+    .hero-kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-kpi strong {
+      display: block;
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-kpi small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .section-subtitle {
+      margin-top: -6px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .quick-control-note {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(20, 32, 24, 0.08);
+    }
+
+    .stats-grid {
+      margin: 0 0 22px;
+    }
+
+    .stat-card {
+      border-radius: 24px;
+      padding: 22px;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(21, 94, 239, 0.1));
+      font-size: 24px;
+    }
+
+    .stat-label {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .stat-value {
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.04em;
+      font-size: 26px;
+    }
+
+    .position-item,
+    .error-item,
+    .report-item,
+    .status-box,
+    .status-panel,
+    .trading-status-card {
+      border-radius: 20px;
+    }
+
+    .position-item,
+    .error-item,
+    .report-item,
+    .status-box,
+    .status-panel {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(20, 32, 24, 0.08);
+    }
+
+    .trading-status-card {
+      border: 1px solid rgba(20, 32, 24, 0.08);
+      background: rgba(255,255,255,0.78);
+    }
+
+    .trading-status-card.active {
+      border-color: rgba(21, 128, 61, 0.28);
+      background: linear-gradient(180deg, rgba(220,252,231,0.9), rgba(255,255,255,0.84));
+    }
+
+    .market-state {
+      display: grid;
+      gap: 10px;
+    }
+
+    .market-state strong {
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .market-state.running strong { color: var(--good); }
+    .market-state.stopped strong { color: #64748b; }
+    .market-state.warning strong { color: var(--accent); }
+
+    .market-state small {
+      color: var(--muted);
+      line-height: 1.6;
+      display: block;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(20, 32, 24, 0.08);
+    }
+
+    .status-chip.good { color: var(--good); }
+    .status-chip.bad { color: var(--bad); }
+    .status-chip.neutral { color: #475569; }
+
+    pre {
+      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .modal-overlay {
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(12px);
+    }
+
+    .modal-content {
+      border-radius: 28px;
+    }
+
+    .usage-guide > div {
+      border-radius: 22px !important;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 768px) {
       .row { grid-template-columns: 1fr; }
       .header-status { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -855,6 +1245,10 @@ const adminHtml = `<!doctype html>
       .status-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: 1fr; }
       .trading-status-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 30px; max-width: none; }
+      .hero-mini-grid, .control-grid { grid-template-columns: 1fr; }
+      .top-header { padding: 16px; }
+      .header-buttons { flex-wrap: wrap; }
     }
   </style>
 </head>
@@ -907,7 +1301,7 @@ const adminHtml = `<!doctype html>
     <!-- Header -->
     <div class="top-header">
       <div class="header-left">
-        <div class="header-title">📊 Stock Auto 관리자</div>
+        <div class="header-title">Stock Auto Control Room</div>
       </div>
       
       <div class="header-status">
@@ -936,21 +1330,58 @@ const adminHtml = `<!doctype html>
     </div>
 
     <!-- Main Content -->
-    <div class="wrap" style="max-width: 1200px; margin: 0 auto;">
-      <div class="row">
-        <!-- 자동매매 제어 -->
-        <section class="card" style="grid-column: 1 / -1;">
-          <h2 style="margin-bottom: 20px;">🤖 자동매매 제어</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-            <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 18px; font-size: 15px;">🇰🇷 국내 자동매매 시작</button>
-            <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 18px; font-size: 15px;">🌎 해외 자동매매 시작</button>
+      <div class="wrap">
+        <section class="dashboard-hero">
+          <div class="hero-panel primary">
+            <div class="eyebrow">2026 Live Ops</div>
+            <div class="hero-title">실시간 자동매매 운영을 한 화면에서.</div>
+            <div class="hero-copy">실서버, DB, KIS, 계좌잔고, 자동매매 상태를 같은 흐름으로 보고 바로 제어할 수 있는 운영 패널입니다.</div>
+            <div class="hero-pills">
+              <div id="heroSystemBadge" class="market-pill">시스템 상태 확인 중</div>
+              <div id="heroDbBadge" class="market-pill">DB 확인 중</div>
+              <div id="heroTradeBadge" class="market-pill">자동매매 상태 확인 중</div>
+            </div>
           </div>
-          <div id="quickControlMsg" style="margin-bottom: 12px;"></div>
-          
-          <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <h3 style="font-size: 15px; margin-bottom: 12px; color: #333;">📍 현재 포지션</h3>
-            <div id="positionsList" style="display: grid; gap: 10px;">
-              <div class="loading-spinner">⏳ 로딩 중...</div>
+          <div class="hero-panel">
+            <div class="hero-mini-grid">
+              <div class="hero-kpi">
+                <span>총 자산</span>
+                <strong id="heroBalanceValue">로딩 중...</strong>
+                <small>실시간 KIS 계좌 평가 금액</small>
+              </div>
+              <div class="hero-kpi">
+                <span>가용 현금</span>
+                <strong id="heroCashValue">로딩 중...</strong>
+                <small>즉시 사용할 수 있는 현금</small>
+              </div>
+              <div class="hero-kpi">
+                <span>국내 자동매매</span>
+                <strong id="heroDomesticValue">확인 중...</strong>
+                <small id="heroDomesticMeta">첫 상태 조회 전</small>
+              </div>
+              <div class="hero-kpi">
+                <span>해외 자동매매</span>
+                <strong id="heroOverseasValue">확인 중...</strong>
+                <small id="heroOverseasMeta">첫 상태 조회 전</small>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="row">
+          <!-- 자동매매 제어 -->
+          <section class="card" style="grid-column: 1 / -1;">
+            <h2 style="margin-bottom: 20px;">🤖 자동매매 제어</h2>
+            <p class="section-subtitle">국내/해외 자동매매를 즉시 시작하거나 중단하고, 최근 상태를 빠르게 확인합니다.</p>
+            <div class="control-grid">
+              <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 18px; font-size: 15px;">🇰🇷 국내 자동매매 시작</button>
+              <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 18px; font-size: 15px;">🌎 해외 자동매매 시작</button>
+            </div>
+            <div id="quickControlMsg" style="margin-bottom: 12px;"></div>
+            
+            <div class="quick-control-note">
+              <h3 style="font-size: 15px; margin-bottom: 12px; color: #333;">📍 현재 포지션</h3>
+              <div id="positionsList" style="display: grid; gap: 10px;">
+                <div class="loading-spinner">⏳ 로딩 중...</div>
             </div>
           </div>
         </section>
@@ -964,9 +1395,12 @@ const adminHtml = `<!doctype html>
           </div>
         </section>
 
-        <!-- 모든 거래 중단 -->
+        <!-- 시장별 거래 중단 -->
         <section class="card" style="grid-column: 1 / -1;">
-          <button id="stopAllBtn" class="btn" onclick="openStopAllModal()" style="width: 100%; padding: 16px; font-size: 15px; background: #dc2626; font-weight: 600;">🛑 모든 거래 중단</button>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button id="stopDomesticBtn" class="btn" onclick="openStopTradingModal('domestic')" style="padding: 16px; font-size: 15px; background: #dc2626; font-weight: 600;">🛑 국내 거래 중단</button>
+            <button id="stopOverseasBtn" class="btn" onclick="openStopTradingModal('overseas')" style="padding: 16px; font-size: 15px; background: #b91c1c; font-weight: 600;">🛑 해외 거래 중단</button>
+          </div>
         </section>
       </div>
     </div>
@@ -975,24 +1409,25 @@ const adminHtml = `<!doctype html>
     <div id="stopAllTradingModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
-          <h2>🛑 모든 거래 중단</h2>
+          <h2 id="stopTradingTitle">🛑 거래 중단</h2>
           <button class="modal-close" onclick="closeStopAllModal()">✕</button>
         </div>
         
         <div style="padding: 20px; color: #d32f2f;">
           <div style="background: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
             <strong style="color: #c62828;">⚠️ 경고</strong><br/>
-            <span style="color: #d32f2f; font-size: 14px;">이 작업은 즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다.</span>
+            <span id="stopTradingWarning" style="color: #d32f2f; font-size: 14px;">이 작업은 해당 시장의 보유 포지션을 모두 매도하고 자동매매를 중단합니다.</span>
           </div>
           
           <p style="color: #666; margin-bottom: 15px; font-size: 14px;">중단하려면 아래 문구를 정확히 입력하세요:</p>
           <input 
             id="stopAllConfirmInput" 
             type="text" 
-            placeholder="모든거래를중단합니다" 
+            placeholder="거래를중단합니다" 
             onkeyup="updateStopAllButtonState()"
             style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 15px; font-size: 14px;"
           />
+          <div id="stopTradingExpectedText" style="margin-bottom: 12px; font-size: 12px; color: #9a3412;">확인 문구: 거래를중단합니다</div>
           
           <div id="stopAllStatus" style="background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 15px; min-height: 20px; color: #666; font-size: 13px;"></div>
         </div>
@@ -1045,7 +1480,7 @@ const adminHtml = `<!doctype html>
   <div id="statusPage" class="page main-page">
     <div class="top-header">
       <div class="header-left">
-        <div class="header-title">📊 현황 대시보드</div>
+        <div class="header-title">Status Observatory</div>
       </div>
       <div class="header-buttons">
         <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
@@ -1062,21 +1497,21 @@ const adminHtml = `<!doctype html>
         <div class="stat-card">
           <div class="stat-icon">💰</div>
           <div class="stat-content">
-            <div class="stat-label">투자중 금액</div>
+            <div class="stat-label">총 자산</div>
             <div class="stat-value" id="statTotalInvested">로딩중...</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">📈</div>
           <div class="stat-content">
-            <div class="stat-label">수익률</div>
+            <div class="stat-label">가용 현금</div>
             <div class="stat-value" id="statROI">로딩중...</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">⏱️</div>
           <div class="stat-content">
-            <div class="stat-label">운영 시간</div>
+            <div class="stat-label">시스템 상태</div>
             <div class="stat-value" id="statRuntime">로딩중...</div>
           </div>
         </div>
@@ -1545,6 +1980,38 @@ const adminHtml = `<!doctype html>
     document.getElementById(id).textContent = JSON.stringify(data, null, 2)
   }
 
+  function formatKrw(value) {
+    return '₩' + Number(value || 0).toLocaleString('ko-KR')
+  }
+
+  function formatDateTime(value) {
+    if (!value) return '기록 없음'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return String(value)
+    return date.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    })
+  }
+
+  function getSystemStatusMeta(status) {
+    if (status === 'running') {
+      return { label: '실행 중', tone: 'good' }
+    }
+    if (status === 'stopped') {
+      return { label: '중단됨', tone: 'neutral' }
+    }
+    if (status === 'suspended') {
+      return { label: '보호 중지', tone: 'bad' }
+    }
+    return { label: status || '확인 중', tone: 'neutral' }
+  }
+
   function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
     document.getElementById(pageId).classList.add('active')
@@ -1574,9 +2041,13 @@ const adminHtml = `<!doctype html>
       
       console.log('[로그인] API 호출 중...')
       // 로컬호스트 검사
-      const loginUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:4000/api/auth/login'
-        : BACKEND_BASE + '/api/auth/login'
+      let loginUrl;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        loginUrl = 'http://localhost:4000/api/auth/login';
+      } else {
+        // Cloudflare 환경에서는 Worker 프록시를 사용
+        loginUrl = '/api/auth/login';
+      }
       
       const res = await fetch(loginUrl, {
         method: 'POST',
@@ -1589,7 +2060,9 @@ const adminHtml = `<!doctype html>
         const errorText = await res.text()
         let errorData = {}
         try { errorData = JSON.parse(errorText) } catch (e) {}
-        throw new Error(errorData.error || ('HTTP ' + res.status))
+        // Throw a richer error object so downstream can provide better hints
+        const err = errorData.error || ('HTTP ' + res.status)
+        throw { message: err, statusCode: res.status, category: errorData.category }
       }
       
       console.log('[로그인] 성공')
@@ -1610,7 +2083,7 @@ const adminHtml = `<!doctype html>
       console.error('[로그인] 실패:', e)
       
       // 에러 분류
-      const category = e.category || classifyError(e)
+      const category = e.category || classifyError(e, e.statusCode)
       const errorMsg = e.message || '로그인 실패'
       
       let displayMsg = category.userMessage
@@ -1829,13 +2302,17 @@ const adminHtml = `<!doctype html>
       const dbOnline = r.dbStatus === 'healthy'
       const dbDot = document.getElementById('headerDbStatus')
       const dbText = document.getElementById('headerDbText')
+      const heroDbBadge = document.getElementById('heroDbBadge')
+      const heroSystemBadge = document.getElementById('heroSystemBadge')
+      const systemMeta = getSystemStatusMeta(r.systemStatus)
 
       isServerOnline = dbOnline
       applyServerStateToTradingButtons()
       
       if (dbOnline) {
         dbDot.className = 'status-dot online'
-        dbText.textContent = '연결됨'
+        dbText.textContent = '실시간 정상'
+        if (heroDbBadge) heroDbBadge.textContent = 'DB 정상 연결'
 
         if (!previousServerOnline) {
           setQuickControlMessage('서버 연결이 복구되었습니다. 자동매매 시작 버튼을 다시 사용할 수 있습니다.', 'success')
@@ -1844,16 +2321,23 @@ const adminHtml = `<!doctype html>
       } else {
         dbDot.className = 'status-dot offline'
         dbText.textContent = '오류'
+        if (heroDbBadge) heroDbBadge.textContent = 'DB 연결 오류'
 
         if (previousServerOnline) {
           setQuickControlMessage('서버 연결 오류 상태입니다. 자동매매 시작 버튼이 일시 비활성화됩니다.', 'error')
         }
+      }
+
+      if (heroSystemBadge) {
+        heroSystemBadge.textContent = '시스템 ' + systemMeta.label
       }
     } catch (e) {
       isServerOnline = false
       applyServerStateToTradingButtons()
       document.getElementById('headerDbStatus').className = 'status-dot offline'
       document.getElementById('headerDbText').textContent = '오류'
+      const heroDbBadge = document.getElementById('heroDbBadge')
+      if (heroDbBadge) heroDbBadge.textContent = 'DB 상태 확인 실패'
       if (previousServerOnline) {
         setQuickControlMessage('서버 상태 확인 실패로 자동매매 시작 버튼이 일시 비활성화됩니다.', 'error')
       }
@@ -1940,6 +2424,10 @@ const adminHtml = `<!doctype html>
         balanceEl.textContent = '₩' + formatted
         balanceEl.title = '총 자산: ₩' + formatted + ' | 보유 현금: ₩' + (parseInt(data.cashBalance) || 0).toLocaleString('ko-KR') + ' | 클릭하여 새로고침'
         balanceEl.style.color = '#10b981'
+        const heroBalanceValue = document.getElementById('heroBalanceValue')
+        const heroCashValue = document.getElementById('heroCashValue')
+        if (heroBalanceValue) heroBalanceValue.textContent = formatKrw(data.totalAssets)
+        if (heroCashValue) heroCashValue.textContent = formatKrw(data.availableCash || data.cashBalance)
       } else {
         balanceEl.textContent = '조회 실패'
         balanceEl.style.color = '#ef4444'
@@ -1949,6 +2437,10 @@ const adminHtml = `<!doctype html>
       balanceEl.textContent = '오류'
       balanceEl.style.color = '#ef4444'
       balanceEl.title = '클릭하여 재시도'
+      const heroBalanceValue = document.getElementById('heroBalanceValue')
+      const heroCashValue = document.getElementById('heroCashValue')
+      if (heroBalanceValue) heroBalanceValue.textContent = '조회 실패'
+      if (heroCashValue) heroCashValue.textContent = '조회 실패'
       console.warn('[Balance Load]', e.message)
     }
   }
@@ -1997,11 +2489,18 @@ const adminHtml = `<!doctype html>
       // 버튼 상태 업데이트
       const domesticBtn = document.getElementById('startDomesticBtn')
       const overseasBtn = document.getElementById('startOverseasBtn')
+      const stopDomesticBtn = document.getElementById('stopDomesticBtn')
+      const stopOverseasBtn = document.getElementById('stopOverseasBtn')
       const stopBtn = document.getElementById('stopAllBtn')
       
       if (domesticBtn && overseasBtn) {
         const domesticRunning = data.domestic?.running || false
         const overseasRunning = data.overseas?.running || false
+        const heroTradeBadge = document.getElementById('heroTradeBadge')
+        const heroDomesticValue = document.getElementById('heroDomesticValue')
+        const heroDomesticMeta = document.getElementById('heroDomesticMeta')
+        const heroOverseasValue = document.getElementById('heroOverseasValue')
+        const heroOverseasMeta = document.getElementById('heroOverseasMeta')
 
         domesticBtn.dataset.running = domesticRunning ? '1' : '0'
         overseasBtn.dataset.running = overseasRunning ? '1' : '0'
@@ -2014,13 +2513,21 @@ const adminHtml = `<!doctype html>
         if (stopBtn) {
           stopBtn.disabled = !domesticRunning && !overseasRunning
         }
+
+        if (heroTradeBadge) {
+          heroTradeBadge.textContent = domesticRunning || overseasRunning ? '자동매매 실행 중' : '자동매매 대기 중'
+        }
+        if (heroDomesticValue) heroDomesticValue.textContent = domesticRunning ? '실행 중' : '대기 중'
+        if (heroOverseasValue) heroOverseasValue.textContent = overseasRunning ? '실행 중' : '대기 중'
+        if (heroDomesticMeta) heroDomesticMeta.textContent = data.domestic?.lastCycleAt ? '최근 사이클 ' + formatDateTime(data.domestic.lastCycleAt) : '아직 실행 기록 없음'
+        if (heroOverseasMeta) heroOverseasMeta.textContent = data.overseas?.lastCycleAt ? '최근 사이클 ' + formatDateTime(data.overseas.lastCycleAt) : '아직 실행 기록 없음'
         
         // 상태 표시
         const statusEl = document.getElementById('autoTradingStatus')
         if (statusEl) {
           let statusHtml = '<div style=\"padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;\">'
-          statusHtml += '<div><strong>국내:</strong> ' + (domesticRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.domestic.cycleCount || 0) + '회)</span>' : '<span style=\"color: #999;\">중단됨</span>') + '</div>'
-          statusHtml += '<div style=\"margin-top: 8px;\"><strong>해외:</strong> ' + (overseasRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.overseas.cycleCount || 0) + '회)</span>' : '<span style=\"color: #999;\">중단됨</span>') + '</div>'
+          statusHtml += '<div><strong>국내:</strong> ' + (domesticRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.domestic.cycleCount || 0) + '회)</span>' : '<span style=\"color: #64748b;\">대기 중</span>') + '</div>'
+          statusHtml += '<div style=\"margin-top: 8px;\"><strong>해외:</strong> ' + (overseasRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.overseas.cycleCount || 0) + '회)</span>' : '<span style=\"color: #64748b;\">대기 중</span>') + '</div>'
           if (data.intervalSeconds) {
             statusHtml += '<div style=\"margin-top: 8px; color: #666;\"><small>갱신 주기: ' + data.intervalSeconds + '초</small></div>'
           }
@@ -2594,22 +3101,13 @@ const adminHtml = `<!doctype html>
       const positions = Array.isArray(trading.positions) ? trading.positions : []
 
       // 통계 카드 업데이트
-      const totalInvested = positions.reduce((sum, pos) => {
-        const shares = Number(pos?.shares || 0)
-        const entryPrice = Number(pos?.entryPrice || 0)
-        return sum + (shares * entryPrice)
-      }, 0)
-      const realizedPnl = Number(trading.realizedPnl || 0)
-      const unrealizedPnl = Number(trading.unrealizedPnl || 0)
-      const roi = totalInvested > 0 ? ((realizedPnl + unrealizedPnl) / totalInvested * 100) : 0
+      const systemMeta = getSystemStatusMeta(trading.systemStatus)
 
-      document.getElementById('statTotalInvested').textContent = '₩' + totalInvested.toLocaleString('ko-KR')
-      document.getElementById('statROI').textContent = roi.toFixed(2) + '%'
-      document.getElementById('statROI').style.color = roi >= 0 ? '#10b981' : '#ef4444'
-      
-      // 운영 시간 계산 (lastRunTime 기준)
-      const runtime = trading.lastRunTime || '시작 전'
-      document.getElementById('statRuntime').textContent = runtime
+      document.getElementById('statTotalInvested').textContent = formatKrw(trading.totalCapital)
+      document.getElementById('statROI').textContent = formatKrw(trading.cashAvailable)
+      document.getElementById('statROI').style.color = '#0f766e'
+      document.getElementById('statRuntime').textContent = systemMeta.label
+      document.getElementById('statRuntime').style.color = systemMeta.tone === 'good' ? '#15803d' : systemMeta.tone === 'bad' ? '#dc2626' : '#475569'
       
       // 포지션 수
       document.getElementById('statPositions').textContent = positions.length + '개'
@@ -2656,16 +3154,16 @@ const adminHtml = `<!doctype html>
     
     if (domesticDiv) {
       const isRunning = auto.domestic?.running
-      domesticDiv.innerHTML = isRunning 
-        ? '<div style="color:#10b981;">✓ 실행 중</div>' 
-        : '<div style="color:#6b7280;">⏸️ 중지됨</div>'
+      domesticDiv.innerHTML = isRunning
+        ? '<div class="market-state running"><div class="status-chip good">LIVE</div><strong>실행 중</strong><small>사이클 ' + (auto.domestic?.cycleCount || 0) + '회 · 최근 실행 ' + formatDateTime(auto.domestic?.lastCycleAt) + '</small></div>'
+        : '<div class="market-state stopped"><div class="status-chip neutral">IDLE</div><strong>대기 중</strong><small>최근 실행 ' + formatDateTime(auto.domestic?.lastCycleAt) + '</small></div>'
     }
     
     if (overseasDiv) {
       const isRunning = auto.overseas?.running
-      overseasDiv.innerHTML = isRunning 
-        ? '<div style="color:#10b981;">✓ 실행 중</div>' 
-        : '<div style="color:#6b7280;">⏸️ 중지됨</div>'
+      overseasDiv.innerHTML = isRunning
+        ? '<div class="market-state running"><div class="status-chip good">LIVE</div><strong>실행 중</strong><small>사이클 ' + (auto.overseas?.cycleCount || 0) + '회 · 최근 실행 ' + formatDateTime(auto.overseas?.lastCycleAt) + '</small></div>'
+        : '<div class="market-state stopped"><div class="status-chip neutral">IDLE</div><strong>대기 중</strong><small>최근 실행 ' + formatDateTime(auto.overseas?.lastCycleAt) + '</small></div>'
     }
   }
 
@@ -2867,7 +3365,49 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  async function openStopAllModal() {
+  let stopTradingMarket = 'all'
+
+  function getStopTradingConfig() {
+    if (stopTradingMarket === 'domestic') {
+      return {
+        title: '🛑 국내 거래 중단',
+        warning: '이 작업은 국내 보유 포지션을 즉시 모두 매도하고 국내 자동매매를 중단합니다.',
+        confirmation: '거래를중단합니다',
+        endpoint: '/trading/auto/stop-market',
+        body: { market: 'domestic', confirmation: '거래를중단합니다' },
+      }
+    }
+    if (stopTradingMarket === 'overseas') {
+      return {
+        title: '🛑 해외 거래 중단',
+        warning: '이 작업은 해외 보유 포지션을 즉시 모두 매도하고 해외 자동매매를 중단합니다.',
+        confirmation: '거래를중단합니다',
+        endpoint: '/trading/auto/stop-market',
+        body: { market: 'overseas', confirmation: '거래를중단합니다' },
+      }
+    }
+    return {
+      title: '🛑 모든 거래 중단',
+      warning: '이 작업은 즉시 모든 보유 포지션을 매도하고 국내/해외 자동매매를 모두 중단합니다.',
+      confirmation: '모든거래를중단합니다',
+      endpoint: '/trading/auto/stop-all',
+      body: { confirmation: '모든거래를중단합니다' },
+    }
+  }
+
+  async function openStopTradingModal(market = 'all') {
+    stopTradingMarket = market
+    const config = getStopTradingConfig()
+    const title = document.getElementById('stopTradingTitle')
+    const warning = document.getElementById('stopTradingWarning')
+    const expectedText = document.getElementById('stopTradingExpectedText')
+    const input = document.getElementById('stopAllConfirmInput')
+
+    if (title) title.textContent = config.title
+    if (warning) warning.textContent = config.warning
+    if (expectedText) expectedText.textContent = '확인 문구: ' + config.confirmation
+    if (input) input.placeholder = config.confirmation
+
     document.getElementById('stopAllTradingModal').classList.add('active')
   }
 
@@ -2885,8 +3425,9 @@ const adminHtml = `<!doctype html>
     const value = input.value
     const btn = document.getElementById('confirmStopAllBtn')
     if (!btn) return
+    const config = getStopTradingConfig()
     
-    const isCorrect = value === '모든거래를중단합니다'
+    const isCorrect = value === config.confirmation
     btn.disabled = !isCorrect
     btn.style.opacity = isCorrect ? '1' : '0.5'
     btn.style.cursor = isCorrect ? 'pointer' : 'not-allowed'
@@ -2896,13 +3437,14 @@ const adminHtml = `<!doctype html>
     try {
       const btn = document.getElementById('confirmStopAllBtn')
       if (!btn) return
+      const config = getStopTradingConfig()
       
       btn.disabled = true
       btn.innerHTML = '<span class="spinner"></span> 처리 중...'
       
-      const response = await api('/trading/auto/stop-all', {
+      await api(config.endpoint, {
         method: 'POST',
-        body: { confirmation: '모든거래를중단합니다' }
+        body: config.body
       })
       
       // 성공
@@ -2935,7 +3477,7 @@ const adminHtml = `<!doctype html>
       const btn = document.getElementById('confirmStopAllBtn')
       if (btn) {
         btn.disabled = false
-        btn.innerHTML = '⚠️ 중단합니다'
+        btn.innerHTML = '⚠️ 중단 실행'
       }
     }
   }
@@ -3015,6 +3557,16 @@ const adminHtml = `<!doctype html>
           overseasBtn.style.background = ''
         }
       }
+
+      if (stopDomesticBtn) {
+        stopDomesticBtn.disabled = !domestic.running
+        stopDomesticBtn.style.opacity = domestic.running ? '1' : '0.5'
+      }
+
+      if (stopOverseasBtn) {
+        stopOverseasBtn.disabled = !overseas.running
+        stopOverseasBtn.style.opacity = overseas.running ? '1' : '0.5'
+      }
     } catch (err) {
       console.warn('[LoadAutoStatus]', err.message)
     }
@@ -3091,7 +3643,41 @@ async function handleRequest(request, env) {
     })
   }
 
-  // Worker는 HTML만 제공, API는 프론트엔드에서 직접 백엔드 호출
+  // /api로 시작하는 요청은 백엔드로 프록시
+  if (url.pathname.startsWith('/api')) {
+    const normalizedBackendBase = backendBase.replace(/\/$/, '')
+    const backendUrl = normalizedBackendBase + url.pathname + (url.search || '')
+
+    // body 복사
+    let body = null;
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      body = await request.clone().arrayBuffer();
+    }
+
+    // 헤더 복사 및 정리
+    const headers = new Headers(request.headers);
+    headers.delete('host');
+    headers.delete('content-length');
+    // Origin 헤더 강제 설정
+    headers.set('Origin', 'http://localhost:4000');
+
+    const backendReq = new Request(backendUrl, {
+      method: request.method,
+      headers,
+      body,
+      redirect: 'follow',
+    });
+    const backendRes = await fetch(backendReq);
+    // 응답 헤더 복사
+    const resHeaders = new Headers(backendRes.headers);
+    corsHeaders && Object.entries(corsHeaders).forEach(([k, v]) => resHeaders.set(k, v));
+    return new Response(await backendRes.body, {
+      status: backendRes.status,
+      headers: resHeaders
+    });
+  }
+
+  // 그 외 경로는 404
   return new Response('Not Found', { status: 404, headers: corsHeaders })
 }
 
