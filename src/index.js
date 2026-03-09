@@ -280,7 +280,10 @@ const adminHtml = `<!doctype html>
     /* Main Dashboard */
     .main-page.active { 
       display: block; 
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
+      background:
+        radial-gradient(circle at 0% 0%, rgba(21, 94, 239, 0.08), transparent 24%),
+        radial-gradient(circle at 100% 12%, rgba(15, 118, 110, 0.08), transparent 22%),
+        linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); 
       min-height: 100vh; 
       padding-top: 0; 
     }
@@ -289,8 +292,9 @@ const adminHtml = `<!doctype html>
       backdrop-filter: blur(20px) saturate(180%);
       border-bottom: 1px solid rgba(229, 231, 235, 0.8);
       padding: 18px 24px;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.35fr) auto;
+      gap: 16px;
       align-items: center;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04),
                   0 2px 8px rgba(0, 0, 0, 0.02);
@@ -298,7 +302,13 @@ const adminHtml = `<!doctype html>
       top: 0;
       z-index: 100;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      grid-column: 1;
+    }
     .header-title { 
       font-size: 20px; 
       font-weight: 800; 
@@ -309,8 +319,12 @@ const adminHtml = `<!doctype html>
     }
     .header-status {
       display: flex;
-      gap: 20px;
+      gap: 12px;
       align-items: center;
+      min-width: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      grid-column: 2;
     }
     .status-badge {
       display: flex;
@@ -325,6 +339,14 @@ const adminHtml = `<!doctype html>
       color: #475569;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 0;
+    }
+    .status-badge code,
+    .status-badge span:last-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .status-badge:hover {
       transform: translateY(-2px);
@@ -341,6 +363,10 @@ const adminHtml = `<!doctype html>
     .header-buttons {
       display: flex;
       gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      grid-column: 3;
+      justify-self: end;
     }
     .header-btn {
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -353,6 +379,7 @@ const adminHtml = `<!doctype html>
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+      white-space: nowrap;
     }
     .header-btn:hover { 
       background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
@@ -820,11 +847,154 @@ const adminHtml = `<!doctype html>
     }
 
     .usage-guide {
-      line-height: 1.8;
+      display: grid;
+      gap: 22px;
     }
-    .usage-guide h3 { margin: 20px 0 10px; color: #333; font-size: 16px; }
-    .usage-guide p { color: #666; margin: 10px 0; }
-    .usage-guide ol, .usage-guide ul { margin-left: 20px; color: #666; }
+    .usage-hero {
+      position: relative;
+      overflow: hidden;
+      padding: 30px;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 18% 24%, rgba(90, 157, 255, 0.26) 0%, rgba(90, 157, 255, 0) 34%),
+        radial-gradient(circle at 85% 18%, rgba(255, 186, 102, 0.24) 0%, rgba(255, 186, 102, 0) 30%),
+        linear-gradient(135deg, #0f172a 0%, #154a7a 48%, #0f766e 100%);
+      color: white;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+    }
+    .usage-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.14), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+    .usage-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .usage-hero h2 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      color: white;
+    }
+    .usage-hero p {
+      margin: 0;
+      max-width: 760px;
+      color: rgba(255,255,255,0.84);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .guide-card {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+    }
+    .guide-card::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: var(--guide-accent, linear-gradient(90deg, #2563eb, #14b8a6));
+    }
+    .guide-card h3 {
+      margin: 0 0 10px;
+      color: #14233c;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .guide-card p,
+    .guide-card li {
+      color: #58677d;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+    .guide-card ul {
+      margin: 14px 0 0 18px;
+      padding: 0;
+    }
+    .guide-card strong {
+      color: #16243b;
+    }
+    .guide-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .guide-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .guide-section-title {
+      margin: 8px 0 -2px;
+      color: #17324f;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .guide-stack {
+      display: grid;
+      gap: 16px;
+    }
+    .guide-callout {
+      padding: 18px 20px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .guide-callout strong {
+      color: #7c2d12;
+    }
+    .guide-troubleshoot {
+      display: grid;
+      gap: 14px;
+    }
+    .guide-troubleshoot-item {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+    }
+    .guide-troubleshoot-item h4 {
+      margin: 0 0 8px;
+      color: #1e293b;
+      font-size: 16px;
+    }
 
     /* Stats Grid */
     .stats-grid {
@@ -988,6 +1158,7 @@ const adminHtml = `<!doctype html>
       background: rgba(255, 255, 255, 0.72);
       border-bottom: 1px solid rgba(20, 32, 24, 0.08);
       box-shadow: 0 12px 30px rgba(20, 32, 24, 0.06);
+      border-radius: 0 0 24px 24px;
     }
 
     .header-title {
@@ -995,6 +1166,7 @@ const adminHtml = `<!doctype html>
       background: linear-gradient(135deg, #12261c 0%, #0f766e 52%, #155eef 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      min-width: 0;
     }
 
     .status-badge {
@@ -1003,6 +1175,7 @@ const adminHtml = `<!doctype html>
       color: var(--muted);
       border-radius: 999px;
       box-shadow: none;
+      min-height: 44px;
     }
 
     .header-btn,
@@ -1014,6 +1187,7 @@ const adminHtml = `<!doctype html>
     .header-btn {
       background: linear-gradient(135deg, #12261c 0%, #0f766e 100%);
       box-shadow: 0 10px 24px rgba(15, 118, 110, 0.2);
+      min-height: 46px;
     }
 
     .header-btn:hover,
@@ -1032,6 +1206,11 @@ const adminHtml = `<!doctype html>
     .card {
       border-radius: var(--radius-xl);
       padding: 26px;
+    }
+
+    .main-page .card {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(250,252,255,0.9) 100%);
     }
 
     .card::before {
@@ -1178,6 +1357,13 @@ const adminHtml = `<!doctype html>
       border-top: 1px solid rgba(20, 32, 24, 0.08);
     }
 
+    .header-balance-code {
+      cursor: pointer;
+      color: #10b981;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
     .stats-grid {
       margin: 0 0 22px;
     }
@@ -1293,7 +1479,11 @@ const adminHtml = `<!doctype html>
       border-radius: 28px;
     }
 
-    .usage-guide > div {
+    .usage-guide > div,
+    .usage-hero,
+    .guide-card,
+    .guide-callout,
+    .guide-troubleshoot-item {
       border-radius: 22px !important;
     }
 
@@ -1305,15 +1495,120 @@ const adminHtml = `<!doctype html>
 
     @media (max-width: 768px) {
       .row { grid-template-columns: 1fr; }
-      .header-status { flex-direction: column; align-items: flex-start; gap: 10px; }
       .quick-actions { grid-template-columns: 1fr; }
       .status-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: 1fr; }
       .trading-status-grid { grid-template-columns: 1fr; }
       .hero-title { font-size: 30px; max-width: none; }
       .hero-mini-grid, .control-grid { grid-template-columns: 1fr; }
-      .top-header { padding: 16px; }
-      .header-buttons { flex-wrap: wrap; }
+      .top-header {
+        grid-template-columns: 1fr;
+        padding: 14px;
+        margin: 10px 10px 0;
+        border: 1px solid rgba(20, 32, 24, 0.08);
+        border-radius: 24px;
+        top: 10px;
+      }
+      .header-left {
+        align-items: flex-start;
+        grid-column: auto;
+      }
+      .header-title {
+        font-size: 20px;
+        line-height: 1.05;
+      }
+      .header-status {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(150px, 1fr);
+        overflow-x: auto;
+        gap: 10px;
+        justify-content: flex-start;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+        grid-column: auto;
+      }
+      .header-status::-webkit-scrollbar {
+        display: none;
+      }
+      .status-badge {
+        padding: 10px 12px;
+      }
+      .header-buttons {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        grid-column: auto;
+        justify-self: stretch;
+      }
+      .header-btn {
+        width: 100%;
+        min-width: 0;
+        padding: 11px 12px;
+        font-size: 13px;
+      }
+      .wrap {
+        margin: 18px auto 34px;
+        padding: 0 12px 24px;
+      }
+      .card {
+        padding: 20px;
+      }
+      .hero-panel {
+        padding: 22px;
+      }
+      .hero-kpi {
+        padding: 16px;
+      }
+      .action-duo-grid,
+      .stop-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .modal-content {
+        width: min(100% - 20px, 720px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .top-header {
+        margin: 8px 8px 0;
+        padding: 12px;
+        top: 8px;
+      }
+      .header-title {
+        font-size: 18px;
+      }
+      .header-status {
+        grid-auto-columns: minmax(138px, 1fr);
+      }
+      .header-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .guide-hero,
+      .usage-hero,
+      .hero-panel,
+      .card,
+      .guide-card,
+      .guide-troubleshoot-item,
+      .guide-callout,
+      .stat-card,
+      .trading-status-card {
+        border-radius: 20px !important;
+      }
+      .hero-title {
+        font-size: 26px;
+      }
+      .hero-copy,
+      .guide-card p,
+      .guide-card li,
+      .guide-callout,
+      .guide-troubleshoot-item {
+        font-size: 13px;
+      }
+      .wrap {
+        padding: 0 10px 24px;
+      }
     }
   </style>
 </head>
@@ -1381,7 +1676,7 @@ const adminHtml = `<!doctype html>
         </div>
         <div class="status-badge">
           <span>💰 잔고:</span>
-          <code id="headerBalance" style="cursor: pointer; color: #10b981; font-weight: 600;" title="클릭하여 새로고침">로딩중...</code>
+          <code id="headerBalance" class="header-balance-code" title="클릭하여 새로고침">로딩중...</code>
         </div>
       </div>
 
@@ -1454,7 +1749,7 @@ const adminHtml = `<!doctype html>
         <!-- 시스템 현황 -->
         <section class="card" style="grid-column: 1 / -1;">
           <h2 style="margin-bottom: 15px;">⚙️ 시스템 현황</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="action-duo-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <button class="btn" onclick="openStatusModal()" style="padding: 12px;">📊 현황보기</button>
             <button class="btn secondary" onclick="openErrorLogsModal()" style="padding: 12px;">📋 오류 로그 보기</button>
           </div>
@@ -1462,7 +1757,7 @@ const adminHtml = `<!doctype html>
 
         <!-- 시장별 거래 중단 -->
         <section class="card" style="grid-column: 1 / -1;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="stop-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <button id="stopDomesticBtn" class="btn" onclick="openStopTradingModal('domestic')" style="padding: 16px; font-size: 15px; background: #dc2626; font-weight: 600;">🛑 국내 거래 중단</button>
             <button id="stopOverseasBtn" class="btn" onclick="openStopTradingModal('overseas')" style="padding: 16px; font-size: 15px; background: #b91c1c; font-weight: 600;">🛑 해외 거래 중단</button>
           </div>
@@ -1645,92 +1940,134 @@ const adminHtml = `<!doctype html>
 
     <div class="wrap">
       <section class="card full">
-        <h2 style="color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; margin-bottom: 20px;">📚 Stock Auto 관리자 가이드</h2>
-        
-        <div class="usage-guide" style="line-height: 1.8;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-            <h3 style="color: white; margin: 0 0 10px 0; font-size: 20px;">🚀 시작하기</h3>
-            <p style="margin: 0; font-size: 14px; opacity: 0.95;">이 관리자 패널은 Stock Auto 자동매매 시스템을 제어하고 모니터링하는 웹 인터페이스입니다.</p>
+        <div class="usage-guide">
+          <section class="usage-hero">
+            <div class="usage-eyebrow">Operator Playbook</div>
+            <h2>한 화면에서 보고, 바로 판단하고, 필요한 시장만 안전하게 제어합니다.</h2>
+            <p>이 가이드는 현재 운영 중인 Stock Auto 관리자 패널 기준입니다. 로그인, 대시보드 해석, 국내/해외 자동매매 제어, 중단 절차, 설정 변경, 장애 대응 순서까지 실제 운용 흐름에 맞춰 정리했습니다.</p>
+            <div class="guide-meta">
+              <div class="guide-pill">실시간 KIS 잔고 반영</div>
+              <div class="guide-pill">시장별 자동매매 제어</div>
+              <div class="guide-pill">확인 문구 기반 안전 중단</div>
+              <div class="guide-pill">Cloudflare 프록시 운영</div>
+            </div>
+          </section>
+
+          <div class="guide-grid">
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #2563eb, #0ea5e9);">
+              <div class="guide-section-title">Step 01</div>
+              <h3>로그인과 초기 진입</h3>
+              <p>관리자 비밀번호로 로그인하면 Worker 프록시 경유 세션 쿠키가 발급됩니다. 로그인 상태는 브라우저에 저장되어 다음 방문 시 빠르게 복구됩니다.</p>
+              <ul>
+                <li><strong>로그인 성공 후</strong> 대시보드가 먼저 뜨고, 핵심 카드부터 빠르게 채워집니다.</li>
+                <li><strong>초기 점검</strong>에서는 DB 연결 여부와 KIS 키 설정 여부를 확인합니다.</li>
+                <li><strong>접속 이상 시</strong> 강력 새로고침 후 다시 로그인하면 최신 Worker 버전으로 갱신됩니다.</li>
+              </ul>
+            </article>
+
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #0f766e, #14b8a6);">
+              <div class="guide-section-title">Step 02</div>
+              <h3>대시보드 읽는 법</h3>
+              <p>상단 헤더와 히어로 카드만 봐도 운영 핵심 상태를 바로 파악할 수 있게 구성되어 있습니다.</p>
+              <ul>
+                <li><strong>키값</strong>: 현재 설정된 KIS 키 프리뷰를 표시합니다.</li>
+                <li><strong>서버</strong>: 백엔드 + DB 상태를 간단하게 보여줍니다.</li>
+                <li><strong>잔고</strong>: 총 자산 기준으로 표시되고, 현금은 히어로 카드에서 별도로 확인합니다.</li>
+                <li><strong>국내/해외 자동매매</strong>: 각 시장별로 실행 중인지 대기 중인지 즉시 확인합니다.</li>
+              </ul>
+            </article>
+
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #7c3aed, #8b5cf6);">
+              <div class="guide-section-title">Step 03</div>
+              <h3>자동매매 시작</h3>
+              <p>국내와 해외 자동매매는 독립적으로 제어됩니다. 필요한 시장만 시작하면 해당 시장의 주기와 상태가 바로 반영됩니다.</p>
+              <ul>
+                <li><strong>국내 자동매매 시작</strong>: 한국 시장 대상 자동매매 사이클을 시작합니다.</li>
+                <li><strong>해외 자동매매 시작</strong>: 해외 시장 대상 자동매매 사이클을 시작합니다.</li>
+                <li><strong>실행 중 상태</strong>: 버튼이 실행 중으로 바뀌고 최근 사이클 시각이 표시됩니다.</li>
+              </ul>
+            </article>
+
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #ea580c, #f59e0b);">
+              <div class="guide-section-title">Step 04</div>
+              <h3>안전 중단 절차</h3>
+              <p>중단은 시장별로 분리되어 있으며, 확인 문구를 정확히 입력해야 실행됩니다. 잘못된 클릭으로 멈추지 않도록 안전장치를 두었습니다.</p>
+              <ul>
+                <li><strong>국내 거래 중단</strong>: 국내 포지션 전량 정리 후 국내 자동매매만 중단합니다.</li>
+                <li><strong>해외 거래 중단</strong>: 해외 포지션 전량 정리 후 해외 자동매매만 중단합니다.</li>
+                <li><strong>전체 거래 중단</strong>: 모든 포지션 청산 후 전체 자동매매를 중단합니다.</li>
+              </ul>
+            </article>
           </div>
 
-          <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #667eea; margin-top: 0;">1️⃣ 로그인</h3>
-            <p style="margin-bottom: 10px;">관리자 비밀번호를 입력하여 로그인합니다.</p>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>로그인 상태는 브라우저에 저장됩니다</li>
-              <li>다음 방문 시 자동 로그인됩니다</li>
-            </ul>
+          <div class="guide-grid">
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #0891b2, #06b6d4);">
+              <div class="guide-section-title">Monitoring</div>
+              <h3>현황 페이지 활용</h3>
+              <p>현황 페이지는 요약 통계, 포지션 목록, 시장별 자동매매 상태, 오류 로그를 한 번에 점검하는 운영용 화면입니다.</p>
+              <ul>
+                <li><strong>포지션 목록</strong>: 현재 보유 종목과 진입 정보를 확인합니다.</li>
+                <li><strong>수익 차트</strong>: 실현/미실현 수익 흐름을 간단히 봅니다.</li>
+                <li><strong>오류 로그</strong>: 최근 장애나 경고가 쌓였는지 빠르게 판단합니다.</li>
+              </ul>
+            </article>
+
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #1d4ed8, #2563eb);">
+              <div class="guide-section-title">Settings</div>
+              <h3>설정과 키 교체</h3>
+              <p>설정 모달에서는 잔고 갱신 주기와 KIS 키 상태를 확인할 수 있고, 필요하면 키를 교체할 수 있습니다.</p>
+              <ul>
+                <li><strong>잔고 갱신 주기</strong>: 운영 상황에 맞춰 30초~10분으로 조정합니다.</li>
+                <li><strong>KIS 키 교체</strong>: 현재 키 프리뷰를 확인한 뒤 교체를 진행합니다.</li>
+                <li><strong>주의</strong>: 키 교체는 자동매매에 직접 영향을 주므로 안내 문구를 꼭 확인하세요.</li>
+              </ul>
+            </article>
+
+            <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #059669, #10b981);">
+              <div class="guide-section-title">Best Practice</div>
+              <h3>운영 팁</h3>
+              <ul>
+                <li><strong>대시보드 잔고</strong>와 <strong>가용 현금</strong>을 먼저 확인하고 자동매매를 시작하세요.</li>
+                <li><strong>오류 로그 보기</strong>에서 최근 오류가 없는지 먼저 확인하면 불필요한 실패를 줄일 수 있습니다.</li>
+                <li><strong>시장 중단 버튼</strong>은 실제 청산 동작이 포함되므로 꼭 대상 시장을 다시 확인하세요.</li>
+                <li><strong>브라우저가 느릴 때</strong>는 새로고침 후 다시 로그인하면 최신 리소스가 반영됩니다.</li>
+              </ul>
+            </article>
           </div>
 
-          <div style="background: #f8f9fa; border-left: 4px solid #10b981; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #10b981; margin-top: 0;">2️⃣ 대시보드 (💼)</h3>
-            <h4 style="color: #333; margin-top: 15px;">📊 상단 헤더 정보</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li><strong>🔑 키값:</strong> 설정된 KIS API 키 (앞뒤 3글자만 표시)</li>
-              <li><strong>🖥️ 서버:</strong> 백엔드 서버 연결 상태 (🟢 정상 / 🔴 오류)</li>
-              <li><strong>💰 잔고:</strong> 현재 계좌 잔고 (<strong>클릭하여 수동 새로고침</strong>)</li>
-            </ul>
-            <h4 style="color: #333; margin-top: 20px;">🤖 자동매매 제어</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li><strong>국내 자동매매:</strong> 한국 주식 시장 자동매매 시작</li>
-              <li><strong>해외 자동매매:</strong> 해외 주식 시장 자동매매 시작</li>
-              <li>실행 중인 매매는 버튼이 비활성화되며 사이클 횟수가 표시됩니다</li>
-            </ul>
-            <h4 style="color: #333; margin-top: 20px;">⚙️ 시스템 현황</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li><strong>📊 현황보기:</strong> 서버 상태, KIS 키 상태 확인</li>
-              <li><strong>📋 오류 로그 보기:</strong> 발생한 오류 메시지 확인</li>
-            </ul>
-            <h4 style="color: #333; margin-top: 20px;">🛑 모든 거래 중단</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>"<strong>모든거래를중단합니다</strong>" 문구를 입력해야 실행됩니다</li>
-              <li>즉시 모든 보유 포지션을 매도하고 자동매매를 중단합니다</li>
-            </ul>
+          <div class="guide-callout">
+            <strong>운영 주의:</strong> 중단/키 교체 같은 민감 작업은 확인 문구를 요구합니다. 이 동작은 실주문, 포지션 청산, 자동매매 정지와 연결될 수 있으므로 버튼을 누르기 전에 대상 시장과 현재 포지션을 반드시 확인하세요.
           </div>
 
-          <div style="background: #f8f9fa; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #3b82f6; margin-top: 0;">3️⃣ 현황 페이지 (📊)</h3>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li><strong>현황 보기:</strong> 서버 상태, 자동매매 상태 확인</li>
-              <li><strong>오류 로그:</strong> 시스템 오류 및 경고 확인</li>
-            </ul>
-          </div>
-
-          <div style="background: #f8f9fa; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #f59e0b; margin-top: 0;">4️⃣ 설정 (⚙️)</h3>
-            <h4 style="color: #333; margin-top: 15px;">🔑 KIS API 키 교체</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>현재 설정된 API 키 확인</li>
-              <li>키 교체 시 "<strong>키를교체하겠습니다</strong>" 문구 입력 필요</li>
-              <li>⚠️ <strong>주의:</strong> 키 교체 시 자동매매가 중단됩니다</li>
-            </ul>
-          </div>
-
-          <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #ff9800; margin-top: 0;">💡 유용한 팁</h3>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>잔고는 <strong>클릭하여 수동으로 새로고침</strong>할 수 있습니다</li>
-              <li>중요한 작업은 확인 문구를 입력해야 실행됩니다</li>
-              <li>모든 설정은 브라우저의 localStorage에 저장됩니다</li>
-              <li>오류 발생 시 📋 오류 로그를 확인하세요</li>
-            </ul>
-          </div>
-
-          <div style="background: #ffebee; border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px;">
-            <h3 style="color: #ef4444; margin-top: 0;">❓ 문제 해결</h3>
-            <h4 style="color: #333; margin-top: 15px;">잔고가 표시되지 않아요</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>잔고를 클릭하여 수동 새로고침을 시도하세요</li>
-              <li>KIS API 키가 제대로 설정되었는지 확인하세요</li>
-              <li>백엔드 서버가 실행 중인지 확인하세요</li>
-            </ul>
-            <h4 style="color: #333; margin-top: 15px;">자동매매가 시작되지 않아요</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              <li>시장 운영 시간인지 확인하세요</li>
-              <li>KIS API 키가 유효한지 확인하세요</li>
-              <li>📋 오류 로그에서 자세한 오류를 확인하세요</li>
-            </ul>
-          </div>
+          <section class="guide-stack">
+            <div class="guide-section-title">Troubleshooting</div>
+            <div class="guide-troubleshoot">
+              <article class="guide-troubleshoot-item">
+                <h4>잔고나 카드 값이 계속 로딩 중일 때</h4>
+                <ul>
+                  <li>먼저 <strong>Ctrl+F5</strong>로 새로고침해서 최신 Worker 자산을 받습니다.</li>
+                  <li>그래도 안 뜨면 <strong>서버 상태</strong>와 <strong>오류 로그</strong>를 확인합니다.</li>
+                  <li>KIS 계정 상태가 불안정하면 잔고 조회가 지연될 수 있습니다.</li>
+                </ul>
+              </article>
+              <article class="guide-troubleshoot-item">
+                <h4>자동매매 시작이 실패할 때</h4>
+                <ul>
+                  <li>KIS 키가 유효한지, 해당 시장이 현재 운영 시간인지 확인합니다.</li>
+                  <li>서버/DB가 정상이어도 시장 휴장 시간에는 주문이 제한될 수 있습니다.</li>
+                  <li>실패 메시지와 오류 로그를 같이 보면 원인을 더 빨리 찾을 수 있습니다.</li>
+                </ul>
+              </article>
+              <article class="guide-troubleshoot-item">
+                <h4>로그인은 되는데 데이터가 안 뜰 때</h4>
+                <ul>
+                  <li>브라우저 콘솔에 mixed content 또는 fetch 오류가 있는지 확인합니다.</li>
+                  <li>현재 운영 버전은 Worker 프록시 기반이라, 직접 http:// 호출이 보이면 프론트 캐시를 비우는 게 좋습니다.</li>
+                  <li>반복되면 운영 화면에서 어떤 카드가 비는지 알려주면 바로 추적 가능합니다.</li>
+                </ul>
+              </article>
+            </div>
+          </section>
         </div>
       </section>
     </div>
@@ -1952,6 +2289,15 @@ const adminHtml = `<!doctype html>
   // Cloudflare Workers 배포 시 환경 변수로 주입됨
   // 개발 환경: localhost:4000, 프로덕션: env.BACKEND_BASE_URL
   const BACKEND_BASE = '__BACKEND_BASE__'
+
+  function isLocalDevHost() {
+    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  }
+
+  function buildBrowserApiUrl(path) {
+    const normalizedPath = path.startsWith('/api') ? path : ('/api' + path)
+    return isLocalDevHost() ? ('http://localhost:4000' + normalizedPath) : normalizedPath
+  }
   
   let currentMarket = 'domestic'
   let currentUser = { isLoggedIn: false }
@@ -1963,25 +2309,25 @@ const adminHtml = `<!doctype html>
   let isServerOnline = true
 
   async function api(path, opts = {}) {
-    const maxRetries = 5
-    const initialDelay = 500
-    const maxDelay = 10000
+    const method = opts.method || 'GET'
+    const maxRetries = Number.isFinite(opts.retries) ? opts.retries : (method === 'GET' ? 2 : 1)
+    const initialDelay = 300
+    const maxDelay = 2500
+    const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : (method === 'GET' ? 8000 : 12000)
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
         
         // /api로 시작하지 않으면 /api 추가
         const apiPath = path.startsWith('/api') ? path : ('/api' + path)
         
         // 로컬호스트 검사 - localhost에서는 localhost로 직접 호출
-        let fullUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? 'http://localhost:4000' + apiPath
-          : BACKEND_BASE + apiPath
+        const fullUrl = buildBrowserApiUrl(apiPath)
         
         const res = await fetch(fullUrl, {
-          method: opts.method || 'GET',
+          method,
           headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
           body: opts.body ? JSON.stringify(opts.body) : undefined,
           credentials: 'include',
@@ -2106,13 +2452,7 @@ const adminHtml = `<!doctype html>
       
       console.log('[로그인] API 호출 중...')
       // 로컬호스트 검사
-      let loginUrl;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        loginUrl = 'http://localhost:4000/api/auth/login';
-      } else {
-        // Cloudflare 환경에서는 Worker 프록시를 사용
-        loginUrl = '/api/auth/login';
-      }
+      const loginUrl = buildBrowserApiUrl('/auth/login')
       
       const res = await fetch(loginUrl, {
         method: 'POST',
@@ -2286,14 +2626,14 @@ const adminHtml = `<!doctype html>
       html += '</div>'
       card.innerHTML = html
 
-      // Auto-navigate after 2 seconds
+      // Auto-navigate quickly after initial health snapshot
       setTimeout(() => {
         if (r.hasKisKeys) {
           goToMainDashboard()
         } else {
           showPage('kisPage')
         }
-      }, 2000)
+      }, 350)
     } catch (e) {
       document.getElementById('initPage').innerHTML = 
         '<div class="init-card"><div class="error-msg">오류: ' + e.message + '</div></div>'
@@ -2328,14 +2668,18 @@ const adminHtml = `<!doctype html>
 
   async function goToMainDashboard() {
     showPage('mainPage')
-    // 병렬 로딩으로 성능 개선
-    await Promise.all([
+    // 첫 화면은 가능한 한 빨리 채우고, 나머지는 백그라운드에서 보강
+    await Promise.allSettled([
       loadKisStatus(),
-      loadStatus(),
       loadBalance(),
+      loadStatus(),
       loadAutoControlStatus(),
-      loadTradingStatus()
-    ]).catch(e => console.error('[Dashboard Load Error]', e))
+    ])
+
+    Promise.allSettled([
+      loadTradingStatus(),
+      loadStatusPage(),
+    ]).catch(e => console.error('[Dashboard Background Load Error]', e))
     
     // 저장된 갱신 시간 불러오기
     loadBalanceRefreshPreference()
@@ -3307,9 +3651,7 @@ const adminHtml = `<!doctype html>
       stopStatusAutoRefresh()
       
       // /api/auth/logout 호출 (쿠키 포함)
-      const logoutUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:4000/api/auth/logout'
-        : BACKEND_BASE + '/api/auth/logout'
+      const logoutUrl = buildBrowserApiUrl('/auth/logout')
       
       const res = await fetch(logoutUrl, {
         method: 'POST',
@@ -3361,74 +3703,6 @@ const adminHtml = `<!doctype html>
   // ============================================
   // 핵심 자동매매 제어 함수들
   // ============================================
-
-  async function startAutoTrading(market) {
-    try {
-      const btn = document.getElementById('start' + (market === 'domestic' ? 'Domestic' : 'Overseas') + 'Btn')
-      if (!btn) {
-        console.error('[AutoTrading] Button not found for market:', market)
-        return
-      }
-      
-      // 버튼 비활성화
-      btn.disabled = true
-      btn.classList.add('loading')
-      const originalText = btn.innerHTML
-      btn.innerHTML = '<span class="spinner"></span> 시작 중...'
-      
-      const response = await api('/trading/auto/start', {
-        method: 'POST',
-        body: { market }
-      })
-      
-      // 성공
-      btn.classList.remove('loading')
-      btn.classList.add('success')
-      btn.innerHTML = '✓ ' + (market === 'domestic' ? '국내' : '해외') + ' 실행 중'
-      
-      // 상태 갱신
-      await Promise.all([
-        loadAutoControlStatus(),
-        loadStatus()
-      ]).catch(e => console.warn('[Refresh after start]', e.message))
-      
-      // 3초 후 버튼 복구
-      setTimeout(() => {
-        btn.classList.remove('success')
-        btn.disabled = true
-        btn.innerHTML = '✓ ' + (market === 'domestic' ? '국내' : '해외') + ' 실행 중'
-      }, 3000)
-      
-    } catch (err) {
-      const category = err.category || classifyError(err)
-      const btn = document.getElementById('start' + (market === 'domestic' ? 'Domestic' : 'Overseas') + 'Btn')
-      
-      if (!btn) return
-      
-      // 에러 처리
-      btn.classList.remove('loading')
-      btn.classList.add('failure')
-      btn.innerHTML = '✕ 실패'
-      
-      // 에러 메시지 표시
-      const msgDiv = document.getElementById('quickControlMsg')
-      if (msgDiv) {
-        msgDiv.innerHTML = formatErrorMessage(
-          category.userMessage,
-          category.suggestion
-        )
-      } else {
-        alert(category.userMessage)
-      }
-      
-      // 2초 후 버튼 복구
-      setTimeout(() => {
-        btn.classList.remove('failure')
-        btn.disabled = false
-        btn.innerHTML = '🤖 ' + (market === 'domestic' ? '🇰🇷 국내 자동매매 시작' : '🌎 해외 자동매매 시작')
-      }, 2000)
-    }
-  }
 
   let stopTradingMarket = 'all'
 
@@ -3544,96 +3818,6 @@ const adminHtml = `<!doctype html>
         btn.disabled = false
         btn.innerHTML = '⚠️ 중단 실행'
       }
-    }
-  }
-
-  async function loadBalance() {
-    try {
-      const r = await api('/trading/balance')
-      const balance = r.data || {}
-      
-      document.getElementById('headerBalance').textContent = 
-        '₩' + (Number(balance.cashAvailable || 0)).toLocaleString('ko-KR')
-      
-      isServerOnline = true
-    } catch (err) {
-      document.getElementById('headerBalance').textContent = '오류'
-      const category = err.category || classifyError(err)
-      
-      if (category.category === ErrorCategories.NETWORK) {
-        isServerOnline = false
-      }
-    }
-  }
-
-  async function loadStatus() {
-    try {
-      const r = await api('/status')
-      const dbStatus = r.dbStatus === 'healthy'
-      
-      const dot = document.getElementById('headerDbStatus')
-      const text = document.getElementById('headerDbText')
-      
-      if (dot) {
-        dot.className = 'status-dot ' + (dbStatus ? 'online' : 'offline')
-      }
-      if (text) {
-        text.textContent = dbStatus ? '연결됨' : '오류'
-      }
-    } catch (err) {
-      const dot = document.getElementById('headerDbStatus')
-      const text = document.getElementById('headerDbText')
-      
-      if (dot) dot.className = 'status-dot offline'
-      if (text) text.textContent = '오류'
-    }
-  }
-
-  async function loadAutoControlStatus() {
-    try {
-      const r = await api('/trading/auto/status')
-      const data = r.data || {}
-      const domestic = data.domestic || {}
-      const overseas = data.overseas || {}
-      
-      const domesticBtn = document.getElementById('startDomesticBtn')
-      const overseasBtn = document.getElementById('startOverseasBtn')
-      
-      if (domesticBtn) {
-        if (domestic.running) {
-          domesticBtn.disabled = true
-          domesticBtn.innerHTML = '✓ 🇰🇷 국내 실행 중'
-          domesticBtn.style.background = '#10b981'
-        } else {
-          domesticBtn.disabled = false
-          domesticBtn.innerHTML = '🤖 🇰🇷 국내 자동매매 시작'
-          domesticBtn.style.background = ''
-        }
-      }
-      
-      if (overseasBtn) {
-        if (overseas.running) {
-          overseasBtn.disabled = true
-          overseasBtn.innerHTML = '✓ 🌎 해외 실행 중'
-          overseasBtn.style.background = '#10b981'
-        } else {
-          overseasBtn.disabled = false
-          overseasBtn.innerHTML = '🤖 🌎 해외 자동매매 시작'
-          overseasBtn.style.background = ''
-        }
-      }
-
-      if (stopDomesticBtn) {
-        stopDomesticBtn.disabled = !domestic.running
-        stopDomesticBtn.style.opacity = domestic.running ? '1' : '0.5'
-      }
-
-      if (stopOverseasBtn) {
-        stopOverseasBtn.disabled = !overseas.running
-        stopOverseasBtn.style.opacity = overseas.running ? '1' : '0.5'
-      }
-    } catch (err) {
-      console.warn('[LoadAutoStatus]', err.message)
     }
   }
 
