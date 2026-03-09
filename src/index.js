@@ -26,10 +26,24 @@ const adminHtml = `<!doctype html>
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      background:
+        radial-gradient(circle at 8% 20%, rgba(104, 170, 255, 0.35) 0%, rgba(104, 170, 255, 0) 45%),
+        radial-gradient(circle at 88% 18%, rgba(255, 190, 120, 0.28) 0%, rgba(255, 190, 120, 0) 42%),
+        radial-gradient(circle at 50% 86%, rgba(140, 220, 200, 0.25) 0%, rgba(140, 220, 200, 0) 44%),
+        linear-gradient(140deg, #eef4ff 0%, #f4f8ff 42%, #f6f6f2 100%);
       height: 100%;
       width: 100%;
       color: #1a1a1a;
+      background-size: 140% 140%, 150% 150%, 160% 160%, 100% 100%;
+      animation: pageGradientDrift 20s ease-in-out infinite alternate;
+    }
+    @keyframes pageGradientDrift {
+      0% {
+        background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%;
+      }
+      100% {
+        background-position: 12% 8%, 86% 12%, 42% 90%, 0% 0%;
+      }
     }
     
     /* ===== Pages ===== */
@@ -43,32 +57,63 @@ const adminHtml = `<!doctype html>
       justify-content: center;
       min-height: 100vh;
       width: 100%;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e2e6ea 50%, #ffffff 100%);
-      background-size: 200% 200%;
-      animation: gradientShift 15s ease infinite;
+      background:
+        radial-gradient(circle at 20% 24%, rgba(127, 182, 255, 0.42) 0%, rgba(127, 182, 255, 0) 48%),
+        radial-gradient(circle at 82% 14%, rgba(255, 201, 140, 0.34) 0%, rgba(255, 201, 140, 0) 44%),
+        radial-gradient(circle at 72% 78%, rgba(150, 232, 208, 0.32) 0%, rgba(150, 232, 208, 0) 46%),
+        linear-gradient(132deg, #f3f8ff 0%, #f8fbff 48%, #fcfbf7 100%);
+      background-size: 170% 170%, 180% 180%, 170% 170%, 100% 100%;
+      animation: loginGradientShift 18s ease-in-out infinite alternate;
       padding: 20px;
       position: relative;
       overflow: hidden;
     }
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes loginGradientShift {
+      0% {
+        background-position: 0% 0%, 100% 0%, 80% 100%, 0% 0%;
+      }
+      100% {
+        background-position: 14% 10%, 88% 18%, 60% 84%, 0% 0%;
+      }
     }
     .login-page.active::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-      background-size: 50px 50px;
-      animation: gridMove 20s linear infinite;
+      inset: -30%;
+      background:
+        radial-gradient(circle at 18% 26%, rgba(80, 144, 255, 0.28) 0%, rgba(80, 144, 255, 0) 36%),
+        radial-gradient(circle at 78% 22%, rgba(255, 171, 93, 0.22) 0%, rgba(255, 171, 93, 0) 32%),
+        radial-gradient(circle at 52% 78%, rgba(111, 209, 190, 0.18) 0%, rgba(111, 209, 190, 0) 34%);
+      filter: blur(6px);
+      animation: auraFloat 24s ease-in-out infinite alternate;
+      pointer-events: none;
     }
-    @keyframes gridMove {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(50px, 50px); }
+    .login-page.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(26, 60, 120, 0.10) 0.8px, transparent 0.9px);
+      background-size: 26px 26px;
+      opacity: 0.22;
+      mix-blend-mode: soft-light;
+      animation: textureDrift 32s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes auraFloat {
+      0% {
+        transform: translate(-2%, -1%) scale(1);
+      }
+      100% {
+        transform: translate(3%, 2%) scale(1.06);
+      }
+    }
+    @keyframes textureDrift {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        transform: translate3d(18px, 18px, 0);
+      }
     }
     .login-card {
       background: rgba(255, 255, 255, 0.95);
@@ -76,8 +121,8 @@ const adminHtml = `<!doctype html>
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 24px;
       padding: 60px 50px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 
-                  0 0 100px rgba(139, 92, 246, 0.2),
+      box-shadow: 0 22px 70px rgba(20, 43, 76, 0.22),
+                  0 0 120px rgba(110, 175, 245, 0.22),
                   inset 0 1px 0 rgba(255,255,255,0.6);
       width: 90%;
       max-width: 440px;
@@ -89,26 +134,46 @@ const adminHtml = `<!doctype html>
     }
     .login-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 25px 70px rgba(0,0,0,0.35), 
-                  0 0 120px rgba(139, 92, 246, 0.3);
+      box-shadow: 0 30px 84px rgba(16, 37, 66, 0.28),
+                  0 0 140px rgba(110, 175, 245, 0.3);
     }
     .login-card h1 {
       font-size: 42px;
       font-weight: 900;
       margin-bottom: 12px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      background: linear-gradient(130deg, #0c65b3 0%, #2563eb 46%, #14b8a6 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       letter-spacing: -2px;
-      text-shadow: 0 2px 10px rgba(139, 92, 246, 0.1);
+      text-shadow: 0 3px 16px rgba(39, 97, 168, 0.16);
     }
     .login-card .subtitle {
-      color: #6b7280;
+      color: #4f5f76;
       margin-bottom: 40px;
       font-size: 15px;
       font-weight: 600;
       letter-spacing: 0.5px;
+    }
+    #loginBtn {
+      background: linear-gradient(120deg, #1767b2 0%, #2f7de8 38%, #38bdb2 74%, #f2ad69 100%);
+      background-size: 230% 230%;
+      box-shadow: 0 12px 28px rgba(39, 102, 178, 0.35),
+                  0 6px 18px rgba(56, 189, 178, 0.2);
+      animation: loginBtnFlow 7s ease-in-out infinite;
+    }
+    #loginBtn:hover {
+      background-position: 100% 45%;
+      box-shadow: 0 16px 34px rgba(39, 102, 178, 0.45),
+                  0 10px 22px rgba(56, 189, 178, 0.26);
+    }
+    #loginBtn:active {
+      box-shadow: 0 8px 18px rgba(39, 102, 178, 0.38);
+    }
+    @keyframes loginBtnFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
     
     /* Init Page */
