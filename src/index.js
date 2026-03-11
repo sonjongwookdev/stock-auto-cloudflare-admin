@@ -995,6 +995,121 @@ const adminHtml = `<!doctype html>
       color: #1e293b;
       font-size: 16px;
     }
+    .ai-ops-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .ai-ops-card {
+      padding: 22px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(240,247,255,0.9) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+    }
+    .ai-ops-card span {
+      display: block;
+      color: #5b6b80;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .ai-ops-card strong {
+      display: block;
+      color: #12233c;
+      font-size: 24px;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .ai-ops-card small {
+      color: #6b7280;
+      line-height: 1.65;
+    }
+    .market-failure-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .market-failure-card {
+      padding: 18px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.92) 100%);
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.05);
+    }
+    .market-failure-card strong,
+    .market-failure-card small,
+    .market-failure-card span {
+      display: block;
+    }
+    .market-failure-card span {
+      color: #64748b;
+      font-size: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+    .market-failure-card strong {
+      color: #0f172a;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .market-failure-card small {
+      color: #6b7280;
+      line-height: 1.7;
+    }
+    .market-failure-card.good {
+      border-color: rgba(16, 185, 129, 0.2);
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+    }
+    .market-failure-card.bad {
+      border-color: rgba(239, 68, 68, 0.22);
+      background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+    }
+    .logs-toolbar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .input.soft {
+      width: 100%;
+      min-height: 46px;
+      border-radius: 16px;
+      border: 1px solid #dbe3ef;
+      background: rgba(255,255,255,0.9);
+      padding: 0 14px;
+      color: #1f2937;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .download-status {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      font-size: 14px;
+    }
+    .log-file-item {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+    }
+    .log-file-item strong,
+    .log-file-item small {
+      display: block;
+    }
+    .log-file-item strong {
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+    .log-file-item small {
+      color: #64748b;
+      line-height: 1.6;
+    }
 
     /* Stats Grid */
     .stats-grid {
@@ -1356,6 +1471,105 @@ const adminHtml = `<!doctype html>
       padding-top: 18px;
       border-top: 1px solid rgba(20, 32, 24, 0.08);
     }
+    .market-open-notice {
+      margin: 14px 0 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(21, 94, 239, 0.08) 0%, rgba(20, 184, 166, 0.08) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.16);
+      color: #1d4ed8;
+      font-size: 13px;
+      line-height: 1.7;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .market-open-notice strong {
+      color: #0f172a;
+    }
+    .stop-confirm-shell {
+      padding: 22px;
+      color: #b91c1c;
+      display: grid;
+      gap: 16px;
+    }
+    .stop-confirm-warning {
+      padding: 18px 18px 18px 20px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+      border: 1px solid rgba(239, 68, 68, 0.16);
+      box-shadow: 0 12px 24px rgba(185, 28, 28, 0.08);
+    }
+    .stop-confirm-warning strong {
+      display: block;
+      color: #991b1b;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    .stop-confirm-warning span {
+      color: #b45309;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .stop-confirm-copy {
+      color: #5b6475;
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 0;
+    }
+    .stop-confirm-field {
+      display: grid;
+      gap: 10px;
+    }
+    .stop-confirm-label {
+      color: #1f2937;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .stop-confirm-input {
+      width: 100%;
+      min-height: 54px;
+      padding: 0 18px;
+      border-radius: 18px;
+      border: 1px solid #fecaca;
+      background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+      color: #111827;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: inset 0 1px 2px rgba(127, 29, 29, 0.05);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .stop-confirm-input:focus {
+      outline: none;
+      border-color: #ef4444;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+      transform: translateY(-1px);
+    }
+    .stop-confirm-input.valid {
+      border-color: #10b981;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+    }
+    .stop-confirm-code {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: #fff7ed;
+      border: 1px dashed #fdba74;
+      color: #9a3412;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .stop-confirm-status {
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: 14px;
+      min-height: 24px;
+      color: #64748b;
+      font-size: 13px;
+      border: 1px solid #e2e8f0;
+    }
 
     .header-balance-code {
       cursor: pointer;
@@ -1683,6 +1897,7 @@ const adminHtml = `<!doctype html>
       <div class="header-buttons">
         <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
         <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('logsPage')">🧾 로그</button>
         <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
         <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
         <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
@@ -1729,12 +1944,45 @@ const adminHtml = `<!doctype html>
         </section>
         <div class="row">
           <!-- 자동매매 제어 -->
-          <section class="card" style="grid-column: 1 / -1;">
-            <h2 style="margin-bottom: 20px;">🤖 자동매매 제어</h2>
-            <p class="section-subtitle">국내/해외 자동매매를 즉시 시작하거나 중단하고, 최근 상태를 빠르게 확인합니다.</p>
+        <section class="card" style="grid-column: 1 / -1;">
+          <h2 style="margin-bottom: 20px;">🧠 AI 자동개선 상태</h2>
+          <p class="section-subtitle">매일 누적 성과를 기반으로 어떤 규칙이 현재 반영 중인지 바로 확인합니다.</p>
+          <div class="ai-ops-grid">
+            <div class="ai-ops-card">
+              <span>현재 익절 규칙</span>
+              <strong id="aiRuleSummary">로딩 중...</strong>
+              <small id="aiRuleDetail">AI 규칙 요약을 불러오는 중입니다.</small>
+            </div>
+            <div class="ai-ops-card">
+              <span>자동개선 상태</span>
+              <strong id="aiOptimizationStatus">로딩 중...</strong>
+              <small id="aiOptimizationDetail">최근 최적화 보고서 확인 중</small>
+            </div>
+            <div class="ai-ops-card">
+              <span>Oracle AI 기록</span>
+              <strong id="aiOracleCount">로딩 중...</strong>
+              <small id="aiOracleDetail">DB 저장 상태 확인 중</small>
+            </div>
+            <div class="ai-ops-card">
+              <span>보조 매수 정책</span>
+              <strong id="aiFallbackPolicy">로딩 중...</strong>
+              <small id="aiFallbackDetail">fallback 매수 규칙 확인 중</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="grid-column: 1 / -1;">
+          <h2 style="margin-bottom: 20px;">🤖 자동매매 제어</h2>
+          <p class="section-subtitle">국내/해외 자동매매를 즉시 시작하거나 중단하고, 최근 상태를 빠르게 확인합니다.</p>
             <div class="control-grid">
               <button id="startDomesticBtn" class="btn" onclick="startAutoTrading('domestic')" style="padding: 18px; font-size: 15px;">🇰🇷 국내 자동매매 시작</button>
               <button id="startOverseasBtn" class="btn" onclick="startAutoTrading('overseas')" style="padding: 18px; font-size: 15px;">🌎 해외 자동매매 시작</button>
+            </div>
+            <div class="market-open-notice" id="marketOpenNoticeDomestic">
+              <strong>국내 안내</strong> 장 상태를 확인하는 중입니다.
+            </div>
+            <div class="market-open-notice" id="marketOpenNoticeOverseas">
+              <strong>해외 안내</strong> 장 상태를 확인하는 중입니다.
             </div>
             <div id="quickControlMsg" style="margin-bottom: 12px;"></div>
             
@@ -1773,23 +2021,26 @@ const adminHtml = `<!doctype html>
           <button class="modal-close" onclick="closeStopAllModal()">✕</button>
         </div>
         
-        <div style="padding: 20px; color: #d32f2f;">
-          <div style="background: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-            <strong style="color: #c62828;">⚠️ 경고</strong><br/>
-            <span id="stopTradingWarning" style="color: #d32f2f; font-size: 14px;">이 작업은 해당 시장의 보유 포지션을 모두 매도하고 자동매매를 중단합니다.</span>
+        <div class="stop-confirm-shell">
+          <div class="stop-confirm-warning">
+            <strong>⚠️ 경고</strong>
+            <span id="stopTradingWarning">이 작업은 해당 시장의 보유 포지션을 모두 매도하고 자동매매를 중단합니다.</span>
           </div>
           
-          <p style="color: #666; margin-bottom: 15px; font-size: 14px;">중단하려면 아래 문구를 정확히 입력하세요:</p>
-          <input 
-            id="stopAllConfirmInput" 
-            type="text" 
-            placeholder="거래를중단합니다" 
-            onkeyup="updateStopAllButtonState()"
-            style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 15px; font-size: 14px;"
-          />
-          <div id="stopTradingExpectedText" style="margin-bottom: 12px; font-size: 12px; color: #9a3412;">확인 문구: 거래를중단합니다</div>
+          <p class="stop-confirm-copy">중단하려면 아래 확인 문구를 정확히 입력해야 합니다. 실거래 포지션 청산과 자동매매 중지가 함께 실행됩니다.</p>
+          <div class="stop-confirm-field">
+            <div class="stop-confirm-label">확인 문구 입력</div>
+            <input 
+              id="stopAllConfirmInput" 
+              class="stop-confirm-input"
+              type="text" 
+              placeholder="거래를중단합니다" 
+              onkeyup="updateStopAllButtonState()"
+            />
+            <div id="stopTradingExpectedText" class="stop-confirm-code">확인 문구: 거래를중단합니다</div>
+          </div>
           
-          <div id="stopAllStatus" style="background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 15px; min-height: 20px; color: #666; font-size: 13px;"></div>
+          <div id="stopAllStatus" class="stop-confirm-status"></div>
         </div>
         
         <div style="display: flex; gap: 10px; padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
@@ -1845,6 +2096,7 @@ const adminHtml = `<!doctype html>
       <div class="header-buttons">
         <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
         <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('logsPage')">🧾 로그</button>
         <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
         <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
         <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
@@ -1899,8 +2151,32 @@ const adminHtml = `<!doctype html>
           <div class="position-list" id="statusPositionList"></div>
         </section>
         <section class="card">
+          <h2>🚀 국내 즉시 매수 후보</h2>
+          <div class="position-list" id="statusDomesticBuyCandidates"></div>
+        </section>
+        <section class="card">
+          <h2>🌎 해외 즉시 매수 후보</h2>
+          <div class="position-list" id="statusOverseasBuyCandidates"></div>
+        </section>
+        <section class="card">
           <h2>⚠️ 오류 로그</h2>
           <div class="error-list" id="statusErrorList"></div>
+        </section>
+        <section class="card full">
+          <h2>🧾 최근 주문 실패</h2>
+          <div class="market-failure-grid">
+            <div id="domesticOrderFailureCard" class="market-failure-card">
+              <span>국내 주문 상태</span>
+              <strong>확인 중...</strong>
+              <small>최근 국내 주문 실패 이력을 확인하는 중입니다.</small>
+            </div>
+            <div id="overseasOrderFailureCard" class="market-failure-card">
+              <span>해외 주문 상태</span>
+              <strong>확인 중...</strong>
+              <small>최근 해외 주문 실패 이력을 확인하는 중입니다.</small>
+            </div>
+          </div>
+          <div class="error-list" id="statusOrderFailureList"></div>
         </section>
       </div>
 
@@ -1932,6 +2208,7 @@ const adminHtml = `<!doctype html>
       <div class="header-buttons">
         <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
         <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('logsPage')">🧾 로그</button>
         <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
         <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
         <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
@@ -2070,6 +2347,77 @@ const adminHtml = `<!doctype html>
           </section>
         </div>
       </section>
+    </div>
+  </div>
+
+  <div id="logsPage" class="page main-page">
+    <div class="top-header">
+      <div class="header-left">
+        <div class="header-title">🧾 Log Vault</div>
+      </div>
+      <div class="header-buttons">
+        <button class="header-btn" onclick="showPage('mainPage')">💼 대시보드</button>
+        <button class="header-btn" onclick="showPage('statusPage')">📊 현황</button>
+        <button class="header-btn" onclick="showPage('logsPage')">🧾 로그</button>
+        <button class="header-btn" onclick="showPage('usagePage')">📖 가이드</button>
+        <button class="header-btn secondary" onclick="openSettingsModal()">⚙️ 설정</button>
+        <button class="header-btn secondary" onclick="performLogout()">로그아웃</button>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <section class="card full">
+        <div class="usage-hero">
+          <div class="usage-eyebrow">Logs & Exports</div>
+          <h2>운영 로그 저장 위치를 확인하고, 전체/구간 로그를 바로 다운로드합니다.</h2>
+          <p>AI 분석 결과는 Oracle DB에, 거래 로그는 JSONL 파일에, 앱 로그는 서버의 logs/*.log 파일에 저장됩니다. 최근 오류는 메모리 버퍼에도 유지됩니다.</p>
+        </div>
+      </section>
+
+      <div class="stats-grid" id="logSummaryGrid">
+        <div class="stat-card"><div class="stat-icon">🗄️</div><div class="stat-content"><div class="stat-label">Oracle AI 결과</div><div class="stat-value" id="logOracleStatus">로딩중...</div></div></div>
+        <div class="stat-card"><div class="stat-icon">📒</div><div class="stat-content"><div class="stat-label">거래 로그</div><div class="stat-value" id="logTradeCount">로딩중...</div></div></div>
+        <div class="stat-card"><div class="stat-icon">🚨</div><div class="stat-content"><div class="stat-label">메모리 오류</div><div class="stat-value" id="logRuntimeCount">로딩중...</div></div></div>
+        <div class="stat-card"><div class="stat-icon">📁</div><div class="stat-content"><div class="stat-label">서버 로그 파일</div><div class="stat-value" id="logFileCount">로딩중...</div></div></div>
+      </div>
+
+      <div class="row">
+        <section class="card full">
+          <h2>⬇️ 로그 다운로드</h2>
+          <p class="section-subtitle">전체 로그 또는 날짜 구간 로그를 타입별로 저장할 수 있습니다.</p>
+          <div class="logs-toolbar">
+            <select id="logTypeSelect" class="input soft">
+              <option value="oracle-ops">Oracle 운영 로그</option>
+              <option value="trade-jsonl">거래 로그 JSON</option>
+              <option value="runtime-errors">오류 버퍼 JSON</option>
+              <option value="all-log">전체 앱 로그</option>
+              <option value="error-log">에러 로그</option>
+              <option value="api-log">API 로그</option>
+              <option value="ai-results">Oracle AI 결과 JSON</option>
+            </select>
+            <select id="logFormatSelect" class="input soft">
+              <option value="json">JSON</option>
+              <option value="csv">CSV</option>
+            </select>
+            <input id="logFromDate" class="input soft" type="datetime-local" />
+            <input id="logToDate" class="input soft" type="datetime-local" />
+            <button class="btn" onclick="downloadLogs(false)">전체 다운로드</button>
+            <button class="btn secondary" onclick="downloadLogs(true)">구간 다운로드</button>
+          </div>
+          <div id="logDownloadStatus" class="download-status">다운로드할 로그 타입과 구간을 선택하세요.</div>
+        </section>
+      </div>
+
+      <div class="row">
+        <section class="card">
+          <h2>🧠 저장 구조</h2>
+          <div id="logStorageNote" class="guide-callout">로딩 중...</div>
+        </section>
+        <section class="card">
+          <h2>📋 서버 로그 파일</h2>
+          <div id="logFileList" class="guide-troubleshoot"></div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -2430,6 +2778,8 @@ const adminHtml = `<!doctype html>
     // 현황 페이지로 이동 시 데이터 로드
     if (pageId === 'statusPage') {
       loadStatusPage()
+    } else if (pageId === 'logsPage') {
+      loadLogsPage()
     }
   }
 
@@ -2674,6 +3024,8 @@ const adminHtml = `<!doctype html>
       loadBalance(),
       loadStatus(),
       loadAutoControlStatus(),
+      loadAiImprovementSummary(),
+      loadMarketOpenNotices(),
     ])
 
     Promise.allSettled([
@@ -3523,6 +3875,10 @@ const adminHtml = `<!doctype html>
 
       // 포지션 리스트
       renderPositionList(positions)
+      renderBuyCandidates('statusDomesticBuyCandidates', data.symbolSelection?.responsiveBuyCandidates?.domestic || [], '국내')
+      renderBuyCandidates('statusOverseasBuyCandidates', data.symbolSelection?.responsiveBuyCandidates?.overseas || [], '해외')
+      renderOrderFailures(data.reports?.recentTradeLogs || [])
+      renderMarketFailureCards(data.reports?.recentTradeFailures || {})
 
       // 자동매매 상태
       updateTradingStatus(auto)
@@ -3574,6 +3930,32 @@ const adminHtml = `<!doctype html>
         ? '<div class="market-state running"><div class="status-chip good">LIVE</div><strong>실행 중</strong><small>사이클 ' + (auto.overseas?.cycleCount || 0) + '회 · 최근 실행 ' + formatDateTime(auto.overseas?.lastCycleAt) + '</small></div>'
         : '<div class="market-state stopped"><div class="status-chip neutral">IDLE</div><strong>대기 중</strong><small>최근 실행 ' + formatDateTime(auto.overseas?.lastCycleAt) + '</small></div>'
     }
+  }
+
+  function renderBuyCandidates(elementId, candidates, marketLabel) {
+    const list = document.getElementById(elementId)
+    if (!list) return
+
+    if (!candidates || !candidates.length) {
+      list.innerHTML = '<div style="padding:20px; color:#6b7280; text-align:center;">지금 바로 진입할 ' + marketLabel + ' 후보가 없습니다</div>'
+      return
+    }
+
+    list.innerHTML = candidates.map((item) => {
+      const price = Number(item.lastPrice || 0).toLocaleString('ko-KR')
+      const mode = item.mode === 'responsive_momentum'
+        ? '빠른모멘텀'
+        : item.mode === 'ranking_fallback'
+          ? '보조진입'
+          : item.mode === 'ranking_watchlist'
+            ? '관찰후보'
+            : 'MA추세'
+      return '<div class="position-item">' +
+        '<strong>' + item.symbol + ' · ' + mode + '</strong>' +
+        '<small>현재가 ₩' + price + ' | 강도 ' + Number(item.strength || 0).toFixed(4) + '</small>' +
+        '<small>' + (item.reason || '현재 전략 기준 즉시 진입 후보') + '</small>' +
+        '</div>'
+    }).join('')
   }
 
   function drawPerformanceChart(data) {
@@ -3643,6 +4025,187 @@ const adminHtml = `<!doctype html>
       ).join('')
     } catch (e) {
       console.error('오류 로그 로드 실패:', e)
+    }
+  }
+
+  function renderOrderFailures(logs) {
+    const list = document.getElementById('statusOrderFailureList')
+    if (!list) return
+
+    const failures = (logs || []).filter((item) => item.action === 'ORDER_FAILED' || item.action === 'RETRY_EXHAUSTED').slice(0, 12)
+    if (!failures.length) {
+      list.innerHTML = '<div style="padding:20px; color:#6b7280; text-align:center;">최근 주문 실패가 없습니다</div>'
+      return
+    }
+
+    list.innerHTML = failures.map((item) => {
+      const title = item.symbol ? (item.symbol + ' · ' + (item.action || '실패')) : (item.operation || item.action || '실패')
+      const detail = item.errorMessage || item.error || item.failureSummary || item.errors || '상세 사유 없음'
+      const actionGuide = item.requiredAction ? ' | 조치: ' + item.requiredAction : ''
+      const retryable = item.retryable ? ' | 재시도 가능' : ''
+      const time = item.timestamp ? formatDateTime(item.timestamp) : '-'
+      return '<div class="error-item">' +
+        '<strong>' + title + '</strong>' +
+        '<small>' + detail + actionGuide + retryable + ' | ' + time + '</small>' +
+        '</div>'
+    }).join('')
+  }
+
+  function renderMarketFailureCards(summary) {
+    const domesticCard = document.getElementById('domesticOrderFailureCard')
+    const overseasCard = document.getElementById('overseasOrderFailureCard')
+
+    const render = (card, label, data) => {
+      if (!card) return
+      if (!data) {
+        card.className = 'market-failure-card good'
+        card.innerHTML = '<span>' + label + ' 주문 상태</span><strong>정상</strong><small>최근 실패 기록이 없거나, 최근 주문 흐름이 안정적입니다.</small>'
+        return
+      }
+
+      card.className = 'market-failure-card bad'
+      card.innerHTML = '<span>' + label + ' 주문 상태</span>' +
+        '<strong>' + (data.symbol || label) + ' 실패</strong>' +
+        '<small>' + (data.errorMessage || '실패 사유 없음') + '</small>' +
+        '<small>' + (data.requiredAction || '추가 조치 정보 없음') + (data.retryable ? ' | 재시도 가능' : '') + '</small>'
+    }
+
+    render(domesticCard, '국내', summary.domestic)
+    render(overseasCard, '해외', summary.overseas)
+  }
+
+  async function loadAiImprovementSummary() {
+    try {
+      const r = await api('/api/ai/improvements')
+      const data = r.data || {}
+      const rules = data.activeExitRules || {}
+      const optimizationReport = data.optimizationReport || {}
+      const recentAiResults = Array.isArray(data.recentAiResults) ? data.recentAiResults : []
+
+      const ruleSummary = document.getElementById('aiRuleSummary')
+      const ruleDetail = document.getElementById('aiRuleDetail')
+      const optimizationStatus = document.getElementById('aiOptimizationStatus')
+      const optimizationDetail = document.getElementById('aiOptimizationDetail')
+      const oracleCount = document.getElementById('aiOracleCount')
+      const oracleDetail = document.getElementById('aiOracleDetail')
+      const fallbackPolicy = document.getElementById('aiFallbackPolicy')
+      const fallbackDetail = document.getElementById('aiFallbackDetail')
+
+      if (ruleSummary) ruleSummary.textContent = '+3% 시작 / 고점 -3% 익절'
+      if (ruleDetail) ruleDetail.textContent = rules.summary || '현재 자동 익절/손절 규칙이 적용 중입니다.'
+      if (optimizationStatus) optimizationStatus.textContent = optimizationReport.summary ? '자동 최적화 활성' : '성과 학습 대기'
+      if (optimizationDetail) optimizationDetail.textContent = optimizationReport.summary || '최근 거래 데이터가 쌓이면 더 정교하게 보정됩니다.'
+      if (oracleCount) oracleCount.textContent = recentAiResults.length + '건 최근 표시'
+      if (oracleDetail) oracleDetail.textContent = data.storage?.aiResultsInOracle ? 'AI 분석 결과는 Oracle DB에 저장됩니다.' : 'Oracle DB 연결을 확인하세요.'
+      if (fallbackPolicy) fallbackPolicy.textContent = '최대 ' + (data.auto?.buyPolicy?.fallbackFillTarget || 1) + '슬롯 보조 채움'
+      if (fallbackDetail) fallbackDetail.textContent = data.auto?.buyPolicy?.summary || '기본 매수 실패 시 보조 매수 규칙을 사용합니다.'
+    } catch (e) {
+      const ruleSummary = document.getElementById('aiRuleSummary')
+      const ruleDetail = document.getElementById('aiRuleDetail')
+      const optimizationStatus = document.getElementById('aiOptimizationStatus')
+      const fallbackPolicy = document.getElementById('aiFallbackPolicy')
+      if (ruleSummary) ruleSummary.textContent = '확인 실패'
+      if (ruleDetail) ruleDetail.textContent = 'AI 개선 정보 조회에 실패했습니다.'
+      if (optimizationStatus) optimizationStatus.textContent = '불러오기 실패'
+      if (fallbackPolicy) fallbackPolicy.textContent = '확인 실패'
+    }
+  }
+
+  function renderMarketOpenNotice(elementId, label, status, openTimeLabel) {
+    const el = document.getElementById(elementId)
+    if (!el) return
+
+    if (!status) {
+      el.innerHTML = '<strong>' + label + ' 안내</strong> 시장 상태를 불러오지 못했습니다.'
+      return
+    }
+
+    if (status.isOpen) {
+      el.innerHTML = '<strong>' + label + ' 안내</strong> 현재 ' + label + ' 시장이 열려 있어, 자동매매를 시작하면 바로 조건 검토와 매매가 진행됩니다.'
+      return
+    }
+
+    el.innerHTML = '<strong>' + label + ' 안내</strong> 장이 열리기 전 자동매매를 시작하면, ' + openTimeLabel + ' 이후 해당 시장이 열리는 시점부터 자동으로 매매가 시작됩니다.'
+  }
+
+  async function loadMarketOpenNotices() {
+    try {
+      const r = await api('/trading/market-status')
+      const data = r.data || {}
+      renderMarketOpenNotice('marketOpenNoticeDomestic', '국내', data.korean, data.korean?.nextOpen?.timeString || '다음 개장 시간')
+      renderMarketOpenNotice('marketOpenNoticeOverseas', '해외', data.us, data.us?.nextOpen?.timeString || '다음 개장 시간')
+    } catch (e) {
+      renderMarketOpenNotice('marketOpenNoticeDomestic', '국내', null)
+      renderMarketOpenNotice('marketOpenNoticeOverseas', '해외', null)
+    }
+  }
+
+  async function loadLogsPage() {
+    try {
+      const r = await api('/api/logs/summary')
+      const data = r.data || {}
+      const loggerFiles = Array.isArray(data.files?.loggerFiles) ? data.files.loggerFiles : []
+
+      document.getElementById('logOracleStatus').textContent = data.oracle?.aiResultsStored ? ('AI ' + (data.oracle?.aiResultsCount || 0) + ' / 운영 ' + (data.oracle?.operationalLogsCount || 0)) : '미연결'
+      document.getElementById('logTradeCount').textContent = (data.files?.tradeJsonlEntries || 0) + '건'
+      document.getElementById('logRuntimeCount').textContent = (data.runtime?.inMemoryErrors || 0) + '건'
+      document.getElementById('logFileCount').textContent = loggerFiles.length + '개'
+      document.getElementById('logStorageNote').textContent = data.note || '저장 구조를 불러오지 못했습니다.'
+
+      const list = document.getElementById('logFileList')
+      if (list) {
+        list.innerHTML = loggerFiles.length
+          ? loggerFiles.map((file) => '<div class="log-file-item"><strong>' + file.name + '</strong><small>크기: ' + Number(file.sizeBytes || 0).toLocaleString('ko-KR') + ' bytes</small><small>수정: ' + formatDateTime(file.updatedAt) + '</small></div>').join('')
+          : '<div class="log-file-item"><strong>로그 파일 없음</strong><small>서버 로그 파일이 아직 생성되지 않았습니다.</small></div>'
+      }
+    } catch (e) {
+      const status = document.getElementById('logDownloadStatus')
+      if (status) status.textContent = '로그 요약을 불러오지 못했습니다: ' + e.message
+    }
+  }
+
+  async function downloadLogs(useRange) {
+    const type = document.getElementById('logTypeSelect')?.value || 'trade-jsonl'
+    const format = document.getElementById('logFormatSelect')?.value || 'json'
+    const from = document.getElementById('logFromDate')?.value || ''
+    const to = document.getElementById('logToDate')?.value || ''
+    const status = document.getElementById('logDownloadStatus')
+
+    try {
+      if (useRange && (!from || !to)) {
+        throw new Error('구간 다운로드는 시작/종료 시간을 모두 선택해야 합니다.')
+      }
+
+      const params = new URLSearchParams({ type, format })
+      if (useRange) {
+        params.set('from', from)
+        params.set('to', to)
+      }
+
+      const url = buildBrowserApiUrl('/logs/download') + '?' + params.toString()
+      if (status) status.textContent = '로그를 준비하는 중입니다...'
+
+      const res = await fetch(url, { credentials: 'include' })
+      if (!res.ok) {
+        const errorText = await res.text()
+        throw new Error(errorText || '로그 다운로드 실패')
+      }
+
+      const blob = await res.blob()
+      const downloadUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const disposition = res.headers.get('Content-Disposition') || ''
+      const fileNameMatch = disposition.match(/filename="([^"]+)"/)
+      link.href = downloadUrl
+      link.download = fileNameMatch ? fileNameMatch[1] : (type + '.txt')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(downloadUrl)
+
+      if (status) status.textContent = '다운로드를 시작했습니다: ' + (link.download || type)
+    } catch (e) {
+      if (status) status.textContent = '다운로드 실패: ' + e.message
     }
   }
 
@@ -3767,6 +4330,7 @@ const adminHtml = `<!doctype html>
     const config = getStopTradingConfig()
     
     const isCorrect = value === config.confirmation
+    input.classList.toggle('valid', isCorrect)
     btn.disabled = !isCorrect
     btn.style.opacity = isCorrect ? '1' : '0.5'
     btn.style.cursor = isCorrect ? 'pointer' : 'not-allowed'
