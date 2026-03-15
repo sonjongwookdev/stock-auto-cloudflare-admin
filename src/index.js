@@ -3251,15 +3251,13 @@ const adminHtml = `<!doctype html>
       return
     }
 
-    domesticBtn.title = ''
-    overseasBtn.title = ''
+    const domesticRunning = domesticBtn.dataset.running === '1'
+    const overseasRunning = overseasBtn.dataset.running === '1'
 
-    if (domesticBtn.dataset.running !== '1') {
-      domesticBtn.disabled = false
-    }
-    if (overseasBtn.dataset.running !== '1') {
-      overseasBtn.disabled = false
-    }
+    domesticBtn.disabled = domesticRunning
+    overseasBtn.disabled = overseasRunning
+    domesticBtn.title = domesticRunning ? '자동매매중입니다' : ''
+    overseasBtn.title = overseasRunning ? '자동매매중입니다' : ''
   }
 
   async function loadAutoControlStatus() {
@@ -3291,8 +3289,8 @@ const adminHtml = `<!doctype html>
         domesticBtn.dataset.running = domesticRunning ? '1' : '0'
         overseasBtn.dataset.running = overseasRunning ? '1' : '0'
 
-        domesticBtn.textContent = domesticRunning ? '🇰🇷 국내 매매 중...' : '🇰🇷 국내 자동매매 시작'
-        overseasBtn.textContent = overseasRunning ? '🌎 해외 매매 중...' : '🌎 해외 자동매매 시작'
+        domesticBtn.textContent = domesticRunning ? '🇰🇷 자동매매중입니다' : '🇰🇷 국내 자동매매 시작'
+        overseasBtn.textContent = overseasRunning ? '🌎 자동매매중입니다' : '🌎 해외 자동매매 시작'
 
         applyServerStateToTradingButtons()
 
@@ -3330,6 +3328,14 @@ const adminHtml = `<!doctype html>
   async function startAutoTrading(market) {
     try {
       const targetMarket = market === 'overseas' ? 'overseas' : 'domestic'
+      const targetBtn = document.getElementById(targetMarket === 'overseas' ? 'startOverseasBtn' : 'startDomesticBtn')
+
+      if (targetBtn && targetBtn.dataset.running === '1') {
+        setQuickControlMessage((targetMarket === 'overseas' ? '해외' : '국내') + ' 자동매매중입니다.', 'success')
+        targetBtn.disabled = true
+        targetBtn.title = '자동매매중입니다'
+        return
+      }
 
       await loadStatus()
       if (!isServerOnline) {
