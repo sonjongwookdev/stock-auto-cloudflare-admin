@@ -2656,6 +2656,25 @@ const adminHtml = `<!doctype html>
   let statusPanelOpen = false
   let isServerOnline = true
 
+  function clearStoredLoginState() {
+    currentUser.isLoggedIn = false
+    storage.removeItem('isLoggedIn')
+  }
+
+  function handleAuthExpired(message = '로그인이 만료되었습니다. 다시 로그인해주세요.') {
+    clearStoredLoginState()
+
+    const passwordInput = document.getElementById('loginPassword')
+    const loginError = document.getElementById('loginError')
+
+    if (passwordInput) passwordInput.value = ''
+    if (loginError) {
+      loginError.innerHTML = '<div class="alert password-error">' + message + '</div>'
+    }
+
+    showPage('loginPage')
+  }
+
   async function api(path, opts = {}) {
     const method = opts.method || 'GET'
     const maxRetries = Number.isFinite(opts.retries) ? opts.retries : (method === 'GET' ? 2 : 1)
@@ -2690,6 +2709,9 @@ const adminHtml = `<!doctype html>
         if (!res.ok) {
           // 4xx 에러는 재시도하지 않음
           if (res.status >= 400 && res.status < 500) {
+            if (res.status === 401 && !path.includes('/auth/login')) {
+              handleAuthExpired()
+            }
             const err = new Error(json.error || json.message || ('HTTP ' + res.status))
             err.statusCode = res.status
             err.errorType = json.code
@@ -2985,6 +3007,9 @@ const adminHtml = `<!doctype html>
         }
       }, 350)
     } catch (e) {
+      if (e.statusCode === 401) {
+        return
+      }
       document.getElementById('initPage').innerHTML = 
         '<div class="init-card"><div class="error-msg">오류: ' + e.message + '</div></div>'
       setTimeout(() => showPage('loginPage'), 3000)
@@ -3659,19 +3684,31 @@ const adminHtml = `<!doctype html>
         Object.entries(positions).forEach(([symbol, pos]) => {
           const item = document.createElement('div')
           item.style.cssText = 'background: #f9f9f9; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb; display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center;'
-          
-          const gainLoss = pos.current_price ? ((pos.current_price - pos.entry_price) * pos.shares).toFixed(0) : 'N/A'
-          const gainPct = pos.current_price ? (((pos.current_price - pos.entry_price) / pos.entry_price) * 100).toFixed(1) : 'N/A'
+
+          const shares = Number(pos?.shares || 0)
+          const entryPrice = Number(pos?.entry_price)
+          const currentPrice = Number(pos?.current_price)
+          const hasEntryPrice = Number.isFinite(entryPrice)
+          const hasCurrentPrice = Number.isFinite(currentPrice)
+          const hasGainData = hasEntryPrice && hasCurrentPrice
+          const gainLoss = hasGainData ? ((currentPrice - entryPrice) * shares).toFixed(0) : 'N/A'
+          const gainPct = hasGainData && entryPrice !== 0 ? (((currentPrice - entryPrice) / entryPrice) * 100).toFixed(1) : 'N/A'
+          const entryDate = pos?.entry_date ? String(pos.entry_date).substring(0, 10) : '-'
+          const priceText = hasEntryPrice ? entryPrice.toFixed(2) : 'N/A'
+          const gainLossNumber = Number(gainLoss)
+          const gainPctNumber = Number(gainPct)
+          const gainLossColor = gainLoss !== 'N/A' && gainLossNumber >= 0 ? '#10b981' : '#ef4444'
+          const gainPctColor = gainPct !== 'N/A' && gainPctNumber >= 0 ? '#10b981' : '#ef4444'
           
           item.innerHTML = '<div>' +
             '<div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">' + symbol + '</div>' +
             '<div style="font-size: 12px; color: #666; line-height: 1.6;">' +
-            '보유수량: ' + pos.shares + '주 | 매입가: ' + pos.entry_price.toFixed(2) + ' | 매입일: ' + pos.entry_date.substring(0, 10) +
+            '보유수량: ' + shares + '주 | 매입가: ' + priceText + ' | 매입일: ' + entryDate +
             '</div>' +
             '</div>' +
             '<div style="text-align: right;">' +
-            '<div style="font-weight: bold; font-size: 14px; color: ' + (gainLoss >= 0 ? '#10b981' : '#ef4444') + ';">' + (gainLoss >= 0 ? '+' : '') + gainLoss + '원</div>' +
-            '<div style="font-size: 12px; color: ' + (gainPct >= 0 ? '#10b981' : '#ef4444') + ';">' + (gainPct >= 0 ? '+' : '') + gainPct + '%</div>' +
+            '<div style="font-weight: bold; font-size: 14px; color: ' + gainLossColor + ';">' + (gainLoss !== 'N/A' && gainLossNumber >= 0 ? '+' : '') + gainLoss + (gainLoss === 'N/A' ? '' : '원') + '</div>' +
+            '<div style="font-size: 12px; color: ' + gainPctColor + ';">' + (gainPct !== 'N/A' && gainPctNumber >= 0 ? '+' : '') + gainPct + (gainPct === 'N/A' ? '' : '%') + '</div>' +
             '</div>'
           
           posList.appendChild(item)
@@ -3855,7 +3892,7 @@ const adminHtml = `<!doctype html>
   async function loadStatusPage() {
     try {
       // API 호출
-      const r = await api('/api/trading/dashboard-overview')
+      const r = await api('/api/trading/dashboard-overview', { timeoutMs: 20000, retries: 1 })
       const data = r.data || {}
       const trading = data.trading || {}
       const auto = data.auto || {}
@@ -3889,6 +3926,9 @@ const adminHtml = `<!doctype html>
       // 오류 로그 로드
       loadErrorLogs()
     } catch (e) {
+      if (e.statusCode === 401) {
+        return
+      }
       console.error('현황 페이지 로드 실패:', e)
     }
   }
@@ -4234,13 +4274,6 @@ const adminHtml = `<!doctype html>
     }
   }
 
-  // DOM이 로드된 후 이벤트 리스너 등록
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initEventListeners)
-  } else {
-    initEventListeners()
-  }
-
   // localStorage 안전하게 사용하는 헬퍼 함수
   function safeLocalStorage() {
     try {
@@ -4262,6 +4295,13 @@ const adminHtml = `<!doctype html>
   }
 
   const storage = safeLocalStorage()
+
+  // DOM이 로드된 후 이벤트 리스너 등록
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEventListeners)
+  } else {
+    initEventListeners()
+  }
 
   // ============================================
   // 핵심 자동매매 제어 함수들
@@ -4451,6 +4491,7 @@ async function handleRequest(request, env) {
     return new Response(html, {
       headers: {
         'Content-Type': 'text/html; charset=UTF-8',
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://stock-auto-cloudflare-admin.sonjongwook123.workers.dev http://158-180-90-6.nip.io:4000 http://localhost:4000; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
         ...corsHeaders
       },
     })
@@ -4483,6 +4524,10 @@ async function handleRequest(request, env) {
     const backendRes = await fetch(backendReq);
     // 응답 헤더 복사
     const resHeaders = new Headers(backendRes.headers);
+    const setCookie = backendRes.headers.get('set-cookie');
+    if (setCookie) {
+      resHeaders.set('set-cookie', setCookie.replace(/;\s*Domain=[^;]+/gi, ''));
+    }
     corsHeaders && Object.entries(corsHeaders).forEach(([k, v]) => resHeaders.set(k, v));
     return new Response(await backendRes.body, {
       status: backendRes.status,
