@@ -1969,6 +1969,28 @@ const adminHtml = `<!doctype html>
               <small id="aiFallbackDetail">fallback 매수 규칙 확인 중</small>
             </div>
           </div>
+          <div class="ai-ops-grid" style="margin-top: 14px;">
+            <div class="ai-ops-card">
+              <span>AI 영향도</span>
+              <strong id="aiImpactHeadline">로딩 중...</strong>
+              <small id="aiImpactDetail">후보 점수 로그를 확인하는 중입니다.</small>
+            </div>
+            <div class="ai-ops-card">
+              <span>AI vs 규칙 성과</span>
+              <strong id="aiComparisonHeadline">로딩 중...</strong>
+              <small id="aiComparisonDetail">실거래 성과 비교를 준비 중입니다.</small>
+            </div>
+            <div class="ai-ops-card">
+              <span>2주 요약</span>
+              <strong id="aiTwoWeekHeadline">로딩 중...</strong>
+              <small id="aiTwoWeekDetail">최근 14일 성과를 계산 중입니다.</small>
+            </div>
+            <div class="ai-ops-card">
+              <span>4주 요약</span>
+              <strong id="aiFourWeekHeadline">로딩 중...</strong>
+              <small id="aiFourWeekDetail">최근 28일 성과를 계산 중입니다.</small>
+            </div>
+          </div>
         </section>
 
         <section class="card" style="grid-column: 1 / -1;">
@@ -4126,6 +4148,9 @@ const adminHtml = `<!doctype html>
       const data = r.data || {}
       const rules = data.activeExitRules || {}
       const optimizationReport = data.optimizationReport || {}
+      const aiComparison = data.performanceReport?.AI_비교 || {}
+      const aiImpact = data.aiCandidateImpact || {}
+      const rolling = data.aiRollingSummary || {}
       const recentAiResults = Array.isArray(data.recentAiResults) ? data.recentAiResults : []
 
       const ruleSummary = document.getElementById('aiRuleSummary')
@@ -4136,6 +4161,17 @@ const adminHtml = `<!doctype html>
       const oracleDetail = document.getElementById('aiOracleDetail')
       const fallbackPolicy = document.getElementById('aiFallbackPolicy')
       const fallbackDetail = document.getElementById('aiFallbackDetail')
+      const aiImpactHeadline = document.getElementById('aiImpactHeadline')
+      const aiImpactDetail = document.getElementById('aiImpactDetail')
+      const aiComparisonHeadline = document.getElementById('aiComparisonHeadline')
+      const aiComparisonDetail = document.getElementById('aiComparisonDetail')
+      const aiTwoWeekHeadline = document.getElementById('aiTwoWeekHeadline')
+      const aiTwoWeekDetail = document.getElementById('aiTwoWeekDetail')
+      const aiFourWeekHeadline = document.getElementById('aiFourWeekHeadline')
+      const aiFourWeekDetail = document.getElementById('aiFourWeekDetail')
+
+      const pct = (value) => value === null || value === undefined || Number.isNaN(Number(value)) ? 'N/A' : Number(value).toFixed(2) + '%'
+      const pnl = (value) => value === null || value === undefined || Number.isNaN(Number(value)) ? 'N/A' : formatNumber(value) + '원'
 
       if (ruleSummary) ruleSummary.textContent = '+3% 시작 / 고점 -3% 익절'
       if (ruleDetail) ruleDetail.textContent = rules.summary || '현재 자동 익절/손절 규칙이 적용 중입니다.'
@@ -4145,15 +4181,31 @@ const adminHtml = `<!doctype html>
       if (oracleDetail) oracleDetail.textContent = data.storage?.aiResultsInOracle ? 'AI 분석 결과는 Oracle DB에 저장됩니다.' : 'Oracle DB 연결을 확인하세요.'
       if (fallbackPolicy) fallbackPolicy.textContent = '최대 ' + (data.auto?.buyPolicy?.fallbackFillTarget || 1) + '슬롯 보조 채움'
       if (fallbackDetail) fallbackDetail.textContent = data.auto?.buyPolicy?.summary || '기본 매수 실패 시 보조 매수 규칙을 사용합니다.'
+      if (aiImpactHeadline) aiImpactHeadline.textContent = (aiImpact.aiScoredCandidates || 0) + '개 후보 AI 점수화'
+      if (aiImpactDetail) aiImpactDetail.textContent = '평균 rule ' + pct(aiImpact.averageRuleScore) + ' / AI ' + pct(aiImpact.averageAiScore) + ' / 최종 ' + pct(aiImpact.averageFinalScore)
+      if (aiComparisonHeadline) aiComparisonHeadline.textContent = 'AI ' + (aiComparison.aiAssisted?.totalTrades || 0) + '건 vs 규칙 ' + (aiComparison.ruleOnly?.totalTrades || 0) + '건'
+      if (aiComparisonDetail) aiComparisonDetail.textContent = 'AI 승률 ' + pct(aiComparison.aiAssisted?.winRate) + ' / 규칙 승률 ' + pct(aiComparison.ruleOnly?.winRate) + ' / AI 총손익 ' + pnl(aiComparison.aiAssisted?.totalPnL)
+      if (aiTwoWeekHeadline) aiTwoWeekHeadline.textContent = (rolling.twoWeeks?.totalTrades || 0) + '건 / AI ' + (rolling.twoWeeks?.aiTrades || 0) + '건'
+      if (aiTwoWeekDetail) aiTwoWeekDetail.textContent = '14일 손익 ' + pnl(rolling.twoWeeks?.totalPnl) + ' | 평균수익률 ' + pct((rolling.twoWeeks?.avgPnlRate || 0) * 100) + ' | ' + (rolling.guidance?.earlySignal || '')
+      if (aiFourWeekHeadline) aiFourWeekHeadline.textContent = (rolling.fourWeeks?.totalTrades || 0) + '건 / AI ' + (rolling.fourWeeks?.aiTrades || 0) + '건'
+      if (aiFourWeekDetail) aiFourWeekDetail.textContent = '28일 손익 ' + pnl(rolling.fourWeeks?.totalPnl) + ' | 평균수익률 ' + pct((rolling.fourWeeks?.avgPnlRate || 0) * 100) + ' | ' + (rolling.guidance?.baseline || '')
     } catch (e) {
       const ruleSummary = document.getElementById('aiRuleSummary')
       const ruleDetail = document.getElementById('aiRuleDetail')
       const optimizationStatus = document.getElementById('aiOptimizationStatus')
       const fallbackPolicy = document.getElementById('aiFallbackPolicy')
+      const aiImpactHeadline = document.getElementById('aiImpactHeadline')
+      const aiComparisonHeadline = document.getElementById('aiComparisonHeadline')
+      const aiTwoWeekHeadline = document.getElementById('aiTwoWeekHeadline')
+      const aiFourWeekHeadline = document.getElementById('aiFourWeekHeadline')
       if (ruleSummary) ruleSummary.textContent = '확인 실패'
       if (ruleDetail) ruleDetail.textContent = 'AI 개선 정보 조회에 실패했습니다.'
       if (optimizationStatus) optimizationStatus.textContent = '불러오기 실패'
       if (fallbackPolicy) fallbackPolicy.textContent = '확인 실패'
+      if (aiImpactHeadline) aiImpactHeadline.textContent = '불러오기 실패'
+      if (aiComparisonHeadline) aiComparisonHeadline.textContent = '불러오기 실패'
+      if (aiTwoWeekHeadline) aiTwoWeekHeadline.textContent = '불러오기 실패'
+      if (aiFourWeekHeadline) aiFourWeekHeadline.textContent = '불러오기 실패'
     }
   }
 
