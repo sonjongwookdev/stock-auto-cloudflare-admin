@@ -4172,6 +4172,10 @@ const adminHtml = `<!doctype html>
 
       const pct = (value) => value === null || value === undefined || Number.isNaN(Number(value)) ? 'N/A' : Number(value).toFixed(2) + '%'
       const pnl = (value) => value === null || value === undefined || Number.isNaN(Number(value)) ? 'N/A' : formatNumber(value) + '원'
+      const hasAiCandidateData = Number(aiImpact.totalLoggedCandidates || 0) > 0
+      const hasAiTradeData = Number(aiComparison.aiAssisted?.totalTrades || 0) + Number(aiComparison.ruleOnly?.totalTrades || 0) > 0
+      const hasTwoWeekData = Number(rolling.twoWeeks?.totalTrades || 0) > 0
+      const hasFourWeekData = Number(rolling.fourWeeks?.totalTrades || 0) > 0
 
       if (ruleSummary) ruleSummary.textContent = '+3% 시작 / 고점 -3% 익절'
       if (ruleDetail) ruleDetail.textContent = rules.summary || '현재 자동 익절/손절 규칙이 적용 중입니다.'
@@ -4181,14 +4185,28 @@ const adminHtml = `<!doctype html>
       if (oracleDetail) oracleDetail.textContent = data.storage?.aiResultsInOracle ? 'AI 분석 결과는 Oracle DB에 저장됩니다.' : 'Oracle DB 연결을 확인하세요.'
       if (fallbackPolicy) fallbackPolicy.textContent = '최대 ' + (data.auto?.buyPolicy?.fallbackFillTarget || 1) + '슬롯 보조 채움'
       if (fallbackDetail) fallbackDetail.textContent = data.auto?.buyPolicy?.summary || '기본 매수 실패 시 보조 매수 규칙을 사용합니다.'
-      if (aiImpactHeadline) aiImpactHeadline.textContent = (aiImpact.aiScoredCandidates || 0) + '개 후보 AI 점수화'
-      if (aiImpactDetail) aiImpactDetail.textContent = '평균 rule ' + pct(aiImpact.averageRuleScore) + ' / AI ' + pct(aiImpact.averageAiScore) + ' / 최종 ' + pct(aiImpact.averageFinalScore)
-      if (aiComparisonHeadline) aiComparisonHeadline.textContent = 'AI ' + (aiComparison.aiAssisted?.totalTrades || 0) + '건 vs 규칙 ' + (aiComparison.ruleOnly?.totalTrades || 0) + '건'
-      if (aiComparisonDetail) aiComparisonDetail.textContent = 'AI 승률 ' + pct(aiComparison.aiAssisted?.winRate) + ' / 규칙 승률 ' + pct(aiComparison.ruleOnly?.winRate) + ' / AI 총손익 ' + pnl(aiComparison.aiAssisted?.totalPnL)
-      if (aiTwoWeekHeadline) aiTwoWeekHeadline.textContent = (rolling.twoWeeks?.totalTrades || 0) + '건 / AI ' + (rolling.twoWeeks?.aiTrades || 0) + '건'
-      if (aiTwoWeekDetail) aiTwoWeekDetail.textContent = '14일 손익 ' + pnl(rolling.twoWeeks?.totalPnl) + ' | 평균수익률 ' + pct((rolling.twoWeeks?.avgPnlRate || 0) * 100) + ' | ' + (rolling.guidance?.earlySignal || '')
-      if (aiFourWeekHeadline) aiFourWeekHeadline.textContent = (rolling.fourWeeks?.totalTrades || 0) + '건 / AI ' + (rolling.fourWeeks?.aiTrades || 0) + '건'
-      if (aiFourWeekDetail) aiFourWeekDetail.textContent = '28일 손익 ' + pnl(rolling.fourWeeks?.totalPnl) + ' | 평균수익률 ' + pct((rolling.fourWeeks?.avgPnlRate || 0) * 100) + ' | ' + (rolling.guidance?.baseline || '')
+      if (aiImpactHeadline) aiImpactHeadline.textContent = hasAiCandidateData ? ((aiImpact.aiScoredCandidates || 0) + '개 후보 AI 점수화') : '데이터 모으는 중'
+      if (aiImpactDetail) aiImpactDetail.textContent = hasAiCandidateData
+        ? ('평균 rule ' + pct(aiImpact.averageRuleScore) + ' / AI ' + pct(aiImpact.averageAiScore) + ' / 최종 ' + pct(aiImpact.averageFinalScore))
+        : '장중 후보 평가가 쌓이면 AI 점수화 비중과 평균 점수를 보여줍니다.'
+      if (aiComparisonHeadline) aiComparisonHeadline.textContent = hasAiTradeData
+        ? ('AI ' + (aiComparison.aiAssisted?.totalTrades || 0) + '건 vs 규칙 ' + (aiComparison.ruleOnly?.totalTrades || 0) + '건')
+        : '비교 데이터 모으는 중'
+      if (aiComparisonDetail) aiComparisonDetail.textContent = hasAiTradeData
+        ? ('AI 승률 ' + pct(aiComparison.aiAssisted?.winRate) + ' / 규칙 승률 ' + pct(aiComparison.ruleOnly?.winRate) + ' / AI 총손익 ' + pnl(aiComparison.aiAssisted?.totalPnL))
+        : 'AI 관여 거래와 규칙 단독 거래가 더 쌓이면 비교 결과를 표시합니다.'
+      if (aiTwoWeekHeadline) aiTwoWeekHeadline.textContent = hasTwoWeekData
+        ? ((rolling.twoWeeks?.totalTrades || 0) + '건 / AI ' + (rolling.twoWeeks?.aiTrades || 0) + '건')
+        : '2주 데이터 집계 중'
+      if (aiTwoWeekDetail) aiTwoWeekDetail.textContent = hasTwoWeekData
+        ? ('14일 손익 ' + pnl(rolling.twoWeeks?.totalPnl) + ' | 평균수익률 ' + pct((rolling.twoWeeks?.avgPnlRate || 0) * 100) + ' | ' + (rolling.guidance?.earlySignal || ''))
+        : '최근 14일 거래가 더 쌓이면 AI/규칙 성과를 자동으로 요약합니다.'
+      if (aiFourWeekHeadline) aiFourWeekHeadline.textContent = hasFourWeekData
+        ? ((rolling.fourWeeks?.totalTrades || 0) + '건 / AI ' + (rolling.fourWeeks?.aiTrades || 0) + '건')
+        : '4주 데이터 집계 중'
+      if (aiFourWeekDetail) aiFourWeekDetail.textContent = hasFourWeekData
+        ? ('28일 손익 ' + pnl(rolling.fourWeeks?.totalPnl) + ' | 평균수익률 ' + pct((rolling.fourWeeks?.avgPnlRate || 0) * 100) + ' | ' + (rolling.guidance?.baseline || ''))
+        : '최근 28일 표본이 쌓이면 더 신뢰도 높은 비교 결과를 보여줍니다.'
     } catch (e) {
       const ruleSummary = document.getElementById('aiRuleSummary')
       const ruleDetail = document.getElementById('aiRuleDetail')
@@ -4198,14 +4216,14 @@ const adminHtml = `<!doctype html>
       const aiComparisonHeadline = document.getElementById('aiComparisonHeadline')
       const aiTwoWeekHeadline = document.getElementById('aiTwoWeekHeadline')
       const aiFourWeekHeadline = document.getElementById('aiFourWeekHeadline')
-      if (ruleSummary) ruleSummary.textContent = '확인 실패'
-      if (ruleDetail) ruleDetail.textContent = 'AI 개선 정보 조회에 실패했습니다.'
-      if (optimizationStatus) optimizationStatus.textContent = '불러오기 실패'
-      if (fallbackPolicy) fallbackPolicy.textContent = '확인 실패'
-      if (aiImpactHeadline) aiImpactHeadline.textContent = '불러오기 실패'
-      if (aiComparisonHeadline) aiComparisonHeadline.textContent = '불러오기 실패'
-      if (aiTwoWeekHeadline) aiTwoWeekHeadline.textContent = '불러오기 실패'
-      if (aiFourWeekHeadline) aiFourWeekHeadline.textContent = '불러오기 실패'
+      if (ruleSummary) ruleSummary.textContent = '일시 확인 지연'
+      if (ruleDetail) ruleDetail.textContent = 'AI 개선 정보를 잠시 불러오지 못했습니다. 잠시 후 다시 갱신됩니다.'
+      if (optimizationStatus) optimizationStatus.textContent = '잠시 후 재시도'
+      if (fallbackPolicy) fallbackPolicy.textContent = '정책 재확인 중'
+      if (aiImpactHeadline) aiImpactHeadline.textContent = '데이터 확인 중'
+      if (aiComparisonHeadline) aiComparisonHeadline.textContent = '비교 데이터 준비 중'
+      if (aiTwoWeekHeadline) aiTwoWeekHeadline.textContent = '2주 데이터 확인 중'
+      if (aiFourWeekHeadline) aiFourWeekHeadline.textContent = '4주 데이터 확인 중'
     }
   }
 
