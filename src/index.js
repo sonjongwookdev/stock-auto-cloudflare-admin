@@ -1920,14 +1920,14 @@ const adminHtml = `<!doctype html>
           <div class="hero-panel">
             <div class="hero-mini-grid">
               <div class="hero-kpi">
-                <span>총 자산</span>
+                <span>계좌 평가금액</span>
                 <strong id="heroBalanceValue">로딩 중...</strong>
-                <small>실시간 KIS 계좌 평가 금액</small>
+                <small>KIS 원본 계좌 총자산 기준</small>
               </div>
               <div class="hero-kpi">
-                <span>가용 현금</span>
+                <span>주문가능 현금</span>
                 <strong id="heroCashValue">로딩 중...</strong>
-                <small>즉시 사용할 수 있는 현금</small>
+                <small id="heroCashMeta">즉시 주문에 사용할 수 있는 현금</small>
               </div>
               <div class="hero-kpi">
                 <span>국내 자동매매</span>
@@ -1940,55 +1940,77 @@ const adminHtml = `<!doctype html>
                 <small id="heroOverseasMeta">첫 상태 조회 전</small>
               </div>
             </div>
+            <div class="hero-mini-grid" style="margin-top: 12px;">
+              <div class="hero-kpi">
+                <span>보유주식 평가액</span>
+                <strong id="heroStockValue">로딩 중...</strong>
+                <small>현재 보유 주식의 실시간 평가액</small>
+              </div>
+              <div class="hero-kpi">
+                <span>출금가능 현금</span>
+                <strong id="heroWithdrawableValue">로딩 중...</strong>
+                <small>KIS가 제공하는 출금가능 금액</small>
+              </div>
+              <div class="hero-kpi">
+                <span>보유 포지션 합계</span>
+                <strong id="heroSettlementValue">로딩 중...</strong>
+                <small>보유 수량 x 현재가 합계</small>
+              </div>
+              <div class="hero-kpi">
+                <span>KIS 총평가 원본</span>
+                <strong id="heroComputedAssetsValue">로딩 중...</strong>
+                <small>stock_tot_evlu_amt / stock_nass_amt 원본</small>
+              </div>
+            </div>
           </div>
         </section>
         <div class="row">
           <!-- 자동매매 제어 -->
         <section class="card" style="grid-column: 1 / -1;">
-          <h2 style="margin-bottom: 20px;">🧠 AI 자동개선 상태</h2>
-          <p class="section-subtitle">매일 누적 성과를 기반으로 어떤 규칙이 현재 반영 중인지 바로 확인합니다.</p>
+          <h2 style="margin-bottom: 20px;">🧭 현재 전략 개요</h2>
+          <p class="section-subtitle">지금 실서버에 실제 적용 중인 국내/해외 전략 방향과 핵심 청산 규칙을 운영 관점에서 빠르게 확인합니다.</p>
           <div class="ai-ops-grid">
             <div class="ai-ops-card">
-              <span>현재 익절 규칙</span>
-              <strong id="aiRuleSummary">로딩 중...</strong>
-              <small id="aiRuleDetail">AI 규칙 요약을 불러오는 중입니다.</small>
+              <span>활성 전략</span>
+              <strong id="strategyOverviewName">로딩 중...</strong>
+              <small id="strategyOverviewMeta">현재 적용 중인 전략 이름과 선택 상태를 확인하는 중입니다.</small>
             </div>
             <div class="ai-ops-card">
-              <span>자동개선 상태</span>
-              <strong id="aiOptimizationStatus">로딩 중...</strong>
-              <small id="aiOptimizationDetail">최근 최적화 보고서 확인 중</small>
+              <span>국내 핵심 규칙</span>
+              <strong id="strategyDomesticExit">로딩 중...</strong>
+              <small id="strategyDomesticDetail">국내 익절/본절/트레일링 규칙을 불러오는 중입니다.</small>
             </div>
             <div class="ai-ops-card">
-              <span>Oracle AI 기록</span>
-              <strong id="aiOracleCount">로딩 중...</strong>
-              <small id="aiOracleDetail">DB 저장 상태 확인 중</small>
+              <span>해외 핵심 규칙</span>
+              <strong id="strategyOverseasExit">로딩 중...</strong>
+              <small id="strategyOverseasDetail">해외 반도체/AI 전용 규칙을 불러오는 중입니다.</small>
             </div>
             <div class="ai-ops-card">
-              <span>보조 매수 정책</span>
-              <strong id="aiFallbackPolicy">로딩 중...</strong>
-              <small id="aiFallbackDetail">fallback 매수 규칙 확인 중</small>
+              <span>현재 시장 운용</span>
+              <strong id="strategyMarketMix">로딩 중...</strong>
+              <small id="strategyMarketMixDetail">국내/해외 자동매매 상태와 다음 운용 흐름을 정리하는 중입니다.</small>
             </div>
           </div>
           <div class="ai-ops-grid" style="margin-top: 14px;">
             <div class="ai-ops-card">
-              <span>AI 영향도</span>
-              <strong id="aiImpactHeadline">로딩 중...</strong>
-              <small id="aiImpactDetail">후보 점수 로그를 확인하는 중입니다.</small>
+              <span>국내 진입 필터</span>
+              <strong id="strategyDomesticFilter">로딩 중...</strong>
+              <small id="strategyDomesticFilterDetail">현재 국내 후보 선별 규칙을 정리하는 중입니다.</small>
             </div>
             <div class="ai-ops-card">
-              <span>AI vs 규칙 성과</span>
-              <strong id="aiComparisonHeadline">로딩 중...</strong>
-              <small id="aiComparisonDetail">실거래 성과 비교를 준비 중입니다.</small>
+              <span>해외 유니버스</span>
+              <strong id="strategyOverseasUniverse">로딩 중...</strong>
+              <small id="strategyOverseasUniverseDetail">현재 허용된 해외 종목군을 표시합니다.</small>
             </div>
             <div class="ai-ops-card">
-              <span>2주 요약</span>
-              <strong id="aiTwoWeekHeadline">로딩 중...</strong>
-              <small id="aiTwoWeekDetail">최근 14일 성과를 계산 중입니다.</small>
+              <span>현재 포지션 철학</span>
+              <strong id="strategyHoldingStyle">로딩 중...</strong>
+              <small id="strategyHoldingStyleDetail">지금 전략이 짧게 끊는지, 추세를 길게 끄는지 요약합니다.</small>
             </div>
             <div class="ai-ops-card">
-              <span>4주 요약</span>
-              <strong id="aiFourWeekHeadline">로딩 중...</strong>
-              <small id="aiFourWeekDetail">최근 28일 성과를 계산 중입니다.</small>
+              <span>운영 메모</span>
+              <strong id="strategyOpsNote">로딩 중...</strong>
+              <small id="strategyOpsNoteDetail">백엔드 AI 비활성화 상태와 현재 운영 메모를 표시합니다.</small>
             </div>
           </div>
         </section>
@@ -2138,7 +2160,7 @@ const adminHtml = `<!doctype html>
         <div class="stat-card">
           <div class="stat-icon">📈</div>
           <div class="stat-content">
-            <div class="stat-label">가용 현금</div>
+            <div class="stat-label">예수금</div>
             <div class="stat-value" id="statROI">로딩중...</div>
           </div>
         </div>
@@ -2677,6 +2699,44 @@ const adminHtml = `<!doctype html>
   let statusRefreshSeconds = 120
   let statusPanelOpen = false
   let isServerOnline = true
+  let statusPageDetailLoaded = false
+  let statusPageAncillaryLoaded = false
+  const elementCache = new Map()
+  const dashboardOverviewCache = {
+    data: null,
+    fetchedAt: 0,
+    promise: null,
+  }
+
+  function el(id) {
+    if (!elementCache.has(id)) {
+      elementCache.set(id, document.getElementById(id))
+    }
+    return elementCache.get(id)
+  }
+
+  async function getDashboardOverview(force = false) {
+    const now = Date.now()
+    if (!force && dashboardOverviewCache.data && (now - dashboardOverviewCache.fetchedAt) < 5000) {
+      return dashboardOverviewCache.data
+    }
+
+    if (!force && dashboardOverviewCache.promise) {
+      return dashboardOverviewCache.promise
+    }
+
+    dashboardOverviewCache.promise = api('/api/trading/dashboard-overview', { timeoutMs: 20000, retries: 1 })
+      .then((response) => {
+        dashboardOverviewCache.data = response
+        dashboardOverviewCache.fetchedAt = Date.now()
+        return response
+      })
+      .finally(() => {
+        dashboardOverviewCache.promise = null
+      })
+
+    return dashboardOverviewCache.promise
+  }
 
   function clearStoredLoginState() {
     currentUser.isLoggedIn = false
@@ -2686,8 +2746,8 @@ const adminHtml = `<!doctype html>
   function handleAuthExpired(message = '로그인이 만료되었습니다. 다시 로그인해주세요.') {
     clearStoredLoginState()
 
-    const passwordInput = document.getElementById('loginPassword')
-    const loginError = document.getElementById('loginError')
+    const passwordInput = el('loginPassword')
+    const loginError = el('loginError')
 
     if (passwordInput) passwordInput.value = ''
     if (loginError) {
@@ -2780,7 +2840,8 @@ const adminHtml = `<!doctype html>
   }
 
   function setOut(id, data) {
-    document.getElementById(id).textContent = JSON.stringify(data, null, 2)
+    const target = el(id)
+    if (target) target.textContent = JSON.stringify(data, null, 2)
   }
 
   function formatKrw(value) {
@@ -2817,10 +2878,12 @@ const adminHtml = `<!doctype html>
 
   function showPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
-    document.getElementById(pageId).classList.add('active')
+    el(pageId).classList.add('active')
     
     // 현황 페이지로 이동 시 데이터 로드
     if (pageId === 'statusPage') {
+      statusPageDetailLoaded = false
+      statusPageAncillaryLoaded = false
       loadStatusPage()
     } else if (pageId === 'logsPage') {
       loadLogsPage()
@@ -3071,7 +3134,7 @@ const adminHtml = `<!doctype html>
       loadBalance(),
       loadStatus(),
       loadAutoControlStatus(),
-      loadAiImprovementSummary(),
+      loadStrategyOverview(),
       loadMarketOpenNotices(),
     ])
 
@@ -3095,10 +3158,10 @@ const adminHtml = `<!doctype html>
       const preview = r.kisKeyPreview || '미설정'
       const baseUrl = r.kisBaseUrl ? '(' + r.kisBaseUrl.substring(0, 30) + '...)' : ''
       
-      document.getElementById('headerKeyPreview').textContent = preview
-      document.getElementById('headerKeyPreview').title = baseUrl
+      el('headerKeyPreview').textContent = preview
+      el('headerKeyPreview').title = baseUrl
     } catch (e) {
-      document.getElementById('headerKeyPreview').textContent = '오류'
+      el('headerKeyPreview').textContent = '오류'
     }
   }
 
@@ -3108,10 +3171,10 @@ const adminHtml = `<!doctype html>
     try {
       const r = await api('/api/status')
       const dbOnline = r.dbStatus === 'healthy'
-      const dbDot = document.getElementById('headerDbStatus')
-      const dbText = document.getElementById('headerDbText')
-      const heroDbBadge = document.getElementById('heroDbBadge')
-      const heroSystemBadge = document.getElementById('heroSystemBadge')
+      const dbDot = el('headerDbStatus')
+      const dbText = el('headerDbText')
+      const heroDbBadge = el('heroDbBadge')
+      const heroSystemBadge = el('heroSystemBadge')
       const systemMeta = getSystemStatusMeta(r.systemStatus)
 
       isServerOnline = dbOnline
@@ -3142,9 +3205,9 @@ const adminHtml = `<!doctype html>
     } catch (e) {
       isServerOnline = false
       applyServerStateToTradingButtons()
-      document.getElementById('headerDbStatus').className = 'status-dot offline'
-      document.getElementById('headerDbText').textContent = '오류'
-      const heroDbBadge = document.getElementById('heroDbBadge')
+      el('headerDbStatus').className = 'status-dot offline'
+      el('headerDbText').textContent = '오류'
+      const heroDbBadge = el('heroDbBadge')
       if (heroDbBadge) heroDbBadge.textContent = 'DB 상태 확인 실패'
       if (previousServerOnline) {
         setQuickControlMessage('서버 상태 확인 실패로 자동매매 시작 버튼이 일시 비활성화됩니다.', 'error')
@@ -3217,7 +3280,7 @@ const adminHtml = `<!doctype html>
    * 잔고 조회 함수
    */
   async function loadBalance() {
-    const balanceEl = document.getElementById('headerBalance')
+    const balanceEl = el('headerBalance')
     try {
       balanceEl.textContent = '⏳'
       balanceEl.style.color = '#6b7280'
@@ -3228,41 +3291,66 @@ const adminHtml = `<!doctype html>
         const data = r.data
         // 총 자산을 표시 (원화)
         const totalAssets = parseInt(data.totalAssets) || 0
-        const formatted = totalAssets.toLocaleString('ko-KR')
+        const cashBalance = parseInt(data.cashBalance) || 0
+        const stockValue = parseInt(data.positionMarketValue ?? data.stockValue) || 0
+        const withdrawableCash = parseInt(data.withdrawableCash) || 0
+        const displayedTotalAssets = totalAssets
+        const rawTotalEvaluation = parseInt(data.source?.rawTotals?.stock_tot_evlu_amt || data.source?.rawTotals?.stock_nass_amt) || 0
+        const formatted = displayedTotalAssets.toLocaleString('ko-KR')
         balanceEl.textContent = '₩' + formatted
-        balanceEl.title = '총 자산: ₩' + formatted + ' | 보유 현금: ₩' + (parseInt(data.cashBalance) || 0).toLocaleString('ko-KR') + ' | 클릭하여 새로고침'
+        balanceEl.title = '계좌 평가금액(KIS 원본): ₩' + formatted + ' | 주문가능 현금: ₩' + cashBalance.toLocaleString('ko-KR') + ' | 보유 포지션 합계: ₩' + stockValue.toLocaleString('ko-KR') + ' | 출금가능: ₩' + withdrawableCash.toLocaleString('ko-KR') + (rawTotalEvaluation ? ' | KIS 총평가 원본: ₩' + rawTotalEvaluation.toLocaleString('ko-KR') : '') + ' | 클릭하여 새로고침'
         balanceEl.style.color = '#10b981'
-        const heroBalanceValue = document.getElementById('heroBalanceValue')
-        const heroCashValue = document.getElementById('heroCashValue')
-        if (heroBalanceValue) heroBalanceValue.textContent = formatKrw(data.totalAssets)
-        if (heroCashValue) heroCashValue.textContent = formatKrw(data.availableCash || data.cashBalance)
+        const heroBalanceValue = el('heroBalanceValue')
+        const heroCashValue = el('heroCashValue')
+        const heroCashMeta = el('heroCashMeta')
+        const heroStockValue = el('heroStockValue')
+        const heroWithdrawableValue = el('heroWithdrawableValue')
+        const heroSettlementValue = el('heroSettlementValue')
+        const heroComputedAssetsValue = el('heroComputedAssetsValue')
+        if (heroBalanceValue) heroBalanceValue.textContent = formatKrw(displayedTotalAssets)
+        if (heroCashValue) heroCashValue.textContent = formatKrw(cashBalance)
+        if (heroCashMeta) heroCashMeta.textContent = '현재 주문 가능한 현금 기준입니다. 출금가능과는 다를 수 있습니다.'
+        if (heroStockValue) heroStockValue.textContent = formatKrw(stockValue)
+        if (heroWithdrawableValue) heroWithdrawableValue.textContent = formatKrw(withdrawableCash)
+        if (heroSettlementValue) heroSettlementValue.textContent = formatKrw(stockValue)
+        if (heroComputedAssetsValue) heroComputedAssetsValue.textContent = rawTotalEvaluation ? formatKrw(rawTotalEvaluation) : '제공 없음'
       } else {
         balanceEl.textContent = '조회 실패'
         balanceEl.style.color = '#ef4444'
       }
     } catch (e) {
-      const balanceEl = document.getElementById('headerBalance')
+      const balanceEl = el('headerBalance')
       balanceEl.textContent = '오류'
       balanceEl.style.color = '#ef4444'
       balanceEl.title = '클릭하여 재시도'
-      const heroBalanceValue = document.getElementById('heroBalanceValue')
-      const heroCashValue = document.getElementById('heroCashValue')
+      const heroBalanceValue = el('heroBalanceValue')
+      const heroCashValue = el('heroCashValue')
+      const heroCashMeta = el('heroCashMeta')
+      const heroStockValue = el('heroStockValue')
+      const heroWithdrawableValue = el('heroWithdrawableValue')
+      const heroSettlementValue = el('heroSettlementValue')
+      const heroComputedAssetsValue = el('heroComputedAssetsValue')
       if (heroBalanceValue) heroBalanceValue.textContent = '조회 실패'
       if (heroCashValue) heroCashValue.textContent = '조회 실패'
+      if (heroCashMeta) heroCashMeta.textContent = '잔고 세부항목 조회 실패'
+      if (heroStockValue) heroStockValue.textContent = '조회 실패'
+      if (heroWithdrawableValue) heroWithdrawableValue.textContent = '조회 실패'
+      if (heroSettlementValue) heroSettlementValue.textContent = '조회 실패'
+      if (heroComputedAssetsValue) heroComputedAssetsValue.textContent = '조회 실패'
       console.warn('[Balance Load]', e.message)
     }
   }
 
   function setQuickControlMessage(message, type = 'success') {
-    const box = document.getElementById('quickControlMsg')
+    const box = el('quickControlMsg')
     if (!box) return
     const className = type === 'error' ? 'error-msg' : 'success-msg'
     box.innerHTML = '<div class="' + className + '">' + message + '</div>'
   }
 
   function applyServerStateToTradingButtons() {
-    const domesticBtn = document.getElementById('startDomesticBtn')
-    const overseasBtn = document.getElementById('startOverseasBtn')
+    const domesticBtn = el('startDomesticBtn')
+    const overseasBtn = el('startOverseasBtn')
     if (!domesticBtn || !overseasBtn) return
 
     if (!isServerOnline) {
@@ -3283,7 +3371,7 @@ const adminHtml = `<!doctype html>
   }
 
   async function loadAutoControlStatus() {
-    const statusEl = document.getElementById('autoTradingStatus')
+    const statusEl = el('autoTradingStatus')
     if (statusEl) {
       statusEl.innerHTML = '<div class="loading-spinner">⏳ 로딩 중...</div>'
     }
@@ -3293,20 +3381,20 @@ const adminHtml = `<!doctype html>
       const data = r.data || {}
       
       // 버튼 상태 업데이트
-      const domesticBtn = document.getElementById('startDomesticBtn')
-      const overseasBtn = document.getElementById('startOverseasBtn')
-      const stopDomesticBtn = document.getElementById('stopDomesticBtn')
-      const stopOverseasBtn = document.getElementById('stopOverseasBtn')
-      const stopBtn = document.getElementById('stopAllBtn')
+      const domesticBtn = el('startDomesticBtn')
+      const overseasBtn = el('startOverseasBtn')
+      const stopDomesticBtn = el('stopDomesticBtn')
+      const stopOverseasBtn = el('stopOverseasBtn')
+      const stopBtn = el('stopAllBtn')
       
       if (domesticBtn && overseasBtn) {
         const domesticRunning = data.domestic?.running || false
         const overseasRunning = data.overseas?.running || false
-        const heroTradeBadge = document.getElementById('heroTradeBadge')
-        const heroDomesticValue = document.getElementById('heroDomesticValue')
-        const heroDomesticMeta = document.getElementById('heroDomesticMeta')
-        const heroOverseasValue = document.getElementById('heroOverseasValue')
-        const heroOverseasMeta = document.getElementById('heroOverseasMeta')
+        const heroTradeBadge = el('heroTradeBadge')
+        const heroDomesticValue = el('heroDomesticValue')
+        const heroDomesticMeta = el('heroDomesticMeta')
+        const heroOverseasValue = el('heroOverseasValue')
+        const heroOverseasMeta = el('heroOverseasMeta')
 
         domesticBtn.dataset.running = domesticRunning ? '1' : '0'
         overseasBtn.dataset.running = overseasRunning ? '1' : '0'
@@ -3329,7 +3417,7 @@ const adminHtml = `<!doctype html>
         if (heroOverseasMeta) heroOverseasMeta.textContent = data.overseas?.lastCycleAt ? '최근 사이클 ' + formatDateTime(data.overseas.lastCycleAt) : '아직 실행 기록 없음'
         
         // 상태 표시
-        const statusEl = document.getElementById('autoTradingStatus')
+        const statusEl = el('autoTradingStatus')
         if (statusEl) {
           let statusHtml = '<div style=\"padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 14px;\">'
           statusHtml += '<div><strong>국내:</strong> ' + (domesticRunning ? '<span style=\"color: #10b981;\">✓ 실행 중 (사이클: ' + (data.domestic.cycleCount || 0) + '회)</span>' : '<span style=\"color: #64748b;\">대기 중</span>') + '</div>'
@@ -3350,7 +3438,7 @@ const adminHtml = `<!doctype html>
   async function startAutoTrading(market) {
     try {
       const targetMarket = market === 'overseas' ? 'overseas' : 'domestic'
-      const targetBtn = document.getElementById(targetMarket === 'overseas' ? 'startOverseasBtn' : 'startDomesticBtn')
+      const targetBtn = el(targetMarket === 'overseas' ? 'startOverseasBtn' : 'startDomesticBtn')
 
       if (targetBtn && targetBtn.dataset.running === '1') {
         setQuickControlMessage((targetMarket === 'overseas' ? '해외' : '국내') + ' 자동매매중입니다.', 'success')
@@ -3387,7 +3475,7 @@ const adminHtml = `<!doctype html>
   }
 
   function openStatusView() {
-    const panel = document.getElementById('statusViewPanel')
+    const panel = el('statusViewPanel')
     if (!panel) return
     panel.classList.remove('hidden')
     statusPanelOpen = true
@@ -3396,7 +3484,7 @@ const adminHtml = `<!doctype html>
   }
 
   function closeStatusView() {
-    const panel = document.getElementById('statusViewPanel')
+    const panel = el('statusViewPanel')
     if (!panel) return
     panel.classList.add('hidden')
     statusPanelOpen = false
@@ -3404,7 +3492,7 @@ const adminHtml = `<!doctype html>
   }
 
   function renderStatusPositions(positions) {
-    const list = document.getElementById('statusPositionsList')
+    const list = el('statusPositionsList')
     if (!list) return
 
     if (!positions || !positions.length) {
@@ -3428,7 +3516,7 @@ const adminHtml = `<!doctype html>
   }
 
   function renderStatusReports(reports) {
-    const box = document.getElementById('statusReportsList')
+    const box = el('statusReportsList')
     if (!box) return
 
     if (!reports || !reports.length) {
@@ -3453,7 +3541,7 @@ const adminHtml = `<!doctype html>
 
   async function refreshStatusView() {
     try {
-      const r = await api('/api/trading/dashboard-overview')
+      const r = await getDashboardOverview()
       const data = r.data || {}
       const trading = data.trading || {}
       const auto = data.auto || {}
@@ -3467,24 +3555,56 @@ const adminHtml = `<!doctype html>
       }, 0)
 
       setOut('statusSummaryOut', {
-        systemStatus: trading.systemStatus,
-        lastRunTime: trading.lastRunTime,
-        totalCapital: trading.totalCapital,
-        investedAmount,
-        cashAvailable: trading.cashAvailable,
-        unrealizedPnl: trading.unrealizedPnl,
-        realizedPnl: trading.realizedPnl,
-        totalPositions: trading.totalPositions,
-        runningMarkets: {
-          domestic: !!auto.domestic?.running,
-          overseas: !!auto.overseas?.running,
+        trading: {
+          systemStatus: trading.systemStatus,
+          lastRunTime: trading.lastRunTime,
+          totalCapital: trading.totalCapital,
+          investedAmount,
+          cashAvailable: trading.cashAvailable,
+          unrealizedPnl: trading.unrealizedPnl,
+          realizedPnl: trading.realizedPnl,
+          totalPositions: trading.totalPositions,
+        },
+        markets: {
+          domestic: {
+            running: !!auto.domestic?.running,
+            marketOpen: !!auto.domestic?.marketOpen,
+            lastCycleAt: auto.domestic?.lastCycleAt || null,
+          },
+          overseas: {
+            running: !!auto.overseas?.running,
+            marketOpen: !!auto.overseas?.marketOpen,
+            lastCycleAt: auto.overseas?.lastCycleAt || null,
+          },
         },
       })
 
       setOut('statusWinrateOut', {
-        avgWinRate: strategy.avgWinRate,
-        totalStrategies: strategy.totalStrategies,
-        rankingTop5: (strategy.ranking || []).slice(0, 5),
+        activeStrategy: {
+          strategyId: strategy.activeStrategy,
+          resolvedStrategyId: strategy.resolvedStrategyId,
+          strategyName: strategy.strategyName,
+          currentPlan: strategy.currentPlan,
+        },
+        effectiveTradingParams: {
+          shortMA: strategy.currentProfile?.shortMA,
+          longMA: strategy.currentProfile?.longMA,
+          stopLossPct: strategy.currentProfile?.stopLossPct,
+          fixedTakeProfitPct: strategy.currentProfile?.fixedTakeProfitPct,
+          breakEvenActivationPct: strategy.currentProfile?.breakEvenActivationPct,
+          trailingActivationPct: strategy.currentProfile?.trailingActivationPct,
+          trailingStopPct: strategy.currentProfile?.trailingStopPct,
+          rankingCandidateLimit: strategy.currentProfile?.rankingCandidateLimit,
+          maxConcurrentPositions: strategy.currentProfile?.maxConcurrentPositions,
+          maxOverflowPositions: strategy.currentProfile?.maxOverflowPositions,
+        },
+        currentProfile: strategy.currentProfile,
+        adaptiveParams: strategy.adaptiveParams,
+        strategyStats: {
+          avgWinRate: strategy.avgWinRate,
+          totalStrategies: strategy.totalStrategies,
+          rankingTop5: (strategy.ranking || []).slice(0, 5),
+        },
       })
 
       renderStatusPositions(trading.positions || [])
@@ -3698,30 +3818,31 @@ const adminHtml = `<!doctype html>
   }
 
   async function loadTradingStatus() {
-    const posList = document.getElementById('positionsList')
+    const posList = el('positionsList')
     try {
       posList.innerHTML = '<div class="loading-spinner">⏳ 로딩 중...</div>'
       
-      const r = await api('/trading/status')
-      const positions = r.positions || {}
+      const r = await api('/api/trading/dashboard-summary', { timeoutMs: 12000, retries: 1 })
+      const positions = Array.isArray(r.data?.trading?.positions) ? r.data.trading.positions : []
       posList.innerHTML = ''
       
-      if (Object.keys(positions).length === 0) {
+      if (!positions.length) {
         posList.innerHTML = '<div style="padding: 20px; color: #999; text-align: center; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">현재 포지션 없음</div>'
       } else {
-        Object.entries(positions).forEach(([symbol, pos]) => {
+        positions.forEach((pos) => {
           const item = document.createElement('div')
           item.style.cssText = 'background: #f9f9f9; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb; display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center;'
 
+          const symbol = pos?.symbol || '-'
           const shares = Number(pos?.shares || 0)
-          const entryPrice = Number(pos?.entry_price)
-          const currentPrice = Number(pos?.current_price)
+          const entryPrice = Number(pos?.entryPrice)
+          const currentPrice = Number(pos?.currentPrice)
           const hasEntryPrice = Number.isFinite(entryPrice)
           const hasCurrentPrice = Number.isFinite(currentPrice)
           const hasGainData = hasEntryPrice && hasCurrentPrice
           const gainLoss = hasGainData ? ((currentPrice - entryPrice) * shares).toFixed(0) : 'N/A'
           const gainPct = hasGainData && entryPrice !== 0 ? (((currentPrice - entryPrice) / entryPrice) * 100).toFixed(1) : 'N/A'
-          const entryDate = pos?.entry_date ? String(pos.entry_date).substring(0, 10) : '-'
+          const entryDate = pos?.entryDate ? String(pos.entryDate).substring(0, 10) : '-'
           const priceText = hasEntryPrice ? entryPrice.toFixed(2) : 'N/A'
           const gainLossNumber = Number(gainLoss)
           const gainPctNumber = Number(gainPct)
@@ -3919,8 +4040,7 @@ const adminHtml = `<!doctype html>
 
   async function loadStatusPage() {
     try {
-      // API 호출
-      const r = await api('/api/trading/dashboard-overview', { timeoutMs: 20000, retries: 1 })
+      const r = await api('/api/trading/dashboard-summary', { timeoutMs: 12000, retries: 1 })
       const data = r.data || {}
       const trading = data.trading || {}
       const auto = data.auto || {}
@@ -3928,9 +4048,16 @@ const adminHtml = `<!doctype html>
 
       // 통계 카드 업데이트
       const systemMeta = getSystemStatusMeta(trading.systemStatus)
+      const latestBalance = await api('/api/trading/balance', { timeoutMs: 15000, retries: 1 }).catch(() => null)
+      const balanceData = latestBalance && latestBalance.ok ? (latestBalance.data || {}) : {}
+      const displayedTotalAssets = Math.max(
+        Number(balanceData.totalAssets || 0),
+        Number(balanceData.cashBalance || 0) + Number(balanceData.stockValue || 0)
+      )
+      const displayedCash = Number(balanceData.cashBalance || trading.cashAvailable || 0)
 
-      document.getElementById('statTotalInvested').textContent = formatKrw(trading.totalCapital)
-      document.getElementById('statROI').textContent = formatKrw(trading.cashAvailable)
+      document.getElementById('statTotalInvested').textContent = formatKrw(displayedTotalAssets)
+      document.getElementById('statROI').textContent = formatKrw(displayedCash)
       document.getElementById('statROI').style.color = '#0f766e'
       document.getElementById('statRuntime').textContent = systemMeta.label
       document.getElementById('statRuntime').style.color = systemMeta.tone === 'good' ? '#15803d' : systemMeta.tone === 'bad' ? '#dc2626' : '#475569'
@@ -3940,9 +4067,6 @@ const adminHtml = `<!doctype html>
 
       // 포지션 리스트
       renderPositionList(positions)
-      renderBuyCandidates('statusDomesticBuyCandidates', data.symbolSelection?.responsiveBuyCandidates?.domestic || [], '국내')
-      renderBuyCandidates('statusOverseasBuyCandidates', data.symbolSelection?.responsiveBuyCandidates?.overseas || [], '해외')
-      renderOrderFailures(data.reports?.recentTradeLogs || [])
       renderMarketFailureCards(data.reports?.recentTradeFailures || {})
 
       // 자동매매 상태
@@ -3951,14 +4075,54 @@ const adminHtml = `<!doctype html>
       // 차트 그리기
       drawPerformanceChart(data)
 
-      // 오류 로그 로드
-      loadErrorLogs()
+      requestIdleCallbackSafe(async () => {
+        try {
+          await loadStatusPageDetails()
+        } catch (e) {
+          console.warn('[Status Page Detail Load]', e.message)
+        }
+      }, 150)
+      requestIdleCallbackSafe(async () => {
+        try {
+          await loadStatusPageAncillary()
+        } catch (e) {
+          console.warn('[Status Page Ancillary Load]', e.message)
+        }
+      }, 600)
     } catch (e) {
       if (e.statusCode === 401) {
         return
       }
       console.error('현황 페이지 로드 실패:', e)
     }
+  }
+
+  async function loadStatusPageDetails() {
+    if (statusPageDetailLoaded) return
+    statusPageDetailLoaded = true
+    const [candidateResponse, overviewResponse] = await Promise.all([
+      api('/api/trading/dashboard-candidates', { timeoutMs: 12000, retries: 1 }),
+      getDashboardOverview(),
+    ])
+    const candidateData = candidateResponse.data || {}
+    const overviewData = overviewResponse.data || {}
+    renderBuyCandidates('statusDomesticBuyCandidates', candidateData.responsiveBuyCandidates?.domestic || [], '국내')
+    renderBuyCandidates('statusOverseasBuyCandidates', candidateData.responsiveBuyCandidates?.overseas || [], '해외')
+    renderOrderFailures(overviewData.reports?.recentTradeLogs || [])
+  }
+
+  async function loadStatusPageAncillary() {
+    if (statusPageAncillaryLoaded) return
+    statusPageAncillaryLoaded = true
+    await loadErrorLogs()
+  }
+
+  function requestIdleCallbackSafe(fn, delay = 0) {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(() => fn(), { timeout: 1000 })
+      return
+    }
+    setTimeout(fn, delay)
   }
 
   function renderPositionList(positions) {
@@ -4140,6 +4304,66 @@ const adminHtml = `<!doctype html>
 
     render(domesticCard, '국내', summary.domestic)
     render(overseasCard, '해외', summary.overseas)
+  }
+
+  async function loadStrategyOverview() {
+    try {
+      const r = await api('/api/trading/dashboard-summary', { timeoutMs: 12000, retries: 1 })
+      const data = r.data || {}
+      const strategy = data.strategy || {}
+      const auto = data.auto || {}
+      const profile = strategy.currentProfile || {}
+      const domestic = auto.domestic || {}
+      const overseas = auto.overseas || {}
+
+      const setText = (id, value) => {
+        const node = el(id)
+        if (node) node.textContent = value
+      }
+
+      const overseasUniverse = ['AMD', 'AVGO', 'MU', 'ARM', 'INTC', 'TSM', 'AMAT', 'LRCX', 'KLAC', 'PLTR']
+      const domesticRunning = domestic.running ? '국내 실행 중' : '국내 대기 중'
+      const overseasRunning = overseas.running ? '해외 실행 중' : '해외 대기 중'
+
+      setText('strategyOverviewName', strategy.strategyName || '추세추종_전략')
+      setText('strategyOverviewMeta', strategy.activeStrategy ? ('고정 전략 · ' + strategy.activeStrategy) : '현재 고정된 전략을 사용하는 중입니다.')
+
+      setText('strategyDomesticExit', '익절 7% · 본절 7% · 트레일링 3/3')
+      setText('strategyDomesticDetail', '국내는 안정 우선 세팅으로 운영하며, 5천~1만원 종목은 2일차 최고수익 4% 미만이면 정리합니다.')
+
+      setText('strategyOverseasExit', '익절 15% · 본절 5% · 트레일링 5/3')
+      setText('strategyOverseasDetail', '해외는 반도체/AI 전용 forced-only 구조이며, 문제 종목은 유니버스에서 제외한 상태입니다.')
+
+      setText('strategyMarketMix', domesticRunning + ' / ' + overseasRunning)
+      setText('strategyMarketMixDetail', '국내는 ' + (domestic.marketOpen ? '장중' : '휴장') + ', 해외는 ' + (overseas.marketOpen ? '장중' : '휴장') + ' 상태입니다.')
+
+      setText('strategyDomesticFilter', '전일 상승 · 변동성 12% 이하 · SMA5 > SMA20')
+      setText('strategyDomesticFilterDetail', '국내 후보는 하락 종목을 제외하고, 거래량과 추세 강도까지 확인한 뒤 weighted 방식으로 진입합니다.')
+
+      setText('strategyOverseasUniverse', '반도체/AI 10종목')
+      setText('strategyOverseasUniverseDetail', overseasUniverse.join(', '))
+
+      setText('strategyHoldingStyle', '국내 단기 2일권 · 해외 중기 추세형')
+      setText('strategyHoldingStyleDetail', '국내는 약한 종목을 빠르게 털고, 해외는 더 길게 추세를 보며 15% 익절을 노립니다.')
+
+      setText('strategyOpsNote', 'AI 비활성 · 규칙 기반 운영')
+      setText('strategyOpsNoteDetail', '현재는 백엔드 AI를 사용하지 않고, 검증된 규칙 기반 세팅만 반영 중입니다.')
+    } catch (e) {
+      ;[
+        'strategyOverviewName','strategyDomesticExit','strategyOverseasExit','strategyMarketMix',
+        'strategyDomesticFilter','strategyOverseasUniverse','strategyHoldingStyle','strategyOpsNote'
+      ].forEach((id) => {
+        const node = el(id)
+        if (node) node.textContent = '확인 지연'
+      })
+      ;[
+        'strategyOverviewMeta','strategyDomesticDetail','strategyOverseasDetail','strategyMarketMixDetail',
+        'strategyDomesticFilterDetail','strategyOverseasUniverseDetail','strategyHoldingStyleDetail','strategyOpsNoteDetail'
+      ].forEach((id) => {
+        const node = el(id)
+        if (node) node.textContent = '전략 정보를 잠시 불러오지 못했습니다. 잠시 후 자동으로 다시 갱신됩니다.'
+      })
+    }
   }
 
   async function loadAiImprovementSummary() {
