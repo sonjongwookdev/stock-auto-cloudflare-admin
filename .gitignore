@@ -12,3 +12,5 @@ build/
 wrangler.json
 .opencode
 cookies*.txt
+*.key
+asdasdasd.txt

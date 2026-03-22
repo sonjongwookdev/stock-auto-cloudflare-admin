@@ -17,12 +17,14 @@ const adminHtml = `<!doctype html>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html {
       height: 100%;
       width: 100%;
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -34,8 +36,11 @@ const adminHtml = `<!doctype html>
       height: 100%;
       width: 100%;
       color: #1a1a1a;
+      overflow-x: hidden;
       background-size: 140% 140%, 150% 150%, 160% 160%, 100% 100%;
       animation: pageGradientDrift 20s ease-in-out infinite alternate;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
     @keyframes pageGradientDrift {
       0% {
@@ -49,6 +54,20 @@ const adminHtml = `<!doctype html>
     /* ===== Pages ===== */
     .page { display: none; }
     .page.active { display: block; }
+    .card,
+    .hero-panel,
+    .hero-kpi,
+    .position-item,
+    .ai-ops-card,
+    .market-state {
+      contain: content;
+    }
+    .row,
+    .hero-mini-grid,
+    .ai-ops-grid {
+      content-visibility: auto;
+      contain-intrinsic-size: 1px 600px;
+    }
     
     /* Login Page */
     .login-page.active {
@@ -174,6 +193,26 @@ const adminHtml = `<!doctype html>
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
+    }
+    @media (prefers-reduced-motion: reduce), (max-width: 768px) {
+      body,
+      .login-page.active,
+      .login-page.active::before,
+      .login-page.active::after,
+      #loginBtn {
+        animation: none !important;
+      }
+      .login-card,
+      .hero-panel,
+      .card {
+        backdrop-filter: none !important;
+      }
+      .row,
+      .hero-mini-grid,
+      .ai-ops-grid {
+        content-visibility: visible;
+        contain-intrinsic-size: auto;
+      }
     }
     
     /* Init Page */
@@ -380,6 +419,8 @@ const adminHtml = `<!doctype html>
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
       white-space: nowrap;
+      min-height: 44px;
+      touch-action: manipulation;
     }
     .header-btn:hover { 
       background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
@@ -400,7 +441,7 @@ const adminHtml = `<!doctype html>
     .wrap {
       max-width: 1320px;
       margin: 24px auto;
-      padding: 0 20px;
+      padding: 0 max(20px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-right));
     }
     .row {
       display: grid;
@@ -549,6 +590,7 @@ const adminHtml = `<!doctype html>
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       background: #f9fafb;
       font-weight: 500;
+      min-height: 48px;
     }
     input:focus, textarea:focus, select:focus { 
       outline: none; 
@@ -755,6 +797,22 @@ const adminHtml = `<!doctype html>
       max-height: 90vh;
       overflow: auto;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overscroll-behavior: contain;
+    }
+    .position-item,
+    .report-item,
+    .status-badge,
+    .status-box,
+    .hero-kpi,
+    .ai-ops-card,
+    .market-state {
+      overflow-wrap: anywhere;
+    }
+    .header-status {
+      scroll-snap-type: x proximity;
+    }
+    .status-badge {
+      scroll-snap-align: start;
     }
     .modal-header {
       display: flex;
@@ -1717,26 +1775,29 @@ const adminHtml = `<!doctype html>
       .hero-mini-grid, .control-grid { grid-template-columns: 1fr; }
       .top-header {
         grid-template-columns: 1fr;
-        padding: 14px;
-        margin: 10px 10px 0;
+        padding: 10px 12px;
+        margin: 6px 8px 0;
         border: 1px solid rgba(20, 32, 24, 0.08);
-        border-radius: 24px;
-        top: 10px;
+        border-radius: 18px;
+        top: 6px;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.92);
       }
       .header-left {
         align-items: flex-start;
         grid-column: auto;
+        gap: 8px;
       }
       .header-title {
-        font-size: 20px;
+        font-size: 17px;
         line-height: 1.05;
       }
       .header-status {
         display: grid;
         grid-auto-flow: column;
-        grid-auto-columns: minmax(150px, 1fr);
+        grid-auto-columns: minmax(128px, 1fr);
         overflow-x: auto;
-        gap: 10px;
+        gap: 8px;
         justify-content: flex-start;
         padding-bottom: 2px;
         scrollbar-width: none;
@@ -1746,24 +1807,29 @@ const adminHtml = `<!doctype html>
         display: none;
       }
       .status-badge {
-        padding: 10px 12px;
+        padding: 8px 10px;
+        font-size: 12px;
       }
       .header-buttons {
         width: 100%;
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
         grid-column: auto;
         justify-self: stretch;
       }
       .header-btn {
         width: 100%;
         min-width: 0;
-        padding: 11px 12px;
-        font-size: 13px;
+        padding: 9px 10px;
+        font-size: 12px;
+        white-space: normal;
+        line-height: 1.25;
+        border-radius: 9px;
+        min-height: 40px;
       }
       .wrap {
-        margin: 18px auto 34px;
+        margin: 14px auto 30px;
         padding: 0 12px 24px;
       }
       .card {
@@ -1781,23 +1847,32 @@ const adminHtml = `<!doctype html>
       }
       .modal-content {
         width: min(100% - 20px, 720px);
+        padding: 22px 18px;
+      }
+      input, textarea, select {
+        font-size: 16px;
       }
     }
 
     @media (max-width: 520px) {
       .top-header {
-        margin: 8px 8px 0;
-        padding: 12px;
-        top: 8px;
+        margin: 4px 6px 0;
+        padding: 8px 10px;
+        top: 4px;
+        border-radius: 16px;
       }
       .header-title {
-        font-size: 18px;
+        font-size: 15px;
       }
       .header-status {
-        grid-auto-columns: minmax(138px, 1fr);
+        grid-auto-columns: minmax(118px, 1fr);
       }
       .header-buttons {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .status-badge {
+        padding: 7px 9px;
+        font-size: 11px;
       }
       .guide-hero,
       .usage-hero,
@@ -1821,7 +1896,23 @@ const adminHtml = `<!doctype html>
         font-size: 13px;
       }
       .wrap {
-        padding: 0 10px 24px;
+        padding: 0 8px 22px;
+      }
+      .quick-btn,
+      button.btn,
+      .tabs button {
+        min-height: 46px;
+      }
+      .hero-pills {
+        gap: 6px;
+      }
+      .market-pill {
+        padding: 7px 10px;
+        font-size: 11px;
+      }
+      .hero-kpi strong,
+      .stat-value {
+        font-size: clamp(18px, 5vw, 24px);
       }
     }
   </style>
@@ -2265,9 +2356,9 @@ const adminHtml = `<!doctype html>
           <section class="usage-hero">
             <div class="usage-eyebrow">Operator Playbook</div>
             <h2>한 화면에서 보고, 바로 판단하고, 필요한 시장만 안전하게 제어합니다.</h2>
-            <p>이 가이드는 현재 운영 중인 Stock Auto 관리자 패널 기준입니다. 로그인, 대시보드 해석, 국내/해외 자동매매 제어, 중단 절차, 설정 변경, 장애 대응 순서까지 실제 운용 흐름에 맞춰 정리했습니다.</p>
+            <p>이 가이드는 지금 실제 운영 중인 관리자 패널 기준입니다. 자산 해석, 현재 전략 읽는 법, 국내/해외 자동매매 제어, 중단 절차, 설정 변경, 장애 대응 순서를 최신 운영 흐름에 맞춰 정리했습니다.</p>
             <div class="guide-meta">
-              <div class="guide-pill">실시간 KIS 잔고 반영</div>
+              <div class="guide-pill">KIS 원본 자산값 분리 표시</div>
               <div class="guide-pill">시장별 자동매매 제어</div>
               <div class="guide-pill">확인 문구 기반 안전 중단</div>
               <div class="guide-pill">Cloudflare 프록시 운영</div>
@@ -2293,7 +2384,10 @@ const adminHtml = `<!doctype html>
               <ul>
                 <li><strong>키값</strong>: 현재 설정된 KIS 키 프리뷰를 표시합니다.</li>
                 <li><strong>서버</strong>: 백엔드 + DB 상태를 간단하게 보여줍니다.</li>
-                <li><strong>잔고</strong>: 총 자산 기준으로 표시되고, 현금은 히어로 카드에서 별도로 확인합니다.</li>
+                <li><strong>계좌 평가금액</strong>: KIS 원본 총자산 필드입니다.</li>
+                <li><strong>주문가능 현금</strong>: 지금 바로 주문에 쓸 수 있는 현금입니다.</li>
+                <li><strong>출금가능 현금</strong>: KIS가 별도로 제공하는 출금 가능 금액입니다.</li>
+                <li><strong>보유 포지션 합계</strong>: 현재 보유 수량 × 현재가 합계입니다.</li>
                 <li><strong>국내/해외 자동매매</strong>: 각 시장별로 실행 중인지 대기 중인지 즉시 확인합니다.</li>
               </ul>
             </article>
@@ -2301,10 +2395,10 @@ const adminHtml = `<!doctype html>
             <article class="guide-card" style="--guide-accent: linear-gradient(90deg, #7c3aed, #8b5cf6);">
               <div class="guide-section-title">Step 03</div>
               <h3>자동매매 시작</h3>
-              <p>국내와 해외 자동매매는 독립적으로 제어됩니다. 필요한 시장만 시작하면 해당 시장의 주기와 상태가 바로 반영됩니다.</p>
+              <p>국내와 해외 자동매매는 독립적으로 제어됩니다. 필요한 시장만 시작하면 해당 시장의 주기와 상태가 반영됩니다.</p>
               <ul>
                 <li><strong>국내 자동매매 시작</strong>: 한국 시장 대상 자동매매 사이클을 시작합니다.</li>
-                <li><strong>해외 자동매매 시작</strong>: 해외 시장 대상 자동매매 사이클을 시작합니다.</li>
+                <li><strong>해외 자동매매 시작</strong>: 해외 주문 가능 계좌가 설정된 경우에만 사용하세요.</li>
                 <li><strong>실행 중 상태</strong>: 버튼이 실행 중으로 바뀌고 최근 사이클 시각이 표시됩니다.</li>
               </ul>
             </article>
@@ -2329,6 +2423,7 @@ const adminHtml = `<!doctype html>
               <ul>
                 <li><strong>포지션 목록</strong>: 현재 보유 종목과 진입 정보를 확인합니다.</li>
                 <li><strong>수익 차트</strong>: 실현/미실현 수익 흐름을 간단히 봅니다.</li>
+                <li><strong>즉시 매수 후보</strong>: 상세 후보는 지연 로딩되므로 첫 화면은 빠르게 뜹니다.</li>
                 <li><strong>오류 로그</strong>: 최근 장애나 경고가 쌓였는지 빠르게 판단합니다.</li>
               </ul>
             </article>
@@ -2348,7 +2443,8 @@ const adminHtml = `<!doctype html>
               <div class="guide-section-title">Best Practice</div>
               <h3>운영 팁</h3>
               <ul>
-                <li><strong>대시보드 잔고</strong>와 <strong>가용 현금</strong>을 먼저 확인하고 자동매매를 시작하세요.</li>
+                <li><strong>계좌 평가금액</strong>과 <strong>주문가능 현금</strong>을 구분해서 보세요.</li>
+                <li><strong>출금가능 현금</strong>은 주문가능 현금과 의미가 다를 수 있으니 함께 확인하세요.</li>
                 <li><strong>오류 로그 보기</strong>에서 최근 오류가 없는지 먼저 확인하면 불필요한 실패를 줄일 수 있습니다.</li>
                 <li><strong>시장 중단 버튼</strong>은 실제 청산 동작이 포함되므로 꼭 대상 시장을 다시 확인하세요.</li>
                 <li><strong>브라우저가 느릴 때</strong>는 새로고침 후 다시 로그인하면 최신 리소스가 반영됩니다.</li>
@@ -2369,6 +2465,7 @@ const adminHtml = `<!doctype html>
                   <li>먼저 <strong>Ctrl+F5</strong>로 새로고침해서 최신 Worker 자산을 받습니다.</li>
                   <li>그래도 안 뜨면 <strong>서버 상태</strong>와 <strong>오류 로그</strong>를 확인합니다.</li>
                   <li>KIS 계정 상태가 불안정하면 잔고 조회가 지연될 수 있습니다.</li>
+                  <li>계좌 평가금액, 주문가능 현금, 출금가능 현금은 서로 다른 필드라 숫자가 다를 수 있습니다.</li>
                 </ul>
               </article>
               <article class="guide-troubleshoot-item">
@@ -2376,6 +2473,7 @@ const adminHtml = `<!doctype html>
                 <ul>
                   <li>KIS 키가 유효한지, 해당 시장이 현재 운영 시간인지 확인합니다.</li>
                   <li>서버/DB가 정상이어도 시장 휴장 시간에는 주문이 제한될 수 있습니다.</li>
+                  <li>해외는 해외 주문 가능 계좌번호가 설정되지 않으면 시작해도 주문이 거절될 수 있습니다.</li>
                   <li>실패 메시지와 오류 로그를 같이 보면 원인을 더 빨리 찾을 수 있습니다.</li>
                 </ul>
               </article>
@@ -2414,12 +2512,12 @@ const adminHtml = `<!doctype html>
         <div class="usage-hero">
           <div class="usage-eyebrow">Logs & Exports</div>
           <h2>운영 로그 저장 위치를 확인하고, 전체/구간 로그를 바로 다운로드합니다.</h2>
-          <p>AI 분석 결과는 Oracle DB에, 거래 로그는 JSONL 파일에, 앱 로그는 서버의 logs/*.log 파일에 저장됩니다. 최근 오류는 메모리 버퍼에도 유지됩니다.</p>
+          <p>운영 로그는 Oracle DB, JSONL, 서버 로그 파일로 분리 저장됩니다. 현재 자동매매 운영은 규칙 기반이며, 최근 오류는 메모리 버퍼에도 유지됩니다.</p>
         </div>
       </section>
 
       <div class="stats-grid" id="logSummaryGrid">
-        <div class="stat-card"><div class="stat-icon">🗄️</div><div class="stat-content"><div class="stat-label">Oracle AI 결과</div><div class="stat-value" id="logOracleStatus">로딩중...</div></div></div>
+        <div class="stat-card"><div class="stat-icon">🗄️</div><div class="stat-content"><div class="stat-label">Oracle 운영 로그</div><div class="stat-value" id="logOracleStatus">로딩중...</div></div></div>
         <div class="stat-card"><div class="stat-icon">📒</div><div class="stat-content"><div class="stat-label">거래 로그</div><div class="stat-value" id="logTradeCount">로딩중...</div></div></div>
         <div class="stat-card"><div class="stat-icon">🚨</div><div class="stat-content"><div class="stat-label">메모리 오류</div><div class="stat-value" id="logRuntimeCount">로딩중...</div></div></div>
         <div class="stat-card"><div class="stat-icon">📁</div><div class="stat-content"><div class="stat-label">서버 로그 파일</div><div class="stat-value" id="logFileCount">로딩중...</div></div></div>
@@ -2437,7 +2535,7 @@ const adminHtml = `<!doctype html>
               <option value="all-log">전체 앱 로그</option>
               <option value="error-log">에러 로그</option>
               <option value="api-log">API 로그</option>
-              <option value="ai-results">Oracle AI 결과 JSON</option>
+              <option value="ai-results">Oracle 운영 결과 JSON</option>
             </select>
             <select id="logFormatSelect" class="input soft">
               <option value="json">JSON</option>
@@ -4072,8 +4170,9 @@ const adminHtml = `<!doctype html>
       // 자동매매 상태
       updateTradingStatus(auto)
 
-      // 차트 그리기
-      drawPerformanceChart(data)
+      requestIdleCallbackSafe(() => {
+        drawPerformanceChart(data)
+      }, 250)
 
       requestIdleCallbackSafe(async () => {
         try {
