@@ -3645,7 +3645,7 @@ const adminHtml = `<!doctype html>
       const auto = data.auto || {}
       const strategy = data.strategy || {}
       const reports = data.reports || {}
-      const positions = Array.isArray(trading.positions) ? trading.positions : []
+      const positions = filterActivePositions(trading.positions)
       const investedAmount = positions.reduce((sum, pos) => {
         const shares = Number(pos?.shares || 0)
         const entryPrice = Number(pos?.entryPrice || 0)
@@ -3921,7 +3921,7 @@ const adminHtml = `<!doctype html>
       posList.innerHTML = '<div class="loading-spinner">⏳ 로딩 중...</div>'
       
       const r = await api('/api/trading/dashboard-summary', { timeoutMs: 12000, retries: 1 })
-      const positions = Array.isArray(r.data?.trading?.positions) ? r.data.trading.positions : []
+      const positions = filterActivePositions(r.data?.trading?.positions)
       posList.innerHTML = ''
       
       if (!positions.length) {
@@ -4142,7 +4142,7 @@ const adminHtml = `<!doctype html>
       const data = r.data || {}
       const trading = data.trading || {}
       const auto = data.auto || {}
-      const positions = Array.isArray(trading.positions) ? trading.positions : []
+      const positions = filterActivePositions(trading.positions)
 
       // 통계 카드 업데이트
       const systemMeta = getSystemStatusMeta(trading.systemStatus)
@@ -4224,16 +4224,26 @@ const adminHtml = `<!doctype html>
     setTimeout(fn, delay)
   }
 
+  function filterActivePositions(positions) {
+    return (Array.isArray(positions) ? positions : []).filter((item) => {
+      const shares = Number(item?.shares ?? item?.quantity ?? 0)
+      const orderableQuantity = Number(item?.orderableQuantity ?? shares)
+      return shares > 0 || orderableQuantity > 0
+    })
+  }
+
   function renderPositionList(positions) {
     const list = document.getElementById('statusPositionList')
     if (!list) return
 
-    if (!positions || !positions.length) {
+    const activePositions = filterActivePositions(positions)
+
+    if (!activePositions.length) {
       list.innerHTML = '<div style="padding:20px; color:#6b7280; text-align:center;">현재 보유 포지션이 없습니다</div>'
       return
     }
 
-    list.innerHTML = positions.map(p => {
+    list.innerHTML = activePositions.map(p => {
       const shares = Number(p.shares || 0).toLocaleString('ko-KR')
       const entryPrice = Number(p.entryPrice || 0).toLocaleString('ko-KR')
       const entryDate = p.entryDate ? String(p.entryDate).substring(0, 16).replace('T', ' ') : '-'
