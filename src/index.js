@@ -4246,10 +4246,28 @@ const adminHtml = `<!doctype html>
     list.innerHTML = activePositions.map(p => {
       const shares = Number(p.shares || 0).toLocaleString('ko-KR')
       const entryPrice = Number(p.entryPrice || 0).toLocaleString('ko-KR')
+      const currentPriceNumber = Number(p.currentPrice)
+      const hasCurrentPrice = Number.isFinite(currentPriceNumber) && currentPriceNumber > 0
+      const currentPrice = hasCurrentPrice ? currentPriceNumber.toLocaleString('ko-KR') : 'N/A'
+      const gainLoss = hasCurrentPrice
+        ? Math.round((currentPriceNumber - Number(p.entryPrice || 0)) * Number(p.shares || 0))
+        : null
+      const gainPct = hasCurrentPrice && Number(p.entryPrice || 0) > 0
+        ? (((currentPriceNumber - Number(p.entryPrice || 0)) / Number(p.entryPrice || 1)) * 100)
+        : null
+      const gainColor = gainLoss === null ? '#ef4444' : gainLoss >= 0 ? '#10b981' : '#ef4444'
       const entryDate = p.entryDate ? String(p.entryDate).substring(0, 16).replace('T', ' ') : '-'
       return '<div class="position-item">' +
+        '<div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center;">' +
+        '<div>' +
         '<strong>' + p.symbol + '</strong>' +
-        '<small>' + shares + '주 @ ₩' + entryPrice + ' | ' + entryDate + '</small>' +
+        '<small>' + shares + '주 @ ₩' + entryPrice + ' | 현재가 ₩' + currentPrice + ' | ' + entryDate + '</small>' +
+        '</div>' +
+        '<div style="text-align:right; color:' + gainColor + ';">' +
+        '<div style="font-weight:700;">' + (gainLoss === null ? 'N/A' : (gainLoss >= 0 ? '+' : '') + gainLoss.toLocaleString('ko-KR') + '원') + '</div>' +
+        '<div style="font-size:12px;">' + (gainPct === null ? 'N/A' : (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%') + '</div>' +
+        '</div>' +
+        '</div>' +
         '</div>'
     }).join('')
   }
@@ -4900,7 +4918,7 @@ async function handleRequest(request, env) {
     return new Response(html, {
       headers: {
         'Content-Type': 'text/html; charset=UTF-8',
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://stock-auto-cloudflare-admin.sonjongwook123.workers.dev http://158-180-90-6.nip.io:4000 http://localhost:4000; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://stock-auto-cloudflare-admin.sonjongwook123.workers.dev http://158.180.90.6:4000 http://localhost:4000; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
         ...corsHeaders
       },
     })
