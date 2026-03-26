@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-03-02"
 workers_dev = true
 [vars]
-BACKEND_BASE_URL = "http://158.180.90.6:4000"
+BACKEND_BASE_URL = "http://158.180.90.6.nip.io:4000"
 ## 아래 환경별 설정 및 변수는 필요시 Cloudflare Dashboard에서 관리
 ## [env.production]
 ## route = "admin.yourdomain.com/*"

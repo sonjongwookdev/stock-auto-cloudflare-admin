@@ -2672,6 +2672,14 @@ const adminHtml = `<!doctype html>
   // 에러 분류 및 사용자 메시지 생성
   function classifyError(error, statusCode = null) {
     const message = error.message || String(error)
+
+    if (message.includes('Direct IP access not allowed') || message.includes('Error 1003')) {
+      return {
+        category: ErrorCategories.NETWORK,
+        userMessage: '프록시 원본 연결 설정에 문제가 발생했습니다.',
+        suggestion: '잠시 후 다시 시도하거나 관리자에게 백엔드 원본 주소 설정을 확인해주세요.'
+      }
+    }
     
     // 타임아웃 감지
     if (message.includes('timeout') || message.includes('Timeout') || message.includes('시간 초과')) {
@@ -2684,11 +2692,18 @@ const adminHtml = `<!doctype html>
 
     // HTTP 상태 코드 기반 분류
     if (statusCode) {
-      if (statusCode === 401 || statusCode === 403) {
+      if (statusCode === 401) {
         return {
           category: ErrorCategories.AUTH,
           userMessage: '인증에 실패했습니다.',
           suggestion: '로그인을 다시 시도해주세요.'
+        }
+      }
+      if (statusCode === 403) {
+        return {
+          category: ErrorCategories.NETWORK,
+          userMessage: '접근이 차단되었거나 프록시 연결에 문제가 있습니다.',
+          suggestion: '잠시 후 다시 시도해주세요. 반복되면 원본 서버 연결 설정을 확인해야 합니다.'
         }
       }
       if (statusCode === 400) {
@@ -3021,7 +3036,8 @@ const adminHtml = `<!doctype html>
         let errorData = {}
         try { errorData = JSON.parse(errorText) } catch (e) {}
         // Throw a richer error object so downstream can provide better hints
-        const err = errorData.error || ('HTTP ' + res.status)
+        const htmlFallback = !Object.keys(errorData).length && errorText ? errorText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : ''
+        const err = errorData.error || htmlFallback || ('HTTP ' + res.status)
         throw { message: err, statusCode: res.status, category: errorData.category }
       }
       
@@ -4918,7 +4934,7 @@ async function handleRequest(request, env) {
     return new Response(html, {
       headers: {
         'Content-Type': 'text/html; charset=UTF-8',
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://stock-auto-cloudflare-admin.sonjongwook123.workers.dev http://158.180.90.6:4000 http://localhost:4000; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://stock-auto-cloudflare-admin.sonjongwook123.workers.dev http://158.180.90.6.nip.io:4000 http://localhost:4000; font-src 'self' data: https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
         ...corsHeaders
       },
     })
