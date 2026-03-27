@@ -4017,16 +4017,25 @@ const adminHtml = `<!doctype html>
           const gainPctNumber = Number(gainPct)
           const gainLossColor = gainLoss !== 'N/A' && gainLossNumber >= 0 ? '#10b981' : '#ef4444'
           const gainPctColor = gainPct !== 'N/A' && gainPctNumber >= 0 ? '#10b981' : '#ef4444'
+          const modeTag = pos?.fastTradeMode === 'high_vol'
+            ? '<span style="display:inline-flex; margin-left:8px; padding:4px 8px; border-radius:999px; background:#fff7ed; color:#c2410c; font-size:11px; font-weight:700;">고변동단타</span>'
+            : '<span style="display:inline-flex; margin-left:8px; padding:4px 8px; border-radius:999px; background:#ecfdf5; color:#047857; font-size:11px; font-weight:700;">일반단타</span>'
+          const bucketLabel = pos?.allocationBucket ? '<span style="display:inline-flex; margin-left:6px; padding:4px 8px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:700;">' + pos.allocationBucket + '</span>' : ''
+          const strategyLabel = pos?.strategyId ? '<div style="font-size:11px; color:#94a3b8; margin-top:4px;">전략 ' + pos.strategyId + '</div>' : ''
           
           item.innerHTML = '<div>' +
-            '<div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">' + symbol + '</div>' +
+            '<div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">' + symbol + modeTag + bucketLabel + '</div>' +
             '<div style="font-size: 12px; color: #666; line-height: 1.6;">' +
-            '보유수량: ' + shares + '주 | 매입가: ' + priceText + ' | 매입일: ' + entryDate +
+            '보유수량: ' + shares + '주 | 매입가: ' + priceText + ' | 현재가: ' + (hasCurrentPrice ? currentPrice.toFixed(2) : 'N/A') + ' | 매입일: ' + entryDate +
             '</div>' +
+            strategyLabel +
             '</div>' +
-            '<div style="text-align: right;">' +
-            '<div style="font-weight: bold; font-size: 14px; color: ' + gainLossColor + ';">' + (gainLoss !== 'N/A' && gainLossNumber >= 0 ? '+' : '') + gainLoss + (gainLoss === 'N/A' ? '' : '원') + '</div>' +
-            '<div style="font-size: 12px; color: ' + gainPctColor + ';">' + (gainPct !== 'N/A' && gainPctNumber >= 0 ? '+' : '') + gainPct + (gainPct === 'N/A' ? '' : '%') + '</div>' +
+            '<div style="display:flex; align-items:center; gap:12px; justify-self:end;">' +
+            '<div style="min-width:104px; text-align:right;">' +
+            '<div style="font-weight: bold; font-size: 14px; color: ' + gainLossColor + '; white-space:nowrap;">' + (gainLoss !== 'N/A' && gainLossNumber >= 0 ? '+' : '') + gainLoss + (gainLoss === 'N/A' ? '' : '원') + '</div>' +
+            '<div style="font-size: 12px; color: ' + gainPctColor + '; white-space:nowrap;">' + (gainPct !== 'N/A' && gainPctNumber >= 0 ? '+' : '') + gainPct + (gainPct === 'N/A' ? '' : '%') + '</div>' +
+            '</div>' +
+            '<button class="btn secondary" type="button" style="width:108px; min-width:108px; max-width:108px; padding:10px 0; justify-content:center;" data-symbol="' + String(symbol).replace(/"/g, '&quot;') + '" onclick="openFastLiquidateModal(this.getAttribute(&quot;data-symbol&quot;))">빠른청산</button>' +
             '</div>'
           
           posList.appendChild(item)
