@@ -4323,7 +4323,7 @@ const adminHtml = `<!doctype html>
         '<div style="font-weight:700;">' + (gainLoss === null ? 'N/A' : (gainLoss >= 0 ? '+' : '') + gainLoss.toLocaleString('ko-KR') + '원') + '</div>' +
         '<div style="font-size:12px;">' + (gainPct === null ? 'N/A' : (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%') + '</div>' +
         '</div>' +
-        '<button class="btn secondary" type="button" style="padding:10px 12px; min-width:92px;" onclick="openFastLiquidateModal(\'' + String(p.symbol).replace(/'/g, "\\'") + '\')">빠른청산</button>' +
+        '<button class="btn secondary" type="button" style="padding:10px 12px; min-width:92px;" data-symbol="' + String(p.symbol).replace(/"/g, '&quot;') + '" onclick="openFastLiquidateModal(this.getAttribute(\'data-symbol\'))">빠른청산</button>' +
         '</div>' +
         '</div>' +
         '</div>'
