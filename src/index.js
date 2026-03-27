@@ -3056,7 +3056,7 @@ const adminHtml = `<!doctype html>
       
       console.log('[로그인] API 호출 중...')
       // 로컬호스트 검사
-      const loginUrl = buildBrowserApiUrl('/auth/login')
+      const loginUrl = buildBrowserApiUrl('/api/auth/login')
       
       const res = await fetch(loginUrl, {
         method: 'POST',
