@@ -2185,6 +2185,32 @@ const adminHtml = `<!doctype html>
       </div>
     </div>
 
+    <div id="fastLiquidateModal" class="modal-overlay">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h2 id="fastLiquidateTitle">빠른 청산</h2>
+          <button class="modal-close" onclick="closeFastLiquidateModal()">✕</button>
+        </div>
+        <div class="stop-confirm-shell">
+          <div class="stop-confirm-warning">
+            <strong>⚠️ 경고</strong>
+            <span id="fastLiquidateWarning">선택한 종목을 즉시 시장가 청산합니다.</span>
+          </div>
+          <p class="stop-confirm-copy">실행하려면 아래 확인 문구를 정확히 입력해야 합니다.</p>
+          <div class="stop-confirm-field">
+            <div class="stop-confirm-label">확인 문구 입력</div>
+            <input id="fastLiquidateConfirmInput" class="stop-confirm-input" type="text" placeholder="청산합니다" onkeyup="updateFastLiquidateButtonState()" />
+            <div class="stop-confirm-code">확인 문구: 청산합니다</div>
+          </div>
+          <div id="fastLiquidateStatus" class="stop-confirm-status"></div>
+        </div>
+        <div style="display: flex; gap: 10px; padding: 15px 20px; background: #fafafa; border-top: 1px solid #e0e0e0;">
+          <button class="btn secondary" type="button" style="flex: 1;" onclick="closeFastLiquidateModal()">취소</button>
+          <button id="confirmFastLiquidateBtn" class="btn" type="button" style="flex: 1; background: #d32f2f;" onclick="confirmFastLiquidate()" disabled>청산 실행</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Status Modal -->
     <div id="statusModal" class="modal-overlay">
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -4273,15 +4299,21 @@ const adminHtml = `<!doctype html>
         : null
       const gainColor = gainLoss === null ? '#ef4444' : gainLoss >= 0 ? '#10b981' : '#ef4444'
       const entryDate = p.entryDate ? String(p.entryDate).substring(0, 16).replace('T', ' ') : '-'
+      const modeTag = p.fastTradeMode === 'high_vol'
+        ? '<span style="display:inline-flex; margin-left:8px; padding:4px 8px; border-radius:999px; background:#fff7ed; color:#c2410c; font-size:11px; font-weight:700;">고변동단타</span>'
+        : '<span style="display:inline-flex; margin-left:8px; padding:4px 8px; border-radius:999px; background:#ecfdf5; color:#047857; font-size:11px; font-weight:700;">일반단타</span>'
       return '<div class="position-item">' +
         '<div style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center;">' +
         '<div>' +
-        '<strong>' + p.symbol + '</strong>' +
+        '<strong>' + p.symbol + '</strong>' + modeTag +
         '<small>' + shares + '주 @ ₩' + entryPrice + ' | 현재가 ₩' + currentPrice + ' | ' + entryDate + '</small>' +
         '</div>' +
+        '<div style="display:flex; align-items:center; gap:12px;">' +
         '<div style="text-align:right; color:' + gainColor + ';">' +
         '<div style="font-weight:700;">' + (gainLoss === null ? 'N/A' : (gainLoss >= 0 ? '+' : '') + gainLoss.toLocaleString('ko-KR') + '원') + '</div>' +
         '<div style="font-size:12px;">' + (gainPct === null ? 'N/A' : (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%') + '</div>' +
+        '</div>' +
+        '<button class="btn secondary" type="button" style="padding:10px 12px; min-width:92px;" onclick="openFastLiquidateModal(\'' + p.symbol + '\')">빠른청산</button>' +
         '</div>' +
         '</div>' +
         '</div>'
@@ -4751,6 +4783,7 @@ const adminHtml = `<!doctype html>
   // ============================================
 
   let stopTradingMarket = 'all'
+  let fastLiquidateSymbol = ''
 
   function getStopTradingConfig() {
     if (stopTradingMarket === 'domestic') {
@@ -4938,6 +4971,72 @@ async function handleRequest(request, env) {
         ...corsHeaders
       },
     })
+  }
+
+  function openFastLiquidateModal(symbol) {
+    fastLiquidateSymbol = String(symbol || '').trim().toUpperCase()
+    const title = document.getElementById('fastLiquidateTitle')
+    const warning = document.getElementById('fastLiquidateWarning')
+    const input = document.getElementById('fastLiquidateConfirmInput')
+    const status = document.getElementById('fastLiquidateStatus')
+    if (title) title.textContent = '빠른 청산 · ' + fastLiquidateSymbol
+    if (warning) warning.textContent = fastLiquidateSymbol + ' 종목을 즉시 시장가로 청산합니다.'
+    if (input) {
+      input.value = ''
+      input.placeholder = '청산합니다'
+      input.classList.remove('valid')
+    }
+    if (status) status.innerHTML = ''
+    updateFastLiquidateButtonState()
+    document.getElementById('fastLiquidateModal').classList.add('active')
+  }
+
+  function closeFastLiquidateModal() {
+    document.getElementById('fastLiquidateModal').classList.remove('active')
+    fastLiquidateSymbol = ''
+    const input = document.getElementById('fastLiquidateConfirmInput')
+    const status = document.getElementById('fastLiquidateStatus')
+    if (input) {
+      input.value = ''
+      input.classList.remove('valid')
+    }
+    if (status) status.innerHTML = ''
+    updateFastLiquidateButtonState()
+  }
+
+  function updateFastLiquidateButtonState() {
+    const input = document.getElementById('fastLiquidateConfirmInput')
+    const btn = document.getElementById('confirmFastLiquidateBtn')
+    if (!input || !btn) return
+    const isCorrect = input.value === '청산합니다' && !!fastLiquidateSymbol
+    input.classList.toggle('valid', isCorrect)
+    btn.disabled = !isCorrect
+    btn.style.opacity = isCorrect ? '1' : '0.5'
+    btn.style.cursor = isCorrect ? 'pointer' : 'not-allowed'
+  }
+
+  async function confirmFastLiquidate() {
+    const btn = document.getElementById('confirmFastLiquidateBtn')
+    const status = document.getElementById('fastLiquidateStatus')
+    if (!btn || !fastLiquidateSymbol) return
+    try {
+      btn.disabled = true
+      btn.innerHTML = '<span class="spinner"></span> 처리 중...'
+      await api('/trading/positions/liquidate', {
+        method: 'POST',
+        body: { symbol: fastLiquidateSymbol, confirmation: '청산합니다' },
+      })
+      if (status) status.innerHTML = '<div style="color:#10b981; font-weight:700;">청산 주문을 전송했습니다.</div>'
+      btn.innerHTML = '✓ 청산 완료'
+      btn.style.background = '#10b981'
+      await Promise.all([loadStatus(), loadBalance()]).catch(() => null)
+      setTimeout(() => closeFastLiquidateModal(), 1800)
+    } catch (err) {
+      const category = err.category || classifyError(err)
+      if (status) status.innerHTML = formatErrorMessage(category.userMessage, category.suggestion)
+      btn.disabled = false
+      btn.innerHTML = '청산 실행'
+    }
   }
 
   // /api로 시작하는 요청은 백엔드로 프록시
