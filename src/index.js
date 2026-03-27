@@ -2294,6 +2294,7 @@ const adminHtml = `<!doctype html>
             <div class="stat-label">활성 포지션</div>
             <div class="stat-value" id="statPositions">로딩중...</div>
             <div style="font-size:12px; margin-top:4px; color:#6b7280;" id="domesticBreadthBadge">국내 breadth -</div>
+            <div style="font-size:12px; margin-top:2px; font-weight:700; color:#6b7280;" id="domesticBreadthStatus">계산 대기</div>
           </div>
         </div>
       </div>
@@ -4267,15 +4268,25 @@ const adminHtml = `<!doctype html>
       document.getElementById('statPositions').textContent = positions.length + '개'
       const breadthMeta = auto?.buyPolicy?.domesticBreadth || null
       const breadthBadge = document.getElementById('domesticBreadthBadge')
+      const breadthStatus = document.getElementById('domesticBreadthStatus')
       if (breadthBadge) {
         if (breadthMeta && Number.isFinite(Number(breadthMeta.ratio))) {
           const ratio = Number(breadthMeta.ratio) * 100
           const threshold = Number(breadthMeta.threshold || 0) * 100
           breadthBadge.textContent = '국내 breadth ' + ratio.toFixed(1) + '% / 기준 ' + threshold.toFixed(1) + '%'
           breadthBadge.style.color = Number(breadthMeta.ratio) >= Number(breadthMeta.threshold || 0) ? '#10b981' : '#ef4444'
+          if (breadthStatus) {
+            const blocked = Number(breadthMeta.ratio) < Number(breadthMeta.threshold || 0)
+            breadthStatus.textContent = blocked ? '진입 보류중' : '진입 가능'
+            breadthStatus.style.color = blocked ? '#ef4444' : '#10b981'
+          }
         } else {
           breadthBadge.textContent = '국내 breadth -'
           breadthBadge.style.color = '#6b7280'
+          if (breadthStatus) {
+            breadthStatus.textContent = '계산 대기'
+            breadthStatus.style.color = '#6b7280'
+          }
         }
       }
 
