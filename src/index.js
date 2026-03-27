@@ -3664,20 +3664,42 @@ const adminHtml = `<!doctype html>
     const list = el('statusPositionsList')
     if (!list) return
 
-    if (!positions || !positions.length) {
+    const activePositions = filterActivePositions(positions)
+
+    if (!activePositions.length) {
       list.innerHTML = '<div style="padding:10px; color:#6b7280; text-align:center;">현재 보유 포지션이 없습니다</div>'
       return
     }
 
-    list.innerHTML = positions
+    list.innerHTML = activePositions
       .map((item) => {
-        const shares = Number(item.shares || 0).toLocaleString('ko-KR')
-        const entryPrice = Number(item.entryPrice || 0).toLocaleString('ko-KR')
+        const shares = Number(item.shares || 0)
+        const entryPrice = Number(item.entryPrice)
+        const currentPrice = Number(item.currentPrice)
+        const hasEntryPrice = Number.isFinite(entryPrice)
+        const hasCurrentPrice = Number.isFinite(currentPrice)
+        const gainLoss = hasEntryPrice && hasCurrentPrice ? Math.round((currentPrice - entryPrice) * shares) : null
+        const gainPct = hasEntryPrice && hasCurrentPrice && entryPrice > 0 ? (((currentPrice - entryPrice) / entryPrice) * 100) : null
+        const gainColor = gainLoss === null ? '#ef4444' : gainLoss >= 0 ? '#10b981' : '#ef4444'
+        const modeTag = item?.fastTradeMode === 'high_vol'
+          ? '<span style="display:inline-flex; margin-left:8px; padding:4px 8px; border-radius:999px; background:#fff7ed; color:#c2410c; font-size:11px; font-weight:700;">고변동단타</span>'
+          : '<span style="display:inline-flex; margin-left:8px; padding:4px 8px; border-radius:999px; background:#ecfdf5; color:#047857; font-size:11px; font-weight:700;">일반단타</span>'
+        const bucketLabel = item?.allocationBucket ? '<span style="display:inline-flex; margin-left:6px; padding:4px 8px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:700;">' + item.allocationBucket + '</span>' : ''
         const entryDate = item.entryDate ? String(item.entryDate).substring(0, 19).replace('T', ' ') : '-'
         return (
-          '<div class="item">' +
-          '<div><strong>' + item.symbol + '</strong><br/><small>' + shares + '주 @ ₩' + entryPrice + '</small></div>' +
-          '<div style="text-align:right; font-size:11px; color:#6b7280;">' + entryDate + '</div>' +
+          '<div class="item" style="display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center;">' +
+          '<div>' +
+          '<div style="font-weight:700; font-size:15px; margin-bottom:4px;">' + item.symbol + modeTag + bucketLabel + '</div>' +
+          '<div style="font-size:12px; color:#666; line-height:1.6;">보유수량: ' + shares.toLocaleString('ko-KR') + '주 | 매입가: ₩' + (hasEntryPrice ? entryPrice.toLocaleString('ko-KR') : 'N/A') + ' | 현재가: ₩' + (hasCurrentPrice ? currentPrice.toLocaleString('ko-KR') : 'N/A') + ' | 매입일: ' + entryDate + '</div>' +
+          (item?.strategyId ? '<div style="font-size:11px; color:#94a3b8; margin-top:4px;">전략 ' + item.strategyId + '</div>' : '') +
+          '</div>' +
+          '<div style="display:flex; align-items:center; gap:12px; justify-self:end;">' +
+          '<div style="min-width:104px; text-align:right; color:' + gainColor + '; line-height:1.35;">' +
+          '<div style="font-weight:700; white-space:nowrap;">' + (gainLoss === null ? 'N/A' : (gainLoss >= 0 ? '+' : '') + gainLoss.toLocaleString('ko-KR') + '원') + '</div>' +
+          '<div style="font-size:12px; white-space:nowrap;">' + (gainPct === null ? 'N/A' : (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%') + '</div>' +
+          '</div>' +
+          '<button class="btn secondary" type="button" style="width:108px; min-width:108px; max-width:108px; padding:10px 0; justify-content:center;" data-symbol="' + String(item.symbol).replace(/"/g, '&quot;') + '" onclick="openFastLiquidateModal(this.getAttribute(&quot;data-symbol&quot;))">빠른청산</button>' +
+          '</div>' +
           '</div>'
         )
       })
