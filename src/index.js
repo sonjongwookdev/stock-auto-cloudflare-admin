@@ -2831,7 +2831,7 @@ const adminHtml = `<!doctype html>
   }
   
   let currentMarket = 'domestic'
-  let currentUser = { isLoggedIn: false }
+  let currentUser = { isLoggedIn: false, csrfToken: '' }
   let balanceRefreshInterval = null  // 잔고 자동 갱신 타이머
   let balanceRefreshSeconds = 120  // 기본값 2분
   let statusRefreshInterval = null
@@ -2879,7 +2879,9 @@ const adminHtml = `<!doctype html>
 
   function clearStoredLoginState() {
     currentUser.isLoggedIn = false
+    currentUser.csrfToken = ''
     storage.removeItem('isLoggedIn')
+    storage.removeItem('csrfToken')
   }
 
   function handleAuthExpired(message = '로그인이 만료되었습니다. 다시 로그인해주세요.') {
@@ -2916,7 +2918,13 @@ const adminHtml = `<!doctype html>
         
         const res = await fetch(fullUrl, {
           method,
-          headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+          headers: {
+            'Content-Type': 'application/json',
+            ...((method !== 'GET' && method !== 'HEAD' && currentUser.csrfToken)
+              ? { 'x-csrf-token': currentUser.csrfToken }
+              : {}),
+            ...(opts.headers || {}),
+          },
           body: opts.body ? JSON.stringify(opts.body) : undefined,
           credentials: 'include',
           signal: controller.signal
@@ -2930,7 +2938,7 @@ const adminHtml = `<!doctype html>
         if (!res.ok) {
           // 4xx 에러는 재시도하지 않음
           if (res.status >= 400 && res.status < 500) {
-            if (res.status === 401 && !path.includes('/auth/login')) {
+            if ((res.status === 401 || (res.status === 403 && json.error === 'invalid_csrf')) && !path.includes('/auth/login')) {
               handleAuthExpired()
             }
             const err = new Error(json.error || json.message || ('HTTP ' + res.status))
@@ -3069,9 +3077,11 @@ const adminHtml = `<!doctype html>
       
       console.log('[로그인] 성공')
       currentUser.isLoggedIn = true
+      currentUser.csrfToken = String((await res.clone().json()).csrfToken || '')
       
       // 로그인 상태를 storage에 저장
       storage.setItem('isLoggedIn', 'true')
+      if (currentUser.csrfToken) storage.setItem('csrfToken', currentUser.csrfToken)
       
       // 성공 표시
       showLoginSuccess()
@@ -4907,6 +4917,7 @@ const adminHtml = `<!doctype html>
     
     // 저장된 로그인 상태 확인
     const isLoggedIn = storage.getItem('isLoggedIn') === 'true'
+    currentUser.csrfToken = storage.getItem('csrfToken') || ''
     if (isLoggedIn) {
       console.log('[초기화] 저장된 로그인 상태 감지')
       currentUser.isLoggedIn = true
