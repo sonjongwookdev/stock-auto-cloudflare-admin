@@ -4337,12 +4337,12 @@ const adminHtml = `<!doctype html>
         '<strong>' + p.symbol + '</strong>' + modeTag +
         '<small>' + shares + '주 @ ₩' + entryPrice + ' | 현재가 ₩' + currentPrice + ' | ' + entryDate + '</small>' +
         '</div>' +
-        '<div style="display:flex; align-items:center; gap:12px;">' +
-        '<div style="text-align:right; color:' + gainColor + ';">' +
-        '<div style="font-weight:700;">' + (gainLoss === null ? 'N/A' : (gainLoss >= 0 ? '+' : '') + gainLoss.toLocaleString('ko-KR') + '원') + '</div>' +
-        '<div style="font-size:12px;">' + (gainPct === null ? 'N/A' : (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%') + '</div>' +
+        '<div style="display:flex; align-items:center; gap:12px; justify-self:end;">' +
+        '<div style="min-width:104px; text-align:right; color:' + gainColor + '; line-height:1.35;">' +
+        '<div style="font-weight:700; white-space:nowrap;">' + (gainLoss === null ? 'N/A' : (gainLoss >= 0 ? '+' : '') + gainLoss.toLocaleString('ko-KR') + '원') + '</div>' +
+        '<div style="font-size:12px; white-space:nowrap;">' + (gainPct === null ? 'N/A' : (gainPct >= 0 ? '+' : '') + gainPct.toFixed(2) + '%') + '</div>' +
         '</div>' +
-        '<button class="btn secondary" type="button" style="padding:10px 12px; min-width:92px;" data-symbol="' + String(p.symbol).replace(/"/g, '&quot;') + '" onclick="openFastLiquidateModal(this.getAttribute(&quot;data-symbol&quot;))">빠른청산</button>' +
+        '<button class="btn secondary" type="button" style="width:108px; min-width:108px; max-width:108px; padding:10px 0; justify-content:center;" data-symbol="' + String(p.symbol).replace(/"/g, '&quot;') + '" onclick="openFastLiquidateModal(this.getAttribute(&quot;data-symbol&quot;))">빠른청산</button>' +
         '</div>' +
         '</div>' +
         '</div>'
