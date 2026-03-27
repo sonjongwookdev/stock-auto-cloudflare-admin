@@ -3040,7 +3040,13 @@ const adminHtml = `<!doctype html>
   async function performLogin() {
     try {
       console.log('[로그인] 시작')
-      const password = document.getElementById('loginPassword').value
+      const rawPassword = document.getElementById('loginPassword').value
+      const normalizedPassword = String(rawPassword || '').normalize('NFKC')
+      const trimmedPassword = normalizedPassword.trim()
+      const candidatePasswords = []
+      if (normalizedPassword) candidatePasswords.push(normalizedPassword)
+      if (trimmedPassword && trimmedPassword !== normalizedPassword) candidatePasswords.push(trimmedPassword)
+      const password = normalizedPassword
       if (!password) {
         displayAlert('loginError', '비밀번호를 입력해주세요', 'password-error')
         return
@@ -3058,21 +3064,34 @@ const adminHtml = `<!doctype html>
       // 로컬호스트 검사
       const loginUrl = buildBrowserApiUrl('/api/auth/login')
       
-      const res = await fetch(loginUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-        credentials: 'include'
-      })
-      
-      if (!res.ok) {
-        const errorText = await res.text()
+      let res = null
+      let lastError = null
+      for (const candidatePassword of candidatePasswords) {
+        const attemptRes = await fetch(loginUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: candidatePassword }),
+          credentials: 'include'
+        })
+
+        if (attemptRes.ok) {
+          res = attemptRes
+          break
+        }
+
+        const errorText = await attemptRes.text()
         let errorData = {}
         try { errorData = JSON.parse(errorText) } catch (e) {}
-        // Throw a richer error object so downstream can provide better hints
         const htmlFallback = !Object.keys(errorData).length && errorText ? errorText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : ''
-        const err = errorData.error || htmlFallback || ('HTTP ' + res.status)
-        throw { message: err, statusCode: res.status, category: errorData.category }
+        lastError = { message: errorData.error || htmlFallback || ('HTTP ' + attemptRes.status), statusCode: attemptRes.status, category: errorData.category }
+
+        if (attemptRes.status !== 401) {
+          throw lastError
+        }
+      }
+
+      if (!res) {
+        throw lastError || { message: 'HTTP 401', statusCode: 401 }
       }
       
       console.log('[로그인] 성공')
